@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'note.ui'
+#
+# Created: Sat Mar 17 19:56:09 2012
+#      by: pyside-uic 0.2.11 running on PySide 1.0.6
+#
+# WARNING! All changes made in this file will be lost!
+
+from PySide import QtCore, QtGui
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.setWindowModality(QtCore.Qt.NonModal)
+        MainWindow.resize(367, 263)
+        MainWindow.setDocumentMode(False)
+        MainWindow.setDockNestingEnabled(False)
+        MainWindow.setDockOptions(QtGui.QMainWindow.AllowTabbedDocks|QtGui.QMainWindow.AnimatedDocks)
+        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.text = QtGui.QTextEdit(self.centralwidget)
+        self.text.setObjectName("text")
+        self.horizontalLayout.addWidget(self.text)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 367, 25))
+        self.menubar.setObjectName("menubar")
+        self.menuFile = QtGui.QMenu(self.menubar)
+        self.menuFile.setObjectName("menuFile")
+        self.menuEdit = QtGui.QMenu(self.menubar)
+        self.menuEdit.setObjectName("menuEdit")
+        MainWindow.setMenuBar(self.menubar)
+        self.toolBar = QtGui.QToolBar(MainWindow)
+        self.toolBar.setObjectName("toolBar")
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        self.actionSave = QtGui.QAction(MainWindow)
+        self.actionSave.setObjectName("actionSave")
+        self.actionClose_and_save = QtGui.QAction(MainWindow)
+        self.actionClose_and_save.setObjectName("actionClose_and_save")
+        self.actionClose_without_saving = QtGui.QAction(MainWindow)
+        self.actionClose_without_saving.setObjectName("actionClose_without_saving")
+        self.actionCut = QtGui.QAction(MainWindow)
+        self.actionCut.setObjectName("actionCut")
+        self.actionCopy = QtGui.QAction(MainWindow)
+        self.actionCopy.setObjectName("actionCopy")
+        self.actionAbout = QtGui.QAction(MainWindow)
+        self.actionAbout.setObjectName("actionAbout")
+        self.actionAbout_Qt = QtGui.QAction(MainWindow)
+        self.actionAbout_Qt.setObjectName("actionAbout_Qt")
+        self.actionPaste = QtGui.QAction(MainWindow)
+        self.actionPaste.setObjectName("actionPaste")
+        self.actionRemove = QtGui.QAction(MainWindow)
+        self.actionRemove.setObjectName("actionRemove")
+        self.menuFile.addAction(self.actionSave)
+        self.menuFile.addAction(self.actionClose_and_save)
+        self.menuFile.addAction(self.actionClose_without_saving)
+        self.menuFile.addAction(self.actionRemove)
+        self.menuEdit.addAction(self.actionCut)
+        self.menuEdit.addAction(self.actionCopy)
+        self.menuEdit.addAction(self.actionPaste)
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuEdit.menuAction())
+
+        self.retranslateUi(MainWindow)
+        QtCore.QObject.connect(self.actionCopy, QtCore.SIGNAL("triggered()"), self.text.copy)
+        QtCore.QObject.connect(self.actionPaste, QtCore.SIGNAL("triggered()"), self.text.paste)
+        QtCore.QObject.connect(self.actionCut, QtCore.SIGNAL("triggered()"), self.text.cut)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "Note", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuEdit.setTitle(QtGui.QApplication.translate("MainWindow", "Edit", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClose_and_save.setText(QtGui.QApplication.translate("MainWindow", "Close and save", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionClose_without_saving.setText(QtGui.QApplication.translate("MainWindow", "Close without saving", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionCut.setText(QtGui.QApplication.translate("MainWindow", "Cut", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionCut.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+X", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionCopy.setText(QtGui.QApplication.translate("MainWindow", "Copy", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionCopy.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+C", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionAbout_Qt.setText(QtGui.QApplication.translate("MainWindow", "About Qt", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPaste.setText(QtGui.QApplication.translate("MainWindow", "Paste", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPaste.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+V", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRemove.setText(QtGui.QApplication.translate("MainWindow", "Remove", None, QtGui.QApplication.UnicodeUTF8))
+

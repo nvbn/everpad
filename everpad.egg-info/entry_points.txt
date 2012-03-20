@@ -1,0 +1,7 @@
+[console_scripts]
+everpad-lens = everpad.lens:main
+everpad-provider = everpad.provider:main
+
+[gui_scripts]
+everpad = everpad.pad:main
+

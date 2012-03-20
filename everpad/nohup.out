@@ -1,0 +1,9 @@
+Checking if settings need to be migrated ...no
+Checking if internal files need to be migrated ...no
+Backend     : gconf
+Integration : true
+Profile     : unity
+Adding plugins
+Skipping upgrade com.canonical.unity.unity.01.upgrade
+Skipping upgrade com.canonical.unity.unity.02.upgrade
+Initializing core options...done

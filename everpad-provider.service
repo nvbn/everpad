@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.everpad.Provider
+Exec=/usr/bin/everpad-provider

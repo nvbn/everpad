@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: everpad
+Version: 0.1dev
+Summary: Ubuntu integrated evernote client
+Home-page: http://nvbn.info/
+Author: Vladimir Yakovlev
+Author-email: nvbn.rm@gmail.com
+License: MIT
+Description: UNKNOWN
+Keywords: ubuntu python evernote
+Platform: UNKNOWN

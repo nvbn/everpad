@@ -1,0 +1,24 @@
+[Desktop Entry]
+Version=0.1
+Name=Everpad
+GenericName=Everpad
+Comment=Evernote client
+Comment[ru]=Клиент для Evernote
+Exec=everpad
+Terminal=false
+Icon=everpad.png
+Type=Application
+Categories=Network;
+X-Ayatana-Desktop-Shortcuts=NewNote;Settings
+
+[NewNote Shortcut Group]
+Name=Create Note
+Name[ru]=Создать заметку
+Exec=everpad --create
+TargetEnvironment=Unity
+
+[Settings Shortcut Group]
+Name=Settings
+Name[ru]=Параметры
+Exec=everpad --settings
+TargetEnvironment=Unity

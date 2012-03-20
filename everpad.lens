@@ -1,0 +1,11 @@
+[Lens]
+DBusName=net.launchpad.Unity.Lens.Everpad
+DBusPath=/net/launchpad/unity/lens/everpad
+Name=Everpad
+Icon=everpad
+Description=Everpad notes lens
+SearchHint=Search everpad notes
+Shortcut=v
+
+[Desktop Entry]
+X-Ubuntu-Gettext-Domain=unity-lens-everpad

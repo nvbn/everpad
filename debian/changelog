@@ -1,0 +1,11 @@
+everpad (0.2-1) oneiric; urgency=low
+
+  * Fix paths in dbus services, fix translates
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Tue, 21 Mar 2012 14:30:22 +0400
+
+everpad (0.1-5) oneiric; urgency=low
+
+  * Initial release
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Tue, 20 Mar 2012 16:04:22 +0400

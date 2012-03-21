@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.1'
+version = '0.2'
 
 setup(name='everpad',
     version=version,
@@ -12,8 +12,8 @@ setup(name='everpad',
     keywords='ubuntu python evernote',
     author='Vladimir Yakovlev',
     author_email='nvbn.rm@gmail.com',
-    url='http://nvbn.info/',
-    license='MIT',
+    url='https://github.com/nvbn/everpad/',
+    license='X11',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=True,
@@ -29,12 +29,12 @@ setup(name='everpad',
         ]
     },
     data_files=[
-        ('/usr/share/icons/hicolor/64x64/apps', ['everpad.png']),
-        ('/usr/share/pixmaps', ['everpad.png']),
-        ('/usr/share/applications', ['everpad.desktop']),
-        ('/usr/share/everpad/lang', ['everpad/i18n/ru_RU.qm']),
-        ('/usr/share/unity/lenses/everpad', ['everpad.lens']),
-        ('/usr/share/dbus-1/services', [
+        ('share/icons/hicolor/64x64/apps', ['everpad.png']),
+        ('share/pixmaps', ['everpad.png']),
+        ('share/applications', ['everpad.desktop']),
+        ('share/everpad/lang', ['everpad/i18n/ru_RU.qm']),
+        ('share/unity/lenses/everpad', ['everpad.lens']),
+        ('share/dbus-1/services', [
             'unity-lens-everpad.service',
             'everpad-provider.service'
         ]),

@@ -108,7 +108,6 @@ class App(QCoreApplication):
     def create_note(self, title, content):
         api = self.api()
         note = api.create_note(title, content)
-        note.content = content
         self.to_db(note, api)
         return note.guid
 

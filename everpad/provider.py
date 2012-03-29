@@ -113,6 +113,7 @@ class App(QCoreApplication):
         return note.guid
 
     def remove_note(self, guid):
+        print guid
         api = self.api()
         api.remove_note(guid)
         self.cursor.execute('delete from notes where guid = ?', (guid,))

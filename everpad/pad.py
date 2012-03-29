@@ -109,6 +109,7 @@ class NoteWindow(QMainWindow):
         if self.save_on_close:
             self.save()
         event.ignore()
+        self.app.indicator.get_notes()
 
     @Slot()
     def close_wo_save(self):

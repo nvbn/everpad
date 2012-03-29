@@ -1,3 +1,10 @@
+everpad (0.3-0~oneiric) oneiric; urgency=low
+
+  * Fix creating note with unicode
+  * Fix ghost notes
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Tue, 29 Mar 2012 17:08:42 +0400
+
 everpad (0.2-4~oneiric) oneiric; urgency=low
 
   * Fix packages

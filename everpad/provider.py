@@ -76,8 +76,10 @@ class App(QCoreApplication):
     def sync(self):
         api = self.api()
         if api:
+            guids = []
             for note in api.get_notes():
                 self.cursor.execute('select updated from notes where guid = ?', (note.guid,))
+                guids.append(note.guid)
                 try:
                     fresh = list(self.cursor)[0][0] == note.updated
                     if not fresh:
@@ -86,6 +88,12 @@ class App(QCoreApplication):
                     fresh = False
                 if not fresh:
                     self.to_db(api.get_note(note.guid), api)
+            if len(guids):
+                self.cursor.execute(
+                    'delete from notes where guid not in (%s)' % ', '.join(
+                        ['?'] * len(guids)
+                    ), guids,
+                )
             self.conn.commit()
 
     def update_note(self, guid, title, content):

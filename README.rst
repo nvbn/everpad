@@ -10,7 +10,7 @@ Client has:
 
 Installation
 ============
-For ubuntu user `ppa <http://uglyrater.org/>`_:
+For ubuntu user `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
 
 ``add-apt-repository ppa:nvbn-rm/ppa``
 

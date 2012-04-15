@@ -4,6 +4,8 @@ import dbus.mainloop.glib
 from sqlite3 import OperationalError
 import sys
 import gconf
+import signal
+
 sys.path.insert(0, '..')
 from evernote.edam.error.ttypes import EDAMUserException
 import fcntl
@@ -11,6 +13,7 @@ from everpad.api import Api
 from PySide.QtCore import QCoreApplication, QThread, QTimer, Slot
 import sqlite3
 import os
+import time
 
 
 class ActionThread(QThread):
@@ -52,15 +55,27 @@ class App(QCoreApplication):
         self.timer.start()
         self.sync()
 
-    def api(self):
-        user = self.settings.get_string('/apps/everpad/login')
-        password = self.settings.get_string('/apps/everpad/password')
+    def get_auth_data(self):
+        return (
+            self.settings.get_string('/apps/everpad/login'),
+            self.settings.get_string('/apps/everpad/password'),
+        )
+
+    def get_api(self):
+        self.user, self.password = self.get_auth_data()
         self.authenticated = True
         try:
-            return Api(user, password)
+            return Api(self.user, self.password)
         except EDAMUserException:
             self.authenticated = False
-            return False
+            return None
+
+    @property
+    def api(self):
+        if not getattr(self, '_api', None) or\
+           (self.user, self.password) != self.get_auth_data():
+            self._api = self.get_api()
+        return self._api
 
     def to_db(self, note, api):
         self.cursor.execute('''insert into notes
@@ -74,10 +89,9 @@ class App(QCoreApplication):
 
     @Slot()
     def sync(self):
-        api = self.api()
-        if api:
+        if self.api:
             guids = []
-            for note in api.get_notes():
+            for note in self.api.get_notes():
                 self.cursor.execute('select updated from notes where guid = ?', (note.guid,))
                 guids.append(note.guid)
                 try:
@@ -87,7 +101,7 @@ class App(QCoreApplication):
                 except IndexError:
                     fresh = False
                 if not fresh:
-                    self.to_db(api.get_note(note.guid), api)
+                    self.to_db(self.api.get_note(note.guid), self.api)
             if len(guids):
                 self.cursor.execute(
                     'delete from notes where guid not in (%s)' % ', '.join(
@@ -97,35 +111,30 @@ class App(QCoreApplication):
             self.conn.commit()
 
     def update_note(self, guid, title, content):
-        api = self.api()
-        note = api.get_note(guid)
-        note.title = api.parse_title(title)
-        note.content = api.parse_content(content)
-        api.update_note(note)
+        note = self.api.get_note(guid)
+        note.title = self.api.parse_title(title)
+        note.content = self.api.parse_content(content)
+        self.api.update_note(note)
         self.cursor.execute('delete from notes where guid = ?', (guid,))
-        self.to_db(note, api)
+        self.to_db(note, self.api)
 
     def create_note(self, title, content):
-        api = self.api()
-        note = api.create_note(title, content)
-        note = api.get_note(note.guid)
-        self.to_db(note, api)
+        note = self.api.create_note(title, content)
+        note = self.api.get_note(note.guid)
+        self.to_db(note, self.api)
         return note.guid
 
     def remove_note(self, guid):
-        print guid
-        api = self.api()
-        api.remove_note(guid)
+        self.api.remove_note(guid)
         self.cursor.execute('delete from notes where guid = ?', (guid,))
         self.conn.commit()
 
     def get_notes(self, words, count):
-        api = self.api()
-        if not api:
+        if not self.api:
             return []
         query = 'select * from notes where owner = ? %(where)s %(limit)s'
         params = {'where': '', 'limit': ''}
-        args = [api.username]
+        args = [self.api.username]
         if words:
             params['where'] = 'and title like ? or content like ?'
             args += ['%%%s%%' % words] * 2
@@ -171,6 +180,7 @@ class EverpadService(dbus.service.Object):
 
 
 def main():
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     fp = open('/tmp/everpad-provider.lock', 'w')
     fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
     app = App(sys.argv)

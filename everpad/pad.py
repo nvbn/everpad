@@ -5,12 +5,12 @@ import signal
 
 sys.path.insert(0, '..')
 from functools import partial
-from PySide.QtCore import Slot, QTranslator, QLocale
+from PySide.QtCore import Slot, QTranslator, QLocale, Signal
 from PySide.QtGui import QApplication, QSystemTrayIcon, QIcon, QMenu, QMainWindow, QDialog, QMessageBox
 from BeautifulSoup import BeautifulSoup
 from everpad.interface.auth import Ui_Dialog as AuthDialogUi
 from everpad.interface.note import Ui_MainWindow as NoteUi
-from everpad.utils import action_thread
+from everpad.utils import SyncThread
 import dbus
 import dbus.service
 import dbus.mainloop.glib
@@ -55,6 +55,8 @@ class AuthDialog(QDialog):
 
 class NoteWindow(QMainWindow):
     """Note window"""
+    note_remove = Signal()
+    note_create = Signal(str)
 
     def __init__(self, app, note, create, *args, **kwargs):
         """Init window, connect signals with slots
@@ -105,15 +107,17 @@ class NoteWindow(QMainWindow):
         self.ui.actionClose_and_save.triggered.connect(self.close)
         self.ui.actionClose_without_saving.triggered.connect(self.close_wo_save)
         self.ui.actionRemove.triggered.connect(self.remove_note)
+        self.note_create.connect(self.note_created)
+        self.closed = False
 
     def closeEvent(self, event):
         """Close w/wo saving"""
+        event.ignore()
         self.hide()
         if self.save_on_close:
             self.save()
-        event.ignore()
         self.app.indicator.get_notes()
-        self.app.opened[self.guid] = None
+        self.closed = True
 
     @Slot()
     def close_wo_save(self):
@@ -129,20 +133,30 @@ class NoteWindow(QMainWindow):
         html = reduce(lambda txt, cur: txt + unicode(cur), body.contents[2:], u'')
         return title, html
 
-    @action_thread
+    @Slot(str)
+    def note_created(self, guid):
+        self.guid = guid
+        self.create = False
+        self.delete.setEnabled(True)
+
     def save(self):
         """Save note"""
         title, html = self.get_data()
         if self.create:
-            self.guid = self.app.provider.create_note(title, html)
+            self.app.sync_thread.action_receive.emit((
+                self.app.provider.create_note,
+                (title, html), {},
+                self.note_create,
+            ))
             self.app.send_notify(
                 self.tr('Note created'),
                 self.tr('Note "%s" created') % title,
             )
-            self.create = False
-            self.delete.setEnabled(True)
         else:
-            self.app.provider.update_note(self.guid, title, html)
+            self.app.sync_thread.action_receive.emit((
+                self.app.provider.update_note,
+                (self.guid, title, html),
+            ))
             self.app.send_notify(
                 self.tr('Note saved'),
                 self.tr('Note "%s" saved') % title,
@@ -159,17 +173,15 @@ class NoteWindow(QMainWindow):
         )
         ret = msgBox.exec_()
         if ret == QMessageBox.Yes:
-            self._remove_note()
+            self.app.sync_thread.action_receive.emit((
+                self.app.provider.remove_note,
+                (self.note[1],),
+            ))
+            self.app.send_notify(
+                self.tr('Note removed'),
+                self.tr('Note "%s" removed') % self.note[2],
+            )
             self.close_wo_save()
-
-    @action_thread
-    def _remove_note(self):
-        """Remove note"""
-        self.app.provider.remove_note(self.note[1])
-        self.app.send_notify(
-            self.tr('Note removed'),
-            self.tr('Note "%s" removed') % self.note[2],
-        )
 
 
 class App(QApplication):
@@ -178,6 +190,8 @@ class App(QApplication):
     def __init__(self, *args, **kwargs):
         """Init app"""
         QApplication.__init__(self, *args, **kwargs)
+        self.sync_thread = SyncThread()
+        self.sync_thread.start()
         self.translator = QTranslator()
         if not self.translator.load('i18n/%s' % QLocale.system().name()):
             self.translator.load('/usr/share/everpad/lang/%s' % QLocale.system().name())
@@ -209,6 +223,7 @@ class App(QApplication):
 
 class Indicator(QSystemTrayIcon):
     """Indicator applet class"""
+    notes_get = Signal(list)
 
     def __init__(self, app, *args, **kwargs):
         """Init indicator
@@ -228,11 +243,18 @@ class Indicator(QSystemTrayIcon):
         self.menu.aboutToShow.connect(self.update)
         self.auth_dialog = AuthDialog(self.app)
         self._notes = []
+        self.notes_get.connect(self.notes_getted)
         self.get_notes()
 
-    @action_thread
+    @Slot(list)
+    def notes_getted(self, notes):
+        self._notes = notes
+
     def get_notes(self):
-        self._notes = self.app.provider.get_notes('', 10)
+        self.app.sync_thread.action_receive.emit((
+            self.app.provider.get_notes,
+            ('', 10), {}, self.notes_get,
+        ))
 
     @Slot()
     def update(self):
@@ -281,7 +303,8 @@ class Indicator(QSystemTrayIcon):
             note = None
         else:
             note = self.app.provider.get_note(id)
-        if not self.app.opened.get(id, None):
+        prev = self.app.opened.get(id, None)
+        if not prev or getattr(prev, 'closed', False):
             self.app.opened[id] = NoteWindow(self.app, note, create)
             self.app.opened[id].show()
 

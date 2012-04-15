@@ -1,34 +1,27 @@
-from functools import wraps
-from PySide.QtCore import QThread
+from PySide.QtCore import QThread, Slot, Signal
+import time
 
-class ActionThread(QThread):
+class SyncThread(QThread):
     """Thread for custom actions"""
+    action_receive = Signal(tuple)
 
-    def __init__(self, action, *args, **kwargs):
-        """Init thread with action
+    @Slot(tuple)
+    def action_received(self, data):
+        self.queue.append(data)
 
-        Keyword Arguments:
-        action -- callable
-
-        Returns: None
-        """
-        self.action = action
-        QThread.__init__(self, *args, **kwargs)
+    def perform(self, action, args, kwargs={}, sig=None):
+        result = action(*args, **kwargs)
+        if sig:
+            sig.emit(result)
 
     def run(self):
         """Run thread with action"""
-        self.action()
+        self.queue = []
+        self.action_receive.connect(self.action_received)
+        while True:
+            try:
+                self.perform(*self.queue[0])
+                self.queue = self.queue[1:]
+            except IndexError:
+                time.sleep(3)
         self.exit()
-
-def action_thread(fnc):
-    @wraps(fnc)
-    def wrapper(self, *args, **kwargs):
-        if not hasattr(self, '_action_threads'):
-            self._action_threads = []
-        elif type(self._action_threads) is not list:
-            raise TypeError('_action_threads mus by list')
-        thread = ActionThread(lambda: fnc(self, *args, **kwargs))
-        self._action_threads.append(thread)
-        thread.start()
-        return True
-    return wrapper

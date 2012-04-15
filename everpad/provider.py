@@ -12,32 +12,14 @@ from evernote.edam.error.ttypes import EDAMUserException
 from evernote.edam.type.ttypes import Note
 import fcntl
 from everpad.api import Api
+from everpad.utils import SyncThread
 from PySide.QtCore import QCoreApplication, QTimer, Slot, Signal, QThread
 import sqlite3
 import os
 import keyring
 
 
-class SyncThread(QThread):
-    """Thread for custom actions"""
-    action_receive = Signal(tuple)
 
-    @Slot(tuple)
-    def action_received(self, data):
-        self.queue.append(data)
-
-    def run(self):
-        """Run thread with action"""
-        self.queue = []
-        self.action_receive.connect(self.action_received)
-        while True:
-            try:
-                action, args, kwargs, sig = self.queue[0]
-                sig.emit(action(*args, **kwargs))
-                self.queue = self.queue[1:]
-            except IndexError:
-                time.sleep(3)
-        self.exit()
 
 
 class App(QCoreApplication):

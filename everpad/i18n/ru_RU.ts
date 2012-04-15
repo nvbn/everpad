@@ -57,7 +57,7 @@
     <message>
         <location filename="pad.py" line="256"/>
         <source>Please authorise</source>
-        <translation>Пожжалуйста, авторизуйтесь</translation>
+        <translation>Пожалуйста, авторизуйтесь</translation>
     </message>
     <message>
         <location filename="pad.py" line="234"/>

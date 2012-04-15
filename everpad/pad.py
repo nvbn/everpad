@@ -1,6 +1,8 @@
 import argparse
 import sys
 import fcntl
+import signal
+
 sys.path.insert(0, '..')
 from functools import partial
 from PySide.QtCore import Slot, QTimer, QThread, QSettings, Signal, QTranslator, QLocale
@@ -110,6 +112,7 @@ class NoteWindow(QMainWindow):
             self.save()
         event.ignore()
         self.app.indicator.get_notes()
+        self.app.opened[self.guid] = None
 
     @Slot()
     def close_wo_save(self):
@@ -277,15 +280,15 @@ class Indicator(QSystemTrayIcon):
             note = None
         else:
             note = self.app.provider.get_note(id)
-        self.app.opened[id] = NoteWindow(self.app, note, create)
-        self.app.opened[id].show()
+        if not self.app.opened.get(id, None):
+            self.app.opened[id] = NoteWindow(self.app, note, create)
+            self.app.opened[id].show()
 
 
 class EverpadService(dbus.service.Object):
     def __init__(self, app, *args, **kwargs):
         self.app = app
         dbus.service.Object.__init__(self, *args, **kwargs)
-        print 'eeep'
 
     @dbus.service.method("com.everpad.App", in_signature='s', out_signature='')
     def open_note(self, id):
@@ -301,6 +304,7 @@ class EverpadService(dbus.service.Object):
 
 
 def main():
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     parser = argparse.ArgumentParser()
     parser.add_argument('--open', type=str, help='open note')
     parser.add_argument('--settings', action='store_true', help='open settings dialog')

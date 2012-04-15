@@ -1,3 +1,10 @@
+everpad (0.5-0~oneiric) oneiric; urgency=low
+
+  * Fix broken package
+  * New agressive verionnig
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sun, 15 Apr 2012 20:42:57 +0400
+
 everpad (0.4-1~oneiric) oneiric; urgency=low
 
   * Fix token expiration

@@ -6,7 +6,6 @@ from sqlite3 import OperationalError
 import sys
 import gconf
 import signal
-import time
 sys.path.insert(0, '..')
 from evernote.edam.error.ttypes import EDAMUserException
 from evernote.edam.type.ttypes import Note
@@ -17,9 +16,6 @@ from PySide.QtCore import QCoreApplication, QTimer, Slot, Signal, QThread
 import sqlite3
 import os
 import keyring
-
-
-
 
 
 class App(QCoreApplication):

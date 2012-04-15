@@ -5,9 +5,8 @@ import signal
 
 sys.path.insert(0, '..')
 from functools import partial
-from PySide.QtCore import Slot, QTimer, QThread, QSettings, Signal, QTranslator, QLocale
+from PySide.QtCore import Slot, QTranslator, QLocale
 from PySide.QtGui import QApplication, QSystemTrayIcon, QIcon, QMenu, QMainWindow, QDialog, QMessageBox
-from evernote.edam.error.ttypes import EDAMUserException
 from BeautifulSoup import BeautifulSoup
 from everpad.interface.auth import Ui_Dialog as AuthDialogUi
 from everpad.interface.note import Ui_MainWindow as NoteUi
@@ -16,6 +15,7 @@ import dbus
 import dbus.service
 import dbus.mainloop.glib
 import gconf
+import keyring
 
 
 class AuthDialog(QDialog):
@@ -38,8 +38,9 @@ class AuthDialog(QDialog):
 
     def accept(self, *args, **kwargs):
         """Save settings"""
-        self.app.settings.set_string('/apps/everpad/login', self.ui.login.text())
-        self.app.settings.set_string('/apps/everpad/password', self.ui.password.text())
+        login = self.ui.login.text()
+        self.app.settings.set_string('/apps/everpad/login', login)
+        keyring.set_password('everpad', login, self.ui.password.text())
         self.hide()
 
     def reject(self, *args, **kwargs):

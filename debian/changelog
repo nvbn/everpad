@@ -3,6 +3,7 @@ everpad (0.4-0~oneiric) oneiric; urgency=low
   * Optimize provider
   * Fix reopening
   * Fix typo
+  * Use gnome-keyring
 
  -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sun, 15 Apr 2012 15:49:12 +0400
 

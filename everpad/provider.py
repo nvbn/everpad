@@ -13,7 +13,7 @@ from everpad.api import Api
 from PySide.QtCore import QCoreApplication, QThread, QTimer, Slot
 import sqlite3
 import os
-import time
+import keyring
 
 
 class ActionThread(QThread):
@@ -56,10 +56,8 @@ class App(QCoreApplication):
         self.sync()
 
     def get_auth_data(self):
-        return (
-            self.settings.get_string('/apps/everpad/login'),
-            self.settings.get_string('/apps/everpad/password'),
-        )
+        login = self.settings.get_string('/apps/everpad/login')
+        return login, keyring.get_password('everpad', login)
 
     def get_api(self):
         self.user, self.password = self.get_auth_data()

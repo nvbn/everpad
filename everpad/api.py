@@ -1,6 +1,5 @@
 import sys
 from evernote.edam.error.ttypes import EDAMUserException
-
 sys.path.insert(0, 'lib')
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import THttpClient
@@ -9,6 +8,7 @@ from evernote.edam.notestore import NoteStore
 from evernote.edam.limits.constants import EDAM_NOTE_TITLE_LEN_MAX, EDAM_NOTE_CONTENT_LEN_MAX
 from evernote.edam.notestore.ttypes import NoteFilter
 from evernote.edam.type.ttypes import Note
+from datetime import datetime
 
 
 class Api(object):
@@ -33,6 +33,9 @@ class Api(object):
         self.auth_result = self.user_store.authenticate(
             username, password,
             self.consumer_key, self.consumer_secret,
+        )
+        self.expire = datetime.fromtimestamp(
+            float(self.auth_result.expiration) / 1000,
         )
         self.user = self.auth_result.user
         self.auth_token = self.auth_result.authenticationToken

@@ -1,3 +1,10 @@
+everpad (0.4-1~oneiric) oneiric; urgency=low
+
+  * Fix token expiration
+  * Remove some locks
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sun, 15 Apr 2012 19:46:01 +0400
+
 everpad (0.4-0~oneiric) oneiric; urgency=low
 
   * Optimize provider

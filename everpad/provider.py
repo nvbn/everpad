@@ -1,3 +1,4 @@
+from datetime import datetime
 import dbus
 import dbus.service
 import dbus.mainloop.glib
@@ -5,40 +6,47 @@ from sqlite3 import OperationalError
 import sys
 import gconf
 import signal
-
+import time
 sys.path.insert(0, '..')
 from evernote.edam.error.ttypes import EDAMUserException
+from evernote.edam.type.ttypes import Note
 import fcntl
 from everpad.api import Api
-from PySide.QtCore import QCoreApplication, QThread, QTimer, Slot
+from PySide.QtCore import QCoreApplication, QTimer, Slot, Signal, QThread
 import sqlite3
 import os
 import keyring
 
 
-class ActionThread(QThread):
+class SyncThread(QThread):
     """Thread for custom actions"""
+    action_receive = Signal(tuple)
 
-    def __init__(self, action, *args, **kwargs):
-        """Init thread with action
-
-        Keyword Arguments:
-        action -- callable
-
-        Returns: None
-        """
-        self.action = action
-        QThread.__init__(self, *args, **kwargs)
+    @Slot(tuple)
+    def action_received(self, data):
+        self.queue.append(data)
 
     def run(self):
         """Run thread with action"""
-        self.action()
+        self.queue = []
+        self.action_receive.connect(self.action_received)
+        while True:
+            try:
+                action, args, kwargs, sig = self.queue[0]
+                sig.emit(action(*args, **kwargs))
+                self.queue = self.queue[1:]
+            except IndexError:
+                time.sleep(3)
         self.exit()
 
 
 class App(QCoreApplication):
+    notes_receive = Signal(list)
+    note_receive = Signal(Note)
+
     def __init__(self, *args, **kwargs):
         QCoreApplication.__init__(self, *args, **kwargs)
+        self._api = None
         self.settings = gconf.client_get_default()
         self.db_path = os.path.expanduser('~/.evernote.db')
         self.conn = sqlite3.connect(self.db_path)
@@ -53,6 +61,10 @@ class App(QCoreApplication):
         self.timer.timeout.connect(self.sync)
         self.timer.setInterval(30 * 60 * 1000)
         self.timer.start()
+        self.notes_receive.connect(self.notes_received)
+        self.note_receive.connect(self.note_received)
+        self.sync_thread = SyncThread()
+        self.sync_thread.start()
         self.sync()
 
     def get_auth_data(self):
@@ -71,7 +83,8 @@ class App(QCoreApplication):
     @property
     def api(self):
         if not getattr(self, '_api', None) or\
-           (self.user, self.password) != self.get_auth_data():
+            (self.user, self.password) != self.get_auth_data() or\
+            datetime.now() > getattr(self._api, 'expire', datetime.min):
             self._api = self.get_api()
         return self._api
 
@@ -85,28 +98,44 @@ class App(QCoreApplication):
             note.updated,
         ))
 
+    @Slot(Note)
+    def note_received(self, note):
+        self.to_db(note, self.api)
+
+    @Slot(list)
+    def notes_received(self, notes):
+        guids = []
+        for note in notes:
+            self.cursor.execute('select updated from notes where guid = ?', (note.guid,))
+            try:
+                fresh = list(self.cursor)[0][0] == note.updated
+                if not fresh:
+                    self.cursor.execute('delete from notes where guid = ?', (note.guid,))
+            except IndexError:
+                fresh = False
+            if fresh:
+                guids.append(note.guid)
+            else:
+                self.sync_thread.action_receive.emit((
+                    self.api.get_note,
+                    (note.guid,), {},
+                    self.note_receive,
+                ))
+        if len(guids):
+            self.cursor.execute(
+                'delete from notes where guid not in (%s)' % ', '.join(
+                    ['?'] * len(guids)
+                ), guids,
+            )
+
     @Slot()
     def sync(self):
         if self.api:
-            guids = []
-            for note in self.api.get_notes():
-                self.cursor.execute('select updated from notes where guid = ?', (note.guid,))
-                guids.append(note.guid)
-                try:
-                    fresh = list(self.cursor)[0][0] == note.updated
-                    if not fresh:
-                        self.cursor.execute('delete from notes where guid = ?', (note.guid,))
-                except IndexError:
-                    fresh = False
-                if not fresh:
-                    self.to_db(self.api.get_note(note.guid), self.api)
-            if len(guids):
-                self.cursor.execute(
-                    'delete from notes where guid not in (%s)' % ', '.join(
-                        ['?'] * len(guids)
-                    ), guids,
-                )
-            self.conn.commit()
+            self.sync_thread.action_receive.emit((
+                self.api.get_notes,
+                tuple(), {},
+                self.notes_receive,
+            ))
 
     def update_note(self, guid, title, content):
         note = self.api.get_note(guid)
@@ -154,6 +183,7 @@ class EverpadService(dbus.service.Object):
 
     @dbus.service.method("com.everpad.Provider", in_signature='s', out_signature='(sssss)')
     def get_note(self, guid):
+        print guid
         return dbus.Struct(self.app.get_note(guid))
 
     @dbus.service.method("com.everpad.Provider", in_signature='si', out_signature='a(sssss)')

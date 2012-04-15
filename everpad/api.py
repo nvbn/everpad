@@ -75,9 +75,10 @@ class Api(object):
         Keyword Arguments:
         note -- Note
 
-        Returns: None
+        Returns: Note
         """
         self.note_store.updateNote(self.auth_token, note)
+        return note
 
     def create_note(self, title, text):
         """Create new note
@@ -125,6 +126,7 @@ class Api(object):
         Returns: None
         """
         self.note_store.deleteNote(self.auth_token, id)
+        return id
 
     def find_notes(self, text):
         return self.note_store.findNotes(self.auth_token, NoteFilter(words=text), 0, 100).notes

@@ -43,6 +43,8 @@ class SyncThread(QThread):
 class App(QCoreApplication):
     notes_receive = Signal(list)
     note_receive = Signal(Note)
+    note_update = Signal(Note)
+    note_remove = Signal(str)
 
     def __init__(self, *args, **kwargs):
         QCoreApplication.__init__(self, *args, **kwargs)
@@ -63,6 +65,8 @@ class App(QCoreApplication):
         self.timer.start()
         self.notes_receive.connect(self.notes_received)
         self.note_receive.connect(self.note_received)
+        self.note_update.connect(self.note_updated)
+        self.note_remove.connect(self.note_removed)
         self.sync_thread = SyncThread()
         self.sync_thread.start()
         self.sync()
@@ -137,13 +141,20 @@ class App(QCoreApplication):
                 self.notes_receive,
             ))
 
+    @Slot(Note)
+    def note_updated(self, note):
+        self.cursor.execute('delete from notes where guid = ?', (note.guid,))
+        self.to_db(note, self.api)
+
     def update_note(self, guid, title, content):
         note = self.api.get_note(guid)
         note.title = self.api.parse_title(title)
         note.content = self.api.parse_content(content)
-        self.api.update_note(note)
-        self.cursor.execute('delete from notes where guid = ?', (guid,))
-        self.to_db(note, self.api)
+        self.sync_thread.action_receive.emit((
+            self.api.update_note,
+            (note,), {},
+            self.note_update,
+        ))
 
     def create_note(self, title, content):
         note = self.api.create_note(title, content)
@@ -151,10 +162,16 @@ class App(QCoreApplication):
         self.to_db(note, self.api)
         return note.guid
 
-    def remove_note(self, guid):
-        self.api.remove_note(guid)
+    @Slot(Note)
+    def note_removed(self, guid):
         self.cursor.execute('delete from notes where guid = ?', (guid,))
         self.conn.commit()
+
+    def remove_note(self, guid):
+        self.sync_thread.action_receive.emit((
+            self.api.remove_note, (guid,),
+            {}, self.note_remove,
+        ))
 
     def get_notes(self, words, count):
         if not self.api:
@@ -183,7 +200,6 @@ class EverpadService(dbus.service.Object):
 
     @dbus.service.method("com.everpad.Provider", in_signature='s', out_signature='(sssss)')
     def get_note(self, guid):
-        print guid
         return dbus.Struct(self.app.get_note(guid))
 
     @dbus.service.method("com.everpad.Provider", in_signature='si', out_signature='a(sssss)')

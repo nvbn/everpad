@@ -18,25 +18,13 @@
 #
 
 from TTransport import *
+from thrift.transport import httpslib
 from cStringIO import StringIO
 
 import urlparse
 import httplib
 import warnings
 import socket
-import ssl
-
-def connect(self):
-  "Connect to a host on a given (SSL) port."
-  sock = socket.create_connection((self.host, self.port),
-    self.timeout, self.source_address)
-  if self._tunnel_host:
-    self.sock = sock
-    self._tunnel()
-  self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=ssl.PROTOCOL_TLSv1)
-
-httplib.HTTPS._connection_class.connect = connect
-
 
 class THttpClient(TTransportBase):
 
@@ -67,6 +55,8 @@ class THttpClient(TTransportBase):
         self.port = parsed.port or httplib.HTTPS_PORT
       self.host = parsed.hostname
       self.path = parsed.path
+      if parsed.query:
+        self.path += '?%s' % parsed.query
     self.__wbuf = StringIO()
     self.__http = None
     self.__timeout = None
@@ -75,7 +65,7 @@ class THttpClient(TTransportBase):
     if self.scheme == 'http':
       self.__http = httplib.HTTP(self.host, self.port)
     else:
-      self.__http = httplib.HTTPS(self.host, self.port)
+      self.__http = httpslib.HTTPS(self.host, self.port)
 
   def close(self):
     self.__http.close()

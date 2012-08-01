@@ -21,6 +21,7 @@ from TTransport import *
 import os
 import errno
 import socket
+import sys
 
 class TSocketBase(TTransportBase):
   def _resolveAddr(self):
@@ -56,7 +57,7 @@ class TSocket(TSocketBase):
     self.handle = h
 
   def isOpen(self):
-    return self.handle != None
+    return self.handle is not None
 
   def setTimeout(self, ms):
     if ms is None:
@@ -64,7 +65,7 @@ class TSocket(TSocketBase):
     else:
       self._timeout = ms/1000.0
 
-    if (self.handle != None):
+    if self.handle is not None:
       self.handle.settimeout(self._timeout)
 
   def open(self):
@@ -89,7 +90,20 @@ class TSocket(TSocketBase):
       raise TTransportException(type=TTransportException.NOT_OPEN, message=message)
 
   def read(self, sz):
-    buff = self.handle.recv(sz)
+    try:
+      buff = self.handle.recv(sz)
+    except socket.error, e:
+      if (e.args[0] == errno.ECONNRESET and
+          (sys.platform == 'darwin' or sys.platform.startswith('freebsd'))):
+        # freebsd and Mach don't follow POSIX semantic of recv
+        # and fail with ECONNRESET if peer performed shutdown.
+        # See corresponding comment and code in TSocket::read()
+        # in lib/cpp/src/transport/TSocket.cpp.
+        self.close()
+        # Trigger the check to raise the END_OF_FILE exception below.
+        buff = ''
+      else:
+        raise
     if len(buff) == 0:
       raise TTransportException(type=TTransportException.END_OF_FILE, message='TSocket read 0 bytes')
     return buff
@@ -112,8 +126,8 @@ class TSocket(TSocketBase):
 class TServerSocket(TSocketBase, TServerTransportBase):
   """Socket implementation of TServerTransport base."""
 
-  def __init__(self, port=9090, unix_socket=None):
-    self.host = None
+  def __init__(self, host=None, port=9090, unix_socket=None):
+    self.host = host
     self.port = port
     self._unix_socket = unix_socket
     self.handle = None
@@ -137,8 +151,8 @@ class TServerSocket(TSocketBase, TServerTransportBase):
 
     self.handle = socket.socket(res[0], res[1])
     self.handle.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    if hasattr(self.handle, 'set_timeout'):
-      self.handle.set_timeout(None)
+    if hasattr(self.handle, 'settimeout'):
+      self.handle.settimeout(None)
     self.handle.bind(res[4])
     self.handle.listen(128)
 

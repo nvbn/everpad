@@ -1,6 +1,7 @@
 from sqlalchemy import Table, Column, Integer, ForeignKey, String, Text, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm.exc import NoResultFound
 from BeautifulSoup import BeautifulSoup
 
 Base = declarative_base()
@@ -33,6 +34,41 @@ class Note(Base):
         backref="notes",
     )
     action = Column(Integer)
+
+    @property
+    def tags_dbus(self):
+        return map(lambda tag: tag.name, self.tags)
+
+    @tags_dbus.setter
+    def tags_dbus(self, val):
+        tags = []
+        for tag in val:
+            try:
+                tags.append(self.session.query(Tag).filter(
+                    Tag.name == tag,
+                ).one()) # shit shit shit
+            except NoResultFound:
+                tg = Tag(name=tag)
+                self.session.add(tg)
+                tags.append(tg)
+        self.tags = tags
+
+    @property
+    def notebook_dbus(self):
+        if self.notebook:
+            return self.notebook.id
+        return
+
+    @notebook_dbus.setter
+    def notebook_dbus(self, val):
+        try:
+            self.notebook = self.session.query(Notebook).filter(
+                Notebook.id == val,
+            ).one()
+        except NoResultFound:
+            self.notebook = self.session.query(Notebook).filter(
+                Notebook.default == True,
+            )
 
     def from_api(self, note, query):
         """Fill data from api"""

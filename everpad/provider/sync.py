@@ -170,7 +170,6 @@ class SyncThread(QThread):
             order=NoteSortOrder.UPDATED,
             ascending=False,
         ), 0, EDAM_USER_NOTES_MAX).notes:  # TODO: think about more than 100000 notes
-            print note.guid, 'xy', note.active
             try:
                 nt = self.sq(models.Note).filter(
                     models.Note.guid == note.guid,
@@ -190,13 +189,6 @@ class SyncThread(QThread):
                 self.session.add(nt)
                 notes_ids.append(nt.id)
         if len(notes_ids):
-            print self.sq(models.Note).filter(
-                ~models.Note.id.in_(notes_ids)
-            ).all()
-            print notes_ids
-            print self.sq(models.Note).filter(
-                models.Note.id.in_(notes_ids)
-            ).all()
             self.sq(models.Note).filter(
                 ~models.Note.id.in_(notes_ids)
             ).delete(synchronize_session='fetch')        

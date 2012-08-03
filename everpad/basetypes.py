@@ -15,12 +15,12 @@ class DbusSendable(object):
     def from_obj(cls, data):
         inst = cls()
         for field in cls.fields:
-            if hasattr(cls, field[0] + '_dbus'):
+            if hasattr(data, field[0] + '_dbus'):
                 val = getattr(data, field[0] + '_dbus')
             else:
                 val = getattr(data, field[0])
             if hasattr(val, '__call__'):
-                val = val
+                val = val()
             setattr(inst, field[0], val)
         return inst
 
@@ -55,7 +55,7 @@ class Note(DbusSendable):
         ('created', 'i'),
         ('updated', 'i'),
         ('notebook', 'i'),
-        ('tags', 'ai'),
+        ('tags', 'as'),
     )
 
 

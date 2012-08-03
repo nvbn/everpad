@@ -51,10 +51,13 @@ class ProviderService(dbus.service.Object):
             raise DBusException('Note not found')
 
     @dbus.service.method(
-        "com.everpad.Provider", in_signature='saiai',
+        "com.everpad.Provider", in_signature='saiaiii',
         out_signature='a%s' % btype.Note.signature,
     )
-    def find_notes(self, words, notebooks, tags):
+    def find_notes(self, words, notebooks, tags,
+        limit=100, order=btype.Note.ORDER_UPDATED,
+    ):
+        print 'eeee'
         filters = []
         if words:
             words = '%' + words.replace(' ', '%') + '%'
@@ -70,12 +73,17 @@ class ProviderService(dbus.service.Object):
             filters.append(
                 Note.tags.any(Tag.id.in_(tags)),
             )
-        return map(
-            lambda note: btype.Note.from_obj(note).struct,
-            self.sq(Note).filter(and_(
-                Note.action != ACTION_DELETE,
-            *filters)).all(),
-        )   
+
+        print self.sq(Note).all()
+        qs = self.sq(Note).filter(and_(
+            Note.action != ACTION_DELETE,
+        *filters)).order_by({
+            btype.Note.ORDER_TITLE: Note.title,
+            btype.Note.ORDER_UPDATED: Note.updated,
+            btype.Note.ORDER_TITLE_DESC: Note.title.desc(),
+            btype.Note.ORDER_UPDATED_DESC: Note.updated.desc(),
+        }[order]).limit(limit)
+        return map(lambda note: btype.Note.from_obj(note).struct, qs.all())   
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
@@ -118,6 +126,7 @@ class ProviderService(dbus.service.Object):
         )
         btype.Note.from_tuple(data).give_to_obj(note)
         self.session.add(note)
+        print note.notebook.id
         self.session.commit()
         return btype.Note.from_obj(note).struct
 

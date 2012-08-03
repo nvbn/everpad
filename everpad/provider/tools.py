@@ -19,6 +19,7 @@ ACTION_CHANGE = 3
 
 
 def get_auth_token():
+    return 'S=s1:U=10185:E=140109084eb:C=138b8df58eb:P=1cd:A=en-devtoken:H=5c00b8c378311fe08784fbd70d60cb27'
     return keyring.get_password('everpad', 'token')
 
 

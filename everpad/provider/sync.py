@@ -56,6 +56,7 @@ class SyncThread(QThread):
         for notebook in self.sq(models.Notebook).filter(
             models.Notebook.action != ACTION_NONE,
         ):
+            print notebook
             kwargs = dict(
                 name=notebook.name[:EDAM_NOTEBOOK_NAME_LEN_MAX].strip().encode('utf8'),
                 defaultNotebook=notebook.default,
@@ -151,6 +152,7 @@ class SyncThread(QThread):
         """Receive tags from server"""
         tags_ids = []
         for tag in self.note_store.listTags(self.auth_token):
+            print tag
             try:
                 tg = self.sq(models.Tag).filter(
                     models.Tag.guid == tag.guid,
@@ -171,10 +173,12 @@ class SyncThread(QThread):
     def notes_remote(self):
         """Receive notes from server"""
         notes_ids = []
+        print 'sync notes', 'yarr'
         for note in self.note_store.findNotes(self.auth_token, NoteFilter(
             order=NoteSortOrder.UPDATED,
             ascending=False,
         ), 0, EDAM_USER_NOTES_MAX).notes:  # TODO: think about more than 100000 notes
+            print note
             try:
                 nt = self.sq(models.Note).filter(
                     models.Note.guid == note.guid,
@@ -193,6 +197,7 @@ class SyncThread(QThread):
                 nt.from_api(note, self.sq)
                 self.session.add(nt)
                 notes_ids.append(nt.id)
+        print 'fuck'
         if len(notes_ids):
             self.sq(models.Note).filter(
                 ~models.Note.id.in_(notes_ids)

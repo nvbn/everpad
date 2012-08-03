@@ -1,3 +1,7 @@
+NONE_ID = 0
+NONE_VAL = 0
+
+
 class BaseDbusSendable(type):
     @property
     def signature(self):
@@ -11,6 +15,10 @@ class DbusSendable(object):
     __metaclass__ = BaseDbusSendable
     fields = tuple()
 
+    def __init__(self, **kwargs):
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+
     @classmethod
     def from_obj(cls, data):
         inst = cls()
@@ -18,7 +26,7 @@ class DbusSendable(object):
             if hasattr(data, field[0] + '_dbus'):
                 val = getattr(data, field[0] + '_dbus')
             else:
-                val = getattr(data, field[0])
+                val = getattr(data, field[0], None)
             if hasattr(val, '__call__'):
                 val = val()
             setattr(inst, field[0], val)
@@ -35,7 +43,7 @@ class DbusSendable(object):
     def struct(self):
         result = []
         for field in self.fields:
-            result.append(getattr(self, field[0]))
+            result.append(getattr(self, field[0], None))
         return tuple(result)
 
     def give_to_obj(self, obj):
@@ -48,12 +56,17 @@ class DbusSendable(object):
 
     
 class Note(DbusSendable):
+    ORDER_TITLE = 0
+    ORDER_UPDATED = 1
+    ORDER_TITLE_DESC = 2
+    ORDER_UPDATED_DESC = 3
+
     fields = (
         ('id', 'i'),
         ('title', 's'),
         ('content', 's'),
-        ('created', 'i'),
-        ('updated', 'i'),
+        ('created', 'x'),
+        ('updated', 'x'),
         ('notebook', 'i'),
         ('tags', 'as'),
     )

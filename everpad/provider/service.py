@@ -8,15 +8,22 @@ from everpad.provider.tools import get_db_session
 from sqlalchemy import or_, and_
 from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
-from PySide.QtCore import Signal
+from PySide.QtCore import Signal, QObject
 import everpad.basetypes as btype
 import dbus
 import dbus.service
 
-
-class ProviderService(dbus.service.Object):
+class ProviderServiceQObject(QObject):
     authenticate_signal = Signal()
     remove_authenticate_signal = Signal()
+
+
+class ProviderService(dbus.service.Object):
+
+    def __init__(self, *args, **kwargs):
+        super(ProviderService, self).__init__(*args, **kwargs)
+        self.qobject = ProviderServiceQObject()
+        
 
     @property
     def session(self):
@@ -169,11 +176,11 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='',
     )
     def authenticate(self):
-        self.authenticate_signal.emit()
+        self.qobject.authenticate_signal.emit()
 
     @dbus.service.method(
         "com.everpad.Provider", 
         in_signature='', out_signature='',
     )
     def remove_authentication(self):
-        self.remove_authenticate_signal.emit()
+        self.qobject.remove_authenticate_signal.emit()

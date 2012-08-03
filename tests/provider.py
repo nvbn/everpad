@@ -17,7 +17,7 @@ import unittest
 
 class TestProvider(unittest.TestCase):
     def setUp(self):
-        self.session = get_db_session('/:memory:')
+        self.session = get_db_session(':memory:')
         self.store = get_note_store(token)
         self.sc = SyncThread()
         self.sc.session = self.session

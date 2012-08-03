@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../..')
-from PySide.QtCore import QThread, Slot
+from PySide.QtCore import QThread, Slot, QTimer
 from evernote.edam.type.ttypes import Note, Notebook, Tag, NoteSortOrder
 from evernote.edam.notestore.ttypes import NoteFilter
 from sqlalchemy.orm.exc import NoResultFound
@@ -25,6 +25,11 @@ class SyncThread(QThread):
         self.sq = self.session.query
         self.auth_token = get_auth_token()
         self.note_store = get_note_store(self.auth_token)
+        self.timer = QTimer(self)
+        self.timer.setInterval(60 * 5000)
+        self.timer.timeout.connect(self.perform)
+        self.perform()
+        self.timer.start()
 
     @Slot()
     def perform(self):

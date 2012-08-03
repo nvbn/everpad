@@ -42,21 +42,18 @@ class SyncThread(QThread):
         self.notebooks_local()
         self.tags_local()
         self.notes_local()
-        self.session.commit()
 
     def remote_changes(self):
         """Receive remote changes from evernote"""
         self.notebooks_remote()
         self.tags_remote()
         self.notes_remote()
-        self.session.commit()
 
     def notebooks_local(self):
         """Send local notebooks changes to server"""
         for notebook in self.sq(models.Notebook).filter(
             models.Notebook.action != ACTION_NONE,
         ):
-            print notebook
             kwargs = dict(
                 name=notebook.name[:EDAM_NOTEBOOK_NAME_LEN_MAX].strip().encode('utf8'),
                 defaultNotebook=notebook.default,
@@ -74,6 +71,7 @@ class SyncThread(QThread):
                 )
                 notebook.guid = nb.guid
             notebook.action = ACTION_NONE
+        self.session.commit()
 
     def tags_local(self):
         """Send loacl tags changes to server"""
@@ -96,6 +94,7 @@ class SyncThread(QThread):
                 )
                 tag.guid = tg.guid
             tag.action = ACTION_NONE
+        self.session.commit()
 
     def notes_local(self):
         """Send loacl notes changes to server"""
@@ -126,6 +125,7 @@ class SyncThread(QThread):
                 self.note_store.deleteNote(self.auth_token, nt.guid)
                 self.session.delete(note)
             note.action = ACTION_NONE
+        self.session.commit()
 
     def notebooks_remote(self):
         """Receive notebooks from server"""
@@ -147,12 +147,12 @@ class SyncThread(QThread):
             self.sq(models.Notebook).filter(
                 ~models.Notebook.id.in_(notebooks_ids),
             ).delete(synchronize_session='fetch')
+        self.session.commit()
 
     def tags_remote(self):
         """Receive tags from server"""
         tags_ids = []
         for tag in self.note_store.listTags(self.auth_token):
-            print tag
             try:
                 tg = self.sq(models.Tag).filter(
                     models.Tag.guid == tag.guid,
@@ -169,16 +169,15 @@ class SyncThread(QThread):
             self.sq(models.Tag).filter(
                 ~models.Tag.id.in_(tags_ids)
             ).delete(synchronize_session='fetch')
+        self.session.commit()
 
     def notes_remote(self):
         """Receive notes from server"""
         notes_ids = []
-        print 'sync notes', 'yarr'
         for note in self.note_store.findNotes(self.auth_token, NoteFilter(
             order=NoteSortOrder.UPDATED,
             ascending=False,
         ), 0, EDAM_USER_NOTES_MAX).notes:  # TODO: think about more than 100000 notes
-            print note
             try:
                 nt = self.sq(models.Note).filter(
                     models.Note.guid == note.guid,
@@ -197,8 +196,8 @@ class SyncThread(QThread):
                 nt.from_api(note, self.sq)
                 self.session.add(nt)
                 notes_ids.append(nt.id)
-        print 'fuck'
         if len(notes_ids):
             self.sq(models.Note).filter(
                 ~models.Note.id.in_(notes_ids)
             ).delete(synchronize_session='fetch')        
+        self.session.commit()

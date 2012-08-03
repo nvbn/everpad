@@ -5,6 +5,7 @@ from PySide.QtCore import Slot
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon, provider
 from everpad.basetypes import Note, Notebook
+from BeautifulSoup import BeautifulSoup
 import dbus
 
 
@@ -42,7 +43,11 @@ class Editor(QMainWindow):
         notebook_index = self.ui.notebook.currentIndex()
         self.note.notebook = self.ui.notebook.itemData(notebook_index)
         self.note.title = self.ui.title.text()
-        self.note.content = self.ui.content.toHtml()
+        soup = BeautifulSoup(self.ui.content.toHtml())
+        self.note.content = ''.join(map(   # shit =)
+            lambda tag: unicode(tag),
+            soup.find('body').fetch(),
+        ))
         self.note.tags = dbus.Array(map(
             lambda tag: tag.strip(),
             self.ui.tags.text().split(','),

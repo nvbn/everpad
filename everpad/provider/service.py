@@ -57,7 +57,6 @@ class ProviderService(dbus.service.Object):
     def find_notes(self, words, notebooks, tags,
         limit=100, order=btype.Note.ORDER_UPDATED,
     ):
-        print 'eeee'
         filters = []
         if words:
             words = '%' + words.replace(' ', '%') + '%'
@@ -74,7 +73,6 @@ class ProviderService(dbus.service.Object):
                 Note.tags.any(Tag.id.in_(tags)),
             )
 
-        print self.sq(Note).all()
         qs = self.sq(Note).filter(and_(
             Note.action != ACTION_DELETE,
         *filters)).order_by({
@@ -125,8 +123,8 @@ class ProviderService(dbus.service.Object):
             action=ACTION_CREATE,
         )
         btype.Note.from_tuple(data).give_to_obj(note)
+        note.id = None
         self.session.add(note)
-        print note.notebook.id
         self.session.commit()
         return btype.Note.from_obj(note).struct
 
@@ -176,6 +174,7 @@ class ProviderService(dbus.service.Object):
             )
         notebook = Notebook(action=ACTION_CREATE)
         nb.give_to_obj(notebook)
+        notebook.id = None
         self.session.add(notebook)
         self.session.commit()
         return btype.Notebook.from_obj(notebook).struct

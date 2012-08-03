@@ -43,14 +43,15 @@ class Note(Base):
     def tags_dbus(self, val):
         tags = []
         for tag in val:
-            try:
-                tags.append(self.session.query(Tag).filter(
-                    Tag.name == tag,
-                ).one()) # shit shit shit
-            except NoResultFound:
-                tg = Tag(name=tag)
-                self.session.add(tg)
-                tags.append(tg)
+            if tag and tag != ' ':  # for blank array and other
+                try:
+                    tags.append(self.session.query(Tag).filter(
+                        Tag.name == tag,
+                    ).one()) # shit shit shit
+                except NoResultFound:
+                    tg = Tag(name=tag, action=ACTION_CREATE)
+                    self.session.add(tg)
+                    tags.append(tg)
         self.tags = tags
 
     @property

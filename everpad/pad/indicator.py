@@ -57,9 +57,9 @@ class Indicator(QSystemTrayIcon):
             created=NONE_VAL,
             updated=NONE_VAL,
         ).struct
-        print note_struct
+        p = provider.create_note(note_struct)
         note = Note.from_tuple(
-            provider.create_note(note_struct),
+            p,
         )
         self.open(note)
 

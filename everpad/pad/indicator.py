@@ -3,12 +3,22 @@ sys.path.append('../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
-from everpad.pad.tools import provider
+from everpad.tools import provider
 from everpad.pad.editor import Editor
+from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST
 from functools import partial
+import everpad.monkey
 import signal
 import dbus
 import argparse
+import oauth2 as oauth
+import subprocess
+import shlex
+import webbrowser
+import urllib
+import urlparse
+import keyring
+
 
 
 class Indicator(QSystemTrayIcon):
@@ -22,17 +32,18 @@ class Indicator(QSystemTrayIcon):
     @Slot()
     def update(self):
         self.menu.clear()
-        for note_struct in provider.find_notes(
-            '', dbus.Array([], signature='i'),
-            dbus.Array([], signature='i'), 20,
-            Note.ORDER_UPDATED_DESC,
-        ):
-            note = Note.from_tuple(note_struct)
-            self.menu.addAction(note.title[:40], Slot()(
-                partial(self.open, note=note)
-            ))
-        self.menu.addSeparator()
-        self.menu.addAction(self.tr('Create Note'), self.create)
+        if keyring.get_password('everpad', 'oauth_token'):
+            for note_struct in provider.find_notes(
+                '', dbus.Array([], signature='i'),
+                dbus.Array([], signature='i'), 20,
+                Note.ORDER_UPDATED_DESC,
+            ):
+                note = Note.from_tuple(note_struct)
+                self.menu.addAction(note.title[:40], Slot()(
+                    partial(self.open, note=note)
+                ))
+            self.menu.addSeparator()
+            self.menu.addAction(self.tr('Create Note'), self.create)
         self.menu.addAction(self.tr('Authorisation'), self.auth)
         self.menu.addSeparator()
         self.menu.addAction(self.tr('Exit'), self.exit)
@@ -57,15 +68,32 @@ class Indicator(QSystemTrayIcon):
             created=NONE_VAL,
             updated=NONE_VAL,
         ).struct
-        p = provider.create_note(note_struct)
         note = Note.from_tuple(
-            p,
+            provider.create_note(note_struct),
         )
         self.open(note)
 
     @Slot()
     def auth(self):
-        pass
+        consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
+        client = oauth.Client(consumer)
+        resp, content = client.request(
+            'https://%s/oauth?oauth_callback=' % HOST + urllib.quote('http://localhost:15216/'), 
+        'GET')
+        data = dict(urlparse.parse_qsl(content))
+        url = 'https://%s/OAuth.action?oauth_token=' % HOST + urllib.quote(data['oauth_token'])
+        webbrowser.open(url)
+        try:
+            subprocess.Popen([
+                'everpad-web-auth', '--token', data['oauth_token'],
+                '--secret', data['oauth_token_secret'],
+            ])
+        except OSError:
+            subprocess.Popen([
+                'python', '../auth.py', '--token',
+                data['oauth_token'], '--secret',
+                data['oauth_token_secret'],
+            ])
 
     @Slot()
     def exit(self):

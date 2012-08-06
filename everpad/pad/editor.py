@@ -3,7 +3,8 @@ sys.path.append('../..')
 from PySide.QtGui import QMainWindow
 from PySide.QtCore import Slot
 from everpad.interface.editor import Ui_Editor
-from everpad.pad.tools import get_icon, provider
+from everpad.pad.tools import get_icon
+from everpad.tools import provider
 from everpad.basetypes import Note, Notebook
 from BeautifulSoup import BeautifulSoup
 import dbus
@@ -15,7 +16,6 @@ class Editor(QMainWindow):
     def __init__(self, note, *args, **kwargs):
         QMainWindow.__init__(self, *args, **kwargs)
         self.closed = False
-        self._action_threads = []
         self.ui = Ui_Editor()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())

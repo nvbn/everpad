@@ -14,7 +14,7 @@ import dbus
 import dbus.service
 
 class ProviderServiceQObject(QObject):
-    authenticate_signal = Signal()
+    authenticate_signal = Signal(str)
     remove_authenticate_signal = Signal()
 
 
@@ -181,10 +181,11 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider", 
-        in_signature='', out_signature='',
+        in_signature='s', out_signature='',
     )
-    def authenticate(self):
-        self.qobject.authenticate_signal.emit()
+    def authenticate(self, token):
+        self.qobject.remove_authenticate_signal.emit()
+        self.qobject.authenticate_signal.emit(token)
 
     @dbus.service.method(
         "com.everpad.Provider", 

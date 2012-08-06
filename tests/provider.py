@@ -270,5 +270,5 @@ class TestProvider(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    token = 'S=s1:U=10185:E=140109084eb:C=138b8df58eb:P=1cd:A=en-devtoken:H=5c00b8c378311fe08784fbd70d60cb27'#raw_input('enter_token:')
+    token = raw_input('enter_token:')
     unittest.main()

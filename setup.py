@@ -18,21 +18,22 @@ setup(name='everpad',
     include_package_data=True,
     zip_safe=True,
     install_requires=[
-        'BeautifulSoup',
+        'BeautifulSoup'
     ],
     entry_points={
         'gui_scripts': [
             'everpad=everpad.pad:main'
         ], 'console_scripts': [
             'everpad-lens=everpad.lens:main',
-            'everpad-provider=everpad.provider:main',
+            'everpad-provider=everpad.provider.daemon:main',
+            'everpad-web-auth=everpad.auth:main',
         ]
     },
     data_files=[
         ('share/icons/hicolor/64x64/apps', ['everpad.png']),
         ('share/pixmaps', ['everpad.png']),
         ('share/applications', ['everpad.desktop']),
-        ('share/everpad/lang', ['everpad/i18n/ru_RU.qm']),
+        # ('share/everpad/lang', ['everpad/i18n/ru_RU.qm']),
         ('share/unity/lenses/everpad', ['everpad.lens']),
         ('share/dbus-1/services', [
             'unity-lens-everpad.service',

@@ -8,6 +8,7 @@ from evernote.edam.notestore import NoteStore
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from everpad.provider.models import Base
+from everpad.const import HOST
 import os
 import keyring
 
@@ -19,8 +20,11 @@ ACTION_CHANGE = 3
 
 
 def get_auth_token():
-    return 'S=s1:U=10185:E=140109084eb:C=138b8df58eb:P=1cd:A=en-devtoken:H=5c00b8c378311fe08784fbd70d60cb27'
-    return keyring.get_password('everpad', 'token')
+    return keyring.get_password('everpad', 'oauth_token')
+
+
+def set_auth_token(token):
+    keyring.set_password('everpad', 'oauth_token', token)
 
 
 def get_db_session(db_path=None):
@@ -35,8 +39,7 @@ def get_db_session(db_path=None):
 def get_note_store(auth_token=None):
     if not auth_token:
         auth_token = get_auth_token()
-    evernote_host = "sandbox.evernote.com"
-    user_store_uri = "https://" + evernote_host + "/edam/user"
+    user_store_uri = "https://" + HOST + "/edam/user"
     user_store_http_client = THttpClient.THttpClient(user_store_uri)
     user_store_protocol = TBinaryProtocol.TBinaryProtocol(user_store_http_client)
     user_store = UserStore.Client(user_store_protocol)

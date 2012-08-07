@@ -20,7 +20,6 @@ import urlparse
 import keyring
 
 
-
 class Indicator(QSystemTrayIcon):
     def __init__(self, *args, **kwargs):
         QSystemTrayIcon.__init__(self, *args, **kwargs)

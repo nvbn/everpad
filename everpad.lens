@@ -1,5 +1,5 @@
 [Lens]
-DBusName=net.launchpad.Unity.Lens.Everpad
+DBusName=net.launchpad.Unity.Lens.EverpadLens
 DBusPath=/net/launchpad/unity/lens/everpad
 Name=Everpad
 Icon=everpad

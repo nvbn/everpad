@@ -1,3 +1,3 @@
 [D-BUS Service]
-Name=net.launchpad.Unity.Lens.Everpad
+Name=net.launchpad.Unity.Lens.EverpadLens
 Exec=/usr/bin/everpad-lens

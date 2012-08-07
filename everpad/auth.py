@@ -42,7 +42,10 @@ def my_processor(handler):
 
 app.add_processor(my_processor)
 
-
-if __name__ == '__main__':
+def main():
     sys.argv[1:] = ['15216']
     app.run()
+
+
+if __name__ == '__main__':
+    main()

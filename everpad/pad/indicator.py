@@ -21,8 +21,9 @@ import keyring
 
 
 class Indicator(QSystemTrayIcon):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, app, *args, **kwargs):
         QSystemTrayIcon.__init__(self, *args, **kwargs)
+        self.app = app
         self.menu = QMenu()
         self.setContextMenu(self.menu)
         self.menu.aboutToShow.connect(self.update)
@@ -52,7 +53,7 @@ class Indicator(QSystemTrayIcon):
         if old_note_window and not getattr(old_note_window, 'closed', True):
             self.opened_notes[note.id].activateWindow()
         else:
-            editor = Editor(note)
+            editor = Editor(self.app, note)
             editor.show()
             self.opened_notes[note.id] = editor
 
@@ -107,8 +108,12 @@ class PadApp(QApplication):
             self.translator.load('/usr/share/everpad/lang/%s' % QLocale.system().name())
         self.installTranslator(self.translator)
         self.icon = QIcon.fromTheme('everpad-mono', QIcon('../../everpad-mono.png'))
-        self.indicator = Indicator(self.icon)
+        self.indicator = Indicator(self, self.icon)
         self.indicator.show()
+
+    def send_notify(self, text):
+        self.indicator.showMessage('Everpad', text,
+            QSystemTrayIcon.Information)
 
 
 def main():

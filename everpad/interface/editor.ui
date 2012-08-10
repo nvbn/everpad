@@ -16,20 +16,28 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QComboBox" name="notebook"/>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="title"/>
-      </item>
-     </layout>
-    </item>
-    <item>
      <widget class="QTextEdit" name="content"/>
     </item>
     <item>
-     <widget class="QLineEdit" name="tags"/>
+     <layout class="QHBoxLayout" name="options">
+      <item>
+       <widget class="QComboBox" name="notebook">
+        <property name="toolTip">
+         <string>Select notebook</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="tags">
+        <property name="toolTip">
+         <string>Note tags</string>
+        </property>
+        <property name="placeholderText">
+         <string>Commas separated tags</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -51,7 +59,30 @@
     <addaction name="actionDelete"/>
     <addaction name="actionClose"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionCut"/>
+    <addaction name="actionCopy"/>
+    <addaction name="actionPaste"/>
+   </widget>
    <addaction name="menuFIle"/>
+   <addaction name="menuEdit"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>true</bool>
+   </attribute>
   </widget>
   <action name="actionSave">
    <property name="text">
@@ -71,6 +102,21 @@
   <action name="actionClose">
    <property name="text">
     <string>Close</string>
+   </property>
+  </action>
+  <action name="actionCut">
+   <property name="text">
+    <string>Cut</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>Paste</string>
    </property>
   </action>
  </widget>

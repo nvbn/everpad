@@ -4,7 +4,7 @@ from PySide.QtGui import QMainWindow, QIcon
 from PySide.QtCore import Slot
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
-from everpad.tools import provider
+from everpad.tools import get_provider
 from everpad.basetypes import Note, Notebook
 from BeautifulSoup import BeautifulSoup
 import dbus
@@ -30,7 +30,7 @@ class Editor(QMainWindow):
         self.ui.content.textChanged.connect(self.text_changed)
         self.init_menu()
         self.init_toolbar()
-        for notebook_struct in provider.list_notebooks():
+        for notebook_struct in self.app.provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             self.ui.notebook.addItem(notebook.name, userData=notebook.id)
 
@@ -133,7 +133,7 @@ class Editor(QMainWindow):
     @Slot()
     def save(self):
         self.update_note()
-        provider.update_note(self.note.struct)
+        self.app.provider.update_note(self.note.struct)
         self.app.send_notify(u'Note "%s" saved!' % self.note.title)
 
     @Slot()
@@ -144,7 +144,7 @@ class Editor(QMainWindow):
     @Slot()
     def delete(self):
         self.update_note()
-        provider.delete_note(self.note.id)
+        self.app.provider.delete_note(self.note.id)
         self.app.send_notify(u'Note "%s" deleted!' % self.note.title)
         self.close()
 

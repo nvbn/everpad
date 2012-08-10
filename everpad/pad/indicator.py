@@ -3,21 +3,23 @@ sys.path.append('../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
-from everpad.tools import provider
+from everpad.tools import get_provider, get_pad
 from everpad.pad.editor import Editor
 from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST
 from functools import partial
 import everpad.monkey
 import signal
 import dbus
+import dbus.service
+import dbus.mainloop.glib
 import argparse
 import oauth2 as oauth
 import subprocess
-import shlex
 import webbrowser
 import urllib
 import urlparse
 import keyring
+import fcntl
 
 
 class Indicator(QSystemTrayIcon):
@@ -33,7 +35,7 @@ class Indicator(QSystemTrayIcon):
     def update(self):
         self.menu.clear()
         if keyring.get_password('everpad', 'oauth_token'):
-            for note_struct in provider.find_notes(
+            for note_struct in self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 20,
                 Note.ORDER_UPDATED_DESC,
@@ -69,7 +71,7 @@ class Indicator(QSystemTrayIcon):
             updated=NONE_VAL,
         ).struct
         note = Note.from_tuple(
-            provider.create_note(note_struct),
+            self.app.provider.create_note(note_struct),
         )
         self.open(note)
 
@@ -116,16 +118,48 @@ class PadApp(QApplication):
             QSystemTrayIcon.Information)
 
 
+class EverpadService(dbus.service.Object):
+    def __init__(self, app, *args, **kwargs):
+        self.app = app
+        dbus.service.Object.__init__(self, *args, **kwargs)
+
+    @dbus.service.method("com.everpad.App", in_signature='i', out_signature='')
+    def open(self, id):
+        note = Note.from_tuple(self.app.provider.get_note(id))
+        self.app.indicator.open(note)
+
+    @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
+    def create(self):
+        self.app.indicator.create()
+
+
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--open', type=str, help='open note')
-    parser.add_argument('--settings', action='store_true', help='open settings dialog')
+    parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
     args = parser.parse_args(sys.argv[1:])
-    app = PadApp(sys.argv)
-    app.exec_()
-
+    fp = open('/tmp/everpad.lock', 'w')
+    try:
+        fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        app = PadApp(sys.argv)
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        session_bus = dbus.SessionBus()
+        app.provider = get_provider(session_bus) 
+        bus = dbus.service.BusName("com.everpad.App", session_bus)
+        service = EverpadService(app, session_bus, '/EverpadService')
+        if args.open:
+            app.open(args.open)
+        if args.create:
+            app.create()
+        app.exec_()
+    except IOError:
+        pad = get_pad()
+        if args.open:
+            pad.open(args.open)
+        if args.create:
+            pad.create()
+        sys.exit(0)
 
 if __name__ == '__main__':
     main()

@@ -2,6 +2,7 @@ everpad.desktop
 everpad.png
 setup.cfg
 setup.py
+setup_for_usc.py
 evernote/__init__.py
 evernote/edam/__init__.py
 evernote/edam/error/__init__.py
@@ -31,8 +32,6 @@ everpad/tools.py
 everpad.egg-info/PKG-INFO
 everpad.egg-info/SOURCES.txt
 everpad.egg-info/dependency_links.txt
-everpad.egg-info/entry_points.txt
-everpad.egg-info/requires.txt
 everpad.egg-info/top_level.txt
 everpad.egg-info/zip-safe
 everpad/interface/__init__.py

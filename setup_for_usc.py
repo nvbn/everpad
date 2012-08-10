@@ -1,7 +1,22 @@
 from setuptools import setup, find_packages
-import sys, os
+import sys
+import os
 
 version = '0.9999'
+
+def get_files():
+    packages = find_packages(exclude=['tests'])
+    files = []
+    for package in packages:
+        path = package.replace('.', '/')
+        files.append((
+            os.path.join('/opt/extras.ubuntu.com/everpad/', path),
+            filter(lambda name: not (name[-4:] == '.pyc', os.path.isdir(name)),
+                map(lambda name: os.path.join(path, name), 
+            os.listdir(path))),
+        ))
+    return files
+
 
 setup(name='everpad',
     version=version,
@@ -14,21 +29,11 @@ setup(name='everpad',
     author_email='nvbn.rm@gmail.com',
     url='https://github.com/nvbn/everpad/',
     license='X11',
-    packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    packages=[],
     include_package_data=True,
     zip_safe=True,
-    install_requires=[
-        'BeautifulSoup'
-    ],
-    entry_points={
-        'gui_scripts': [
-            'everpad=everpad.pad.indicator:main'
-        ], 'console_scripts': [
-            'everpad-lens=everpad.lens:main',
-            'everpad-provider=everpad.provider.daemon:main',
-            'everpad-web-auth=everpad.auth:main',
-        ]
-    },
+    install_requires=[],
+    entry_points={},
     data_files=[
         ('/usr/share/icons/hicolor/64x64/apps', [
             'everpad.png', 'everpad-mono.png', 'everpad-lens.png'
@@ -37,12 +42,15 @@ setup(name='everpad',
             'everpad.png', 'everpad-mono.png', 'everpad-lens.png',
         ]),
         ('/usr/share/applications', ['everpad.desktop']),
-        # ('share/everpad/lang', ['everpad/i18n/ru_RU.qm']),
         ('/usr/share/unity/lenses/everpad', ['everpad.lens']),
         ('/usr/share/dbus-1/services', [
             'unity-lens-everpad.service',
             'everpad-provider.service',
             'everpad-app.service',
         ]),
-    ]
+        ('/usr/bin/', [
+            'bin/everpad', 'bin/everpad-lens',
+            'bin/everpad-provider', 'bin/everpad-web-auth',
+        ])
+    ] + get_files(),
 )

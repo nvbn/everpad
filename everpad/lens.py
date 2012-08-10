@@ -47,7 +47,7 @@ class EverpadLens(SingleScopeLens):
         ):
             note = Note.from_tuple(note_struct)
             results.append(str(note.id),
-                'everpad', self.category, "text/html",
+                'everpad-note', self.category, "text/html",
                 note.title, '', ''
             )
 

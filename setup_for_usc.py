@@ -36,10 +36,12 @@ setup(name='everpad',
     entry_points={},
     data_files=[
         ('/usr/share/icons/hicolor/64x64/apps', [
-            'everpad.png', 'everpad-mono.png', 'everpad-lens.png'
+            'everpad.png', 'everpad-mono.png', 
+            'everpad-lens.png', 'everpad-note.png',
         ]),
         ('/usr/share/pixmaps', [
-            'everpad.png', 'everpad-mono.png', 'everpad-lens.png',
+            'everpad.png', 'everpad-mono.png',
+            'everpad-lens.png', 'everpad-note.png',
         ]),
         ('/usr/share/applications', ['everpad.desktop']),
         ('/usr/share/unity/lenses/everpad', ['everpad.lens']),

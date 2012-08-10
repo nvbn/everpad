@@ -3,11 +3,12 @@ sys.path.append('..')
 from singlet.lens import SingleScopeLens, IconViewCategory, ListViewCategory
 from gi.repository import Gio, Unity
 from singlet.utils import run_lens
-from everpad.tools import get_provider
+from everpad.tools import get_provider, get_pad
 from everpad.basetypes import Note, Tag, Notebook
 import dbus
 import sys
 provider = get_provider()
+pad = get_pad()
 
 
 class EverpadLens(SingleScopeLens):
@@ -16,7 +17,7 @@ class EverpadLens(SingleScopeLens):
         name = 'everpad'
         description = 'Everpad Lens'
         search_hint = 'Search Everpad'
-        icon = '../everpad.png'
+        icon = 'everpad-lens'
         search_on_blank = True
         bus_name = 'net.launchpad.Unity.Lens.EverpadLens'
         bus_path = '/net/launchpad/unity/lens/everpad'
@@ -34,7 +35,7 @@ class EverpadLens(SingleScopeLens):
             notebooks.add_option(str(notebook.id), notebook.name, icon)
         self._lens.props.filters = [notebooks, tags]
 
-    category = IconViewCategory("Notes", 'everpad')
+    category = ListViewCategory("Notes", 'everpad-lens')
 
     def search(self, search, results):
         if self.notebook_filter_id:
@@ -46,11 +47,14 @@ class EverpadLens(SingleScopeLens):
             search, notebooks, tags, 100, Note.ORDER_TITLE,
         ):
             note = Note.from_tuple(note_struct)
-            results.append(
-                'everpad --open %d' % note.id,
+            results.append(str(note.id),
                 'everpad', self.category, "text/html",
                 note.title, '', ''
             )
+
+    def handle_uri(self, scope, id):
+        pad.open(int(id))
+        return self.hide_dash_response()
 
     def on_filtering_changed(self, scope):
         tags = scope.get_filter('tags')

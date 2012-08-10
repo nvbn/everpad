@@ -1,3 +1,14 @@
+everpad (0.9999-0~oneiric) oneiric; urgency=low
+
+  * New sexy architecture
+  * Fix ssl error
+  * Notebooks support
+  * Tags support
+  * OAuth
+  * New icons
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Fri, 10 Aug 2012 19:26:02 +0900
+
 everpad (0.5-0~oneiric) oneiric; urgency=low
 
   * Fix broken package

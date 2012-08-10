@@ -36,6 +36,7 @@ def my_processor(handler):
         resp, content = client.request('https://%s/oauth' % HOST, 'POST')
         access_token = dict(urlparse.parse_qsl(content))
         provider.authenticate(access_token['oauth_token'])
+        sys.exit(0)
     except KeyError:
         pass
     return handler() 

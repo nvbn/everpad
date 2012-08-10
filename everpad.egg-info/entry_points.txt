@@ -1,7 +1,8 @@
 [console_scripts]
 everpad-lens = everpad.lens:main
-everpad-provider = everpad.provider:main
+everpad-web-auth = everpad.auth:main
+everpad-provider = everpad.provider.daemon:main
 
 [gui_scripts]
-everpad = everpad.pad:main
+everpad = everpad.pad.indicator:main
 

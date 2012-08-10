@@ -16,9 +16,3 @@ Name=Create Note
 Name[ru]=Создать заметку
 Exec=everpad --create
 TargetEnvironment=Unity
-
-[Settings Shortcut Group]
-Name=Settings
-Name[ru]=Параметры
-Exec=everpad --settings
-TargetEnvironment=Unity

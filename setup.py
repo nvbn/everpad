@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.4.1'
+version = '0.9999'
 
 setup(name='everpad',
     version=version,
@@ -22,7 +22,7 @@ setup(name='everpad',
     ],
     entry_points={
         'gui_scripts': [
-            'everpad=everpad.pad:main'
+            'everpad=everpad.pad.indicator:main'
         ], 'console_scripts': [
             'everpad-lens=everpad.lens:main',
             'everpad-provider=everpad.provider.daemon:main',
@@ -30,14 +30,19 @@ setup(name='everpad',
         ]
     },
     data_files=[
-        ('share/icons/hicolor/64x64/apps', ['everpad.png']),
-        ('share/pixmaps', ['everpad.png']),
-        ('share/applications', ['everpad.desktop']),
+        ('/usr/share/icons/hicolor/64x64/apps', [
+            'everpad.png', 'everpad-mono.png', 'everpad-lens.png'
+        ]),
+        ('/usr/share/pixmaps', [
+            'everpad.png', 'everpad-mono.png', 'everpad-lens.png',
+        ]),
+        ('/usr/share/applications', ['everpad.desktop']),
         # ('share/everpad/lang', ['everpad/i18n/ru_RU.qm']),
-        ('share/unity/lenses/everpad', ['everpad.lens']),
-        ('share/dbus-1/services', [
+        ('/usr/share/unity/lenses/everpad', ['everpad.lens']),
+        ('/usr/share/dbus-1/services', [
             'unity-lens-everpad.service',
-            'everpad-provider.service'
+            'everpad-provider.service',
+            'everpad-app.service',
         ]),
     ]
 )

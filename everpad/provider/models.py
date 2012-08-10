@@ -70,6 +70,7 @@ class Note(Base):
             self.notebook = self.session.query(Notebook).filter(
                 Notebook.default == True,
             ).one()
+        print val, self.notebook
 
     def from_api(self, note, query):
         """Fill data from api"""

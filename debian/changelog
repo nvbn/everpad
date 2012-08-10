@@ -1,3 +1,9 @@
+everpad (1.0.2-0~oneiric) oneiric; urgency=low
+
+  * Fix notepads issue
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sun, 10 Aug 2012 23:54:12 +0900
+
 everpad (1.0.1-0~oneiric) oneiric; urgency=low
 
   * Fix authoristaion from /opt/

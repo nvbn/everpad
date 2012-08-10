@@ -54,6 +54,17 @@ class DbusSendable(object):
             else:
                 setattr(obj, field[0], val)
 
+    def __repr__(self):
+        return "<%s:\n%s>" % (
+            type(self).__name__,
+            "\n".join(map(
+                lambda field: '%s: %s' % (
+                    field[0], str(getattr(self, field[0], '')),
+                ), self.fields,
+            ))
+        )
+
+
     
 class Note(DbusSendable):
     ORDER_TITLE = 0

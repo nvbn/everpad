@@ -88,9 +88,9 @@ class Editor(QMainWindow):
 
     def load_note(self, note):
         self.note = note
-        notebook_index = self.ui.notebook.findData(note.id)
+        notebook_index = self.ui.notebook.findData(note.notebook)
         self.ui.notebook.setCurrentIndex(notebook_index)
-        self.ui.content.setHtml("<h2>%s</h2>\n%s" % (
+        self.ui.content.setHtml("<h2>%s</h2><a href='#' />\n%s" % (
             note.title, note.content,
         ))
         self.ui.tags.setText(', '.join(note.tags))

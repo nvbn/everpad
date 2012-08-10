@@ -1,3 +1,10 @@
+everpad (1.0.1-0~oneiric) oneiric; urgency=low
+
+  * Fix authoristaion from /opt/
+  * Fix non sandbox
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sun, 10 Aug 2012 23:34:12 +0900
+
 everpad (0.9999-0~oneiric) oneiric; urgency=low
 
   * New sexy architecture

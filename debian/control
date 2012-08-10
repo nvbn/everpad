@@ -2,7 +2,7 @@ Source: everpad
 Section: net
 Priority: optional
 Maintainer: Vladimir Yakovlev <nvbn.rm@gmail.com>
-Build-Depends: cdbs (>= 0.4.49), debhelper (>= 7), python (>= 2.4), python-support, python2.6, python2.7, python-pyside.qtcore ,python-pyside.qtgui, python-dbus, python-beautifulsoup, sni-qt, python-pysqlite2, python-setuptools, python-keyring
+Build-Depends: cdbs (>= 0.4.49), debhelper (>= 7), python (>= 2.4), python-support, python-pyside.qtcore ,python-pyside.qtgui, python-dbus, python-beautifulsoup, sni-qt, python-pysqlite2, python-setuptools, python-keyring, python-webpy, python-sqlalchemy
 Standards-Version: 3.9.2
 Homepage: https://github.com/nvbn/everpad/
 #Vcs-Git: git://git.debian.org/collab-maint/terminator.git
@@ -10,7 +10,7 @@ Homepage: https://github.com/nvbn/everpad/
 
 Package: everpad
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-pyside.qtcore ,python-pyside.qtgui, python-dbus, python-beautifulsoup, sni-qt, python-pysqlite2, python-keyring
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-pyside.qtcore ,python-pyside.qtgui, python-dbus, python-beautifulsoup, sni-qt, python-pysqlite2, python-keyring, python-webpy, python-support, python-sqlalchemy
 Description: Ubuntu integrated evernote client
  Evernote client with unity integration
 

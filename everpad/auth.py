@@ -2,7 +2,7 @@ import sys
 sys.path.append('..')
 sys.path.append('../..')
 from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST
-from everpad.tools import provider
+from everpad.tools import get_provider
 import web
 import argparse
 import everpad.monkey
@@ -22,7 +22,7 @@ class Auth(object):
 app = web.application(urls, globals())
 
 argv = sys.argv[1:]
-def my_processor(handler): 
+def auth_processor(handler): 
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument('--token', type=str, help='oauth token')
@@ -35,13 +35,13 @@ def my_processor(handler):
         client = oauth.Client(consumer, token)
         resp, content = client.request('https://%s/oauth' % HOST, 'POST')
         access_token = dict(urlparse.parse_qsl(content))
-        provider.authenticate(access_token['oauth_token'])
+        get_provider().authenticate(access_token['oauth_token'])
         sys.exit(0)
     except KeyError:
         pass
     return handler() 
 
-app.add_processor(my_processor)
+app.add_processor(auth_processor)
 
 def main():
     sys.argv[1:] = ['15216']

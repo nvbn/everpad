@@ -8,7 +8,6 @@ from everpad.basetypes import Note, Tag, Notebook
 import dbus
 import sys
 provider = get_provider()
-pad = get_pad()
 
 
 class EverpadLens(SingleScopeLens):
@@ -53,7 +52,7 @@ class EverpadLens(SingleScopeLens):
             )
 
     def handle_uri(self, scope, id):
-        pad.open(int(id))
+        get_pad().open(int(id))
         return self.hide_dash_response()
 
     def on_filtering_changed(self, scope):

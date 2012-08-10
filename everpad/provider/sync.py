@@ -9,6 +9,7 @@ from evernote.edam.limits.constants import (
     EDAM_TAG_NAME_LEN_MAX, EDAM_NOTEBOOK_NAME_LEN_MAX,
     EDAM_USER_NOTES_MAX,
 )
+from evernote.edam.error.ttypes import EDAMUserException
 from everpad.provider.tools import (
     ACTION_NONE, ACTION_CREATE,
     ACTION_CHANGE, ACTION_DELETE,
@@ -122,8 +123,11 @@ class SyncThread(QThread):
                 nt = self.note_store.createNote(self.auth_token, nt)
                 note.guid = nt.guid
             elif note.action == ACTION_DELETE:
-                self.note_store.deleteNote(self.auth_token, nt.guid)
-                self.session.delete(note)
+                try:
+                    self.note_store.deleteNote(self.auth_token, nt.guid)
+                    self.session.delete(note)
+                except EDAMUserException:
+                    pass
             note.action = ACTION_NONE
         self.session.commit()
 

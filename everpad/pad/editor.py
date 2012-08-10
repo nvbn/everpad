@@ -26,6 +26,7 @@ class Editor(QMainWindow):
     def init_controls(self):
         self.ui.tags.hide()
         self.ui.notebook.hide()
+        self.ui.menubar.hide()
         self.ui.content.textChanged.connect(self.text_changed)
         self.init_menu()
         self.init_toolbar()

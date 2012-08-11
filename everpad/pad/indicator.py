@@ -20,6 +20,7 @@ import urllib
 import urlparse
 import keyring
 import fcntl
+import os
 
 
 class Indicator(QSystemTrayIcon):
@@ -85,6 +86,7 @@ class Indicator(QSystemTrayIcon):
         data = dict(urlparse.parse_qsl(content))
         url = 'https://%s/OAuth.action?oauth_token=' % HOST + urllib.quote(data['oauth_token'])
         webbrowser.open(url)
+        os.system('killall everpad-web-auth')
         try:
             subprocess.Popen([
                 'everpad-web-auth', '--token', data['oauth_token'],

@@ -109,10 +109,13 @@ class Editor(QMainWindow):
         if self.resources:
             self.ui.resourceArea.show()
             for res in self.resources:
-                pixmap = QPixmap(res.file_path).scaledToWidth(100)
                 label = QLabel()
-                label.setPixmap(pixmap)
-                label.setMask(pixmap.mask())
+                if 'image' in res.mime:
+                    pixmap = QPixmap(res.file_path).scaledToWidth(100)
+                    label.setPixmap(pixmap)
+                    label.setMask(pixmap.mask())
+                else:
+                    label.setText(res.file_name)
                 label.mouseReleaseEvent = partial(self.open_res, res.file_path)
                 self.ui.resourceArea.widget().layout().addWidget(label)
 

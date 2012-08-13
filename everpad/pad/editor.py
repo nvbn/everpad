@@ -1,13 +1,15 @@
 import sys
 sys.path.append('../..')
-from PySide.QtGui import QMainWindow, QIcon
+from PySide.QtGui import QMainWindow, QIcon, QPixmap, QLabel, QVBoxLayout, QFrame
 from PySide.QtCore import Slot
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider
-from everpad.basetypes import Note, Notebook
+from everpad.basetypes import Note, Notebook, Resource
 from BeautifulSoup import BeautifulSoup
+from functools import partial
 import dbus
+import subprocess
 
 
 class Editor(QMainWindow):
@@ -28,11 +30,18 @@ class Editor(QMainWindow):
         self.ui.notebook.hide()
         self.ui.menubar.hide()
         self.ui.content.textChanged.connect(self.text_changed)
+        self.ui.resourceArea.hide()
         self.init_menu()
         self.init_toolbar()
         for notebook_struct in self.app.provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             self.ui.notebook.addItem(notebook.name, userData=notebook.id)
+        frame = QFrame()
+        frame.setLayout(QVBoxLayout())
+        frame.setFixedWidth(100)
+        self.ui.resourceArea.setFixedWidth(100)
+        self.ui.resourceArea.setWidget(frame)
+        self.ui.resourceArea.hide()
 
     def init_menu(self):
         self.ui.actionSave.triggered.connect(self.save)
@@ -94,6 +103,19 @@ class Editor(QMainWindow):
             note.title, note.content,
         ))
         self.ui.tags.setText(', '.join(note.tags))
+        self.resources = map(Resource.from_tuple,
+            self.app.provider.get_note_resources(note.id),
+        )
+        if self.resources:
+            self.ui.resourceArea.show()
+            for res in self.resources:
+                pixmap = QPixmap(res.file_path).scaledToWidth(100)
+                label = QLabel()
+                label.setPixmap(pixmap)
+                label.setMask(pixmap.mask())
+                label.mouseReleaseEvent = partial(self.open_res, res.file_path)
+                self.ui.resourceArea.widget().layout().addWidget(label)
+
 
     def update_note(self):
         notebook_index = self.ui.notebook.currentIndex()
@@ -152,3 +174,6 @@ class Editor(QMainWindow):
     def close(self):
         self.hide()
         self.closed = True
+
+    def open_res(self, path, *args):  # event
+        subprocess.Popen(['xdg-open', path])

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Fri Aug 10 15:21:51 2012
+# Created: Mon Aug 13 22:38:21 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,9 +17,22 @@ class Ui_Editor(object):
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
         self.content = QtGui.QTextEdit(self.centralwidget)
         self.content.setObjectName("content")
-        self.verticalLayout.addWidget(self.content)
+        self.horizontalLayout.addWidget(self.content)
+        self.resourceArea = QtGui.QScrollArea(self.centralwidget)
+        self.resourceArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.resourceArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.resourceArea.setWidgetResizable(True)
+        self.resourceArea.setObjectName("resourceArea")
+        self.scrollAreaWidgetContents = QtGui.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 76, 238))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.resourceArea.setWidget(self.scrollAreaWidgetContents)
+        self.horizontalLayout.addWidget(self.resourceArea)
+        self.verticalLayout.addLayout(self.horizontalLayout)
         self.options = QtGui.QHBoxLayout()
         self.options.setObjectName("options")
         self.notebook = QtGui.QComboBox(self.centralwidget)
@@ -42,7 +55,6 @@ class Ui_Editor(object):
         self.toolBar.setMovable(False)
         self.toolBar.setObjectName("toolBar")
         Editor.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
-        Editor.insertToolBarBreak(self.toolBar)
         self.actionSave = QtGui.QAction(Editor)
         self.actionSave.setObjectName("actionSave")
         self.actionSave_and_close = QtGui.QAction(Editor)

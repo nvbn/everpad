@@ -145,6 +145,7 @@ class Resource(Base):
         self.file_name = resource.attributes.fileName.decode('utf8')
         self.hash = b64encode(resource.data.bodyHash)
         self.action = ACTION_NONE
+        self.mime = resource.mime.decode('utf8')
         path = os.path.expanduser('~/.everpad/data/%s/' % self.note_id)
         try:
             os.mkdir(path)

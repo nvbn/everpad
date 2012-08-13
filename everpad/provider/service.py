@@ -1,8 +1,8 @@
 import sys
 sys.path.append('../..')
 from everpad.provider.models import (
-    Note, Notebook, Tag, ACTION_CHANGE,
-    ACTION_CREATE, ACTION_DELETE,
+    Note, Notebook, Tag, Resource,
+    ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
 )
 from everpad.provider.tools import get_db_session
 from sqlalchemy import or_, and_
@@ -193,3 +193,16 @@ class ProviderService(dbus.service.Object):
     )
     def remove_authentication(self):
         self.qobject.remove_authenticate_signal.emit()
+
+    @dbus.service.method(
+        "com.everpad.Provider", 
+        in_signature='i', out_signature='a' + btype.Resource.signature,
+    )
+    def get_note_resources(self, note_id):
+        return map(
+            lambda res: btype.Resource.from_obj(res).struct,
+            self.sq(Resource).filter(and_(
+                Resource.note_id == note_id,
+                Resource.action != ACTION_DELETE,
+            ))
+        )

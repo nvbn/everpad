@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../..')
+sys.path.insert(0, '../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL

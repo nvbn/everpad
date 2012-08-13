@@ -96,3 +96,12 @@ class Tag(DbusSendable):
         ('id', 'i'),
         ('name', 's'),
     )
+
+
+class Resource(DbusSendable):
+    fields = (
+        ('id', 'i'),
+        ('file_name', 's'),
+        ('file_path', 's'),
+        ('mime', 's'),
+    )

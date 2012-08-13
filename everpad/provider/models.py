@@ -3,6 +3,8 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 from BeautifulSoup import BeautifulSoup
+from base64 import b64decode, b64encode
+import os
 
 Base = declarative_base()
 
@@ -33,6 +35,7 @@ class Note(Base):
         secondary=notetags_table,
         backref="notes",
     )
+    resources = relationship("Resource")
     action = Column(Integer)
 
     @property
@@ -124,3 +127,29 @@ class Tag(Base):
         """Fill data from api"""
         self.name = tag.name.decode('utf8')
         self.action = ACTION_NONE
+
+
+class Resource(Base):
+    __tablename__ = 'resources'
+    id = Column(Integer, primary_key=True)
+    note_id = Column(Integer, ForeignKey('notes.id'))
+    file_name = Column(String)
+    file_path = Column(String)
+    guid = Column(String)
+    hash = Column(String)
+    mime = Column(String)
+    action = Column(Integer)
+
+    def from_api(self, resource):
+        """Fill data from api"""
+        self.file_name = resource.attributes.fileName.decode('utf8')
+        self.hash = b64encode(resource.data.bodyHash)
+        self.action = ACTION_NONE
+        path = os.path.expanduser('~/.everpad/data/%s/' % self.note_id)
+        try:
+            os.mkdir(path)
+        except OSError:
+            pass
+        self.file_path = os.path.join(path, self.file_name)
+        with open(self.file_path, 'w') as data:
+            data.write(resource.data.body)

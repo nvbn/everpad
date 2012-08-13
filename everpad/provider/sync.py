@@ -4,6 +4,7 @@ from PySide.QtCore import QThread, Slot, QTimer
 from evernote.edam.type.ttypes import Note, Notebook, Tag, NoteSortOrder
 from evernote.edam.notestore.ttypes import NoteFilter
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import and_
 from evernote.edam.limits.constants import (
     EDAM_NOTE_TITLE_LEN_MAX, EDAM_NOTE_CONTENT_LEN_MAX,
     EDAM_TAG_NAME_LEN_MAX, EDAM_NOTEBOOK_NAME_LEN_MAX,
@@ -17,6 +18,7 @@ from everpad.provider.tools import (
     get_note_store,
 )
 from everpad.provider import models
+from base64 import b64encode, b64decode
 
 
 class SyncThread(QThread):
@@ -188,20 +190,50 @@ class SyncThread(QThread):
                 ).one()
                 notes_ids.append(nt.id)
                 if nt.updated > note.updated:
-                    note.content = self.note_store.getNoteContent(
+                    updated = True
+                    note = self.note_store.getNote(
                         self.auth_token, note.guid,
+                        True, True, True, True,
                     )
                     nt.from_api(note, self.sq)
+                    self.note_resources_remote(note, nt)
             except NoResultFound:
-                note.content = self.note_store.getNoteContent(
+                note = self.note_store.getNote(
                     self.auth_token, note.guid,
+                    True, True, True, True,
                 )
                 nt = models.Note(guid=note.guid)
                 nt.from_api(note, self.sq)
                 self.session.add(nt)
                 notes_ids.append(nt.id)
+                self.note_resources_remote(note, nt)
         if len(notes_ids):
             self.sq(models.Note).filter(
                 ~models.Note.id.in_(notes_ids)
             ).delete(synchronize_session='fetch')        
+        self.session.commit()
+
+    def note_resources_remote(self, note_api, note_model):
+        resources_ids = []
+        for resource in note_api.resources or []:
+            try:
+                rs = self.sq(models.Resource).filter(
+                    models.Resource.guid == resource.guid,
+                ).one()
+                resources_ids.append(rs.id)
+                if b64decode(rs.hash) != resource.data.bodyHash:
+                    rs.from_api(resource)
+            except NoResultFound:
+                rs = models.Resource(
+                    guid=resource.guid,
+                    note_id=note_model.id,
+                )
+                rs.from_api(resource)
+                self.session.add(rs)
+                resources_ids.append(rs.id)
+        if len(resources_ids):
+            self.sq(models.Resource).filter(and_(
+                ~models.Resource.id.in_(resources_ids),
+                models.Resource.note_id == note_model.id,
+            )).delete(synchronize_session='fetch')        
         self.session.commit()

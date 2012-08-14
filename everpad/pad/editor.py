@@ -1,8 +1,11 @@
 import sys
 sys.path.append('../..')
-from PySide.QtGui import QMainWindow, QIcon, QPixmap, QLabel, QVBoxLayout, QFrame
-from PySide import Qt
-from PySide.QtCore import Slot
+from PySide.QtGui import (
+    QMainWindow, QIcon, QPixmap,
+    QLabel, QVBoxLayout, QFrame,
+    QMessageBox,
+)
+from PySide.QtCore import Slot, Qt
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider
@@ -170,10 +173,18 @@ class Editor(QMainWindow):
 
     @Slot()
     def delete(self):
-        self.update_note()
-        self.app.provider.delete_note(self.note.id)
-        self.app.send_notify(u'Note "%s" deleted!' % self.note.title)
-        self.close()
+        msgBox = QMessageBox(
+            QMessageBox.Critical,
+            self.tr("You try to delete a note"),
+            self.tr("Are you sure want to delete this note?"),
+            QMessageBox.Yes | QMessageBox.No
+        )
+        ret = msgBox.exec_()
+        if ret == QMessageBox.Yes:
+            self.update_note()
+            self.app.provider.delete_note(self.note.id)
+            self.app.send_notify(u'Note "%s" deleted!' % self.note.title)
+            self.close()
 
     @Slot()
     def close(self):

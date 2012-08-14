@@ -28,6 +28,7 @@ class Editor(QMainWindow):
         self.setWindowIcon(get_icon())
         self.init_controls()
         self.load_note(note)
+        self.mark_untouched()
 
     def init_controls(self):
         self.ui.tags.hide()
@@ -46,7 +47,9 @@ class Editor(QMainWindow):
         self.ui.resourceArea.setFixedWidth(100)
         self.ui.resourceArea.setWidget(frame)
         self.ui.resourceArea.hide()
-        self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
+        # self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.tags.textChanged.connect(self.mark_touched)
+        self.ui.notebook.currentIndexChanged.connect(self.mark_touched)
 
     def init_menu(self):
         self.ui.actionSave.triggered.connect(self.save)
@@ -62,7 +65,7 @@ class Editor(QMainWindow):
         self.ui.actionPaste.triggered.connect(self.ui.content.paste)
 
     def init_toolbar(self):
-        self.ui.toolBar.addAction(
+        self.save_btn = self.ui.toolBar.addAction(
             QIcon.fromTheme('document-save'), 
             self.tr('Save'), self.save,
         )
@@ -124,7 +127,6 @@ class Editor(QMainWindow):
                 label.mouseReleaseEvent = partial(self.open_res, res.file_path)
                 self.ui.resourceArea.widget().layout().addWidget(label)
 
-
     def update_note(self):
         notebook_index = self.ui.notebook.currentIndex()
         self.note.notebook = self.ui.notebook.itemData(notebook_index)
@@ -144,7 +146,8 @@ class Editor(QMainWindow):
 
     def closeEvent(self, event):
         event.ignore()
-        self.save()
+        if self.touched:
+            self.save()
         self.close()
 
     @Slot()
@@ -159,6 +162,7 @@ class Editor(QMainWindow):
     @Slot()
     def text_changed(self):
         self.setWindowTitle(u'Everpad / %s' % self.get_title())
+        self.mark_touched()
 
     @Slot()
     def save(self):
@@ -193,3 +197,14 @@ class Editor(QMainWindow):
 
     def open_res(self, path, *args):  # event
         subprocess.Popen(['xdg-open', path])
+
+    @Slot()
+    def mark_touched(self):
+        self.touched = True
+        self.ui.actionSave.setEnabled(True)
+        self.save_btn.setEnabled(True)
+
+    def mark_untouched(self):
+        self.touched = False
+        self.ui.actionSave.setEnabled(False)
+        self.save_btn.setEnabled(False)

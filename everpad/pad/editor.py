@@ -1,6 +1,7 @@
 import sys
 sys.path.append('../..')
 from PySide.QtGui import QMainWindow, QIcon, QPixmap, QLabel, QVBoxLayout, QFrame
+from PySide import Qt
 from PySide.QtCore import Slot
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
@@ -42,6 +43,7 @@ class Editor(QMainWindow):
         self.ui.resourceArea.setFixedWidth(100)
         self.ui.resourceArea.setWidget(frame)
         self.ui.resourceArea.hide()
+        self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
 
     def init_menu(self):
         self.ui.actionSave.triggered.connect(self.save)

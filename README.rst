@@ -31,7 +31,10 @@ Developers can clone this repository and install via ``setup.py``
 Want to help?
 =============
 Write code here.
+
 Or create bug reports.
+
 Or donate:
-**PayPal**: nvbn.rm@gmail.com
-**Yandex Money**: 410011244953574
+
+ - **PayPal**: nvbn.rm@gmail.com
+ - **Yandex Money**: 410011244953574

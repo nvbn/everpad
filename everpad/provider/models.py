@@ -78,10 +78,10 @@ class Note(Base):
     def from_api(self, note, query):
         """Fill data from api"""
         soup = BeautifulSoup(note.content.decode('utf8'))
-        content = ''.join(map(   # shit =)
-            lambda tag: unicode(tag),
-            soup.find('en-note').fetch(),
-        ))
+        content = reduce(
+            lambda txt, cur: txt + unicode(cur),
+            soup.find('en-note').contents, 
+        u'')
         self.title = note.title.decode('utf8')
         self.content = content
         self.created = note.created

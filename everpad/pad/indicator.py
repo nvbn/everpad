@@ -5,7 +5,7 @@ from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad
 from everpad.pad.editor import Editor
-from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST
+from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST, STATUS_SYNC
 from functools import partial
 import everpad.monkey
 import signal
@@ -47,7 +47,14 @@ class Indicator(QSystemTrayIcon):
                 ))
             self.menu.addSeparator()
             self.menu.addAction(self.tr('Create Note'), self.create)
-        self.menu.addAction(self.tr('Authorisation'), self.auth)
+            if self.app.provider.get_status() == STATUS_SYNC:
+                action = self.menu.addAction(self.tr('Sync in progress'))
+                action.setEnabled(False)
+            else:
+                self.menu.addAction(self.tr('Last sync: %s') % 
+                    self.app.provider.get_last_sync())
+        else:
+            self.menu.addAction(self.tr('Authorisation'), self.auth)
         self.menu.addSeparator()
         self.menu.addAction(self.tr('Exit'), self.exit)
 

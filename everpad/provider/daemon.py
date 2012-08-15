@@ -15,8 +15,8 @@ class ProviderApp(QCoreApplication):
         QCoreApplication.__init__(self, *args, **kwargs)
         session_bus = dbus.SessionBus()
         self.bus = dbus.service.BusName("com.everpad.Provider", session_bus)
-        self.service = ProviderService(session_bus, '/EverpadProvider')
-        self.sync_thread = SyncThread()
+        self.service = ProviderService(self, session_bus, '/EverpadProvider')
+        self.sync_thread = SyncThread(self)
         if get_auth_token():
             self.sync_thread.start()
         self.service.qobject.authenticate_signal.connect(

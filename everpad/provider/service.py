@@ -10,20 +10,21 @@ from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
 from PySide.QtCore import Signal, QObject
 import everpad.basetypes as btype
+from everpad.const import STATUS_NONE, STATUS_SYNC
 import dbus
 import dbus.service
 
 class ProviderServiceQObject(QObject):
     authenticate_signal = Signal(str)
     remove_authenticate_signal = Signal()
+    force_sync_signal = Signal()
 
 
 class ProviderService(dbus.service.Object):
-
-    def __init__(self, *args, **kwargs):
+    def __init__(self, app, *args, **kwargs):
         super(ProviderService, self).__init__(*args, **kwargs)
         self.qobject = ProviderServiceQObject()
-        
+        self.app = app
 
     @property
     def session(self):
@@ -206,3 +207,25 @@ class ProviderService(dbus.service.Object):
                 Resource.action != ACTION_DELETE,
             ))
         )
+
+    @dbus.service.method(
+        "com.everpad.Provider", 
+        in_signature='', out_signature='i',
+    )
+    def get_status(self):
+        return self.app.sync_thread.status
+
+    @dbus.service.method(
+        "com.everpad.Provider", 
+        in_signature='', out_signature='s',
+    )
+    def get_last_sync(self):
+        return self.app.sync_thread.last_sync.strftime('%H:%M')
+
+    @dbus.service.method(
+        "com.everpad.Provider", 
+        in_signature='', out_signature='',
+    )
+    def sync(self):
+        if self.app.sync_thread.status != STATUS_SYNC:
+            self.qobject.force_sync_signal.emit()

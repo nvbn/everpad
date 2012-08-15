@@ -18,11 +18,17 @@ from everpad.provider.tools import (
     get_note_store,
 )
 from everpad.provider import models
+from everpad.const import STATUS_NONE, STATUS_SYNC
 from base64 import b64encode, b64decode
+from datetime import datetime
 
 
 class SyncThread(QThread):
     """Sync notes with evernote thread"""
+    def __init__(self, app, *args, **kwargs):
+        QThread.__init__(self, *args, **kwargs)
+        self.app = app
+
     def run(self):
         self.session = get_db_session()
         self.sq = self.session.query
@@ -37,8 +43,11 @@ class SyncThread(QThread):
     @Slot()
     def perform(self):
         """Perform all sync"""
+        self.status = STATUS_SYNC
+        self.last_sync = datetime.now()
         self.local_changes()
         self.remote_changes()
+        self.status = STATUS_NONE
 
     def local_changes(self):
         """Send local changes to evernote server"""

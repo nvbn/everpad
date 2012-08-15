@@ -8,6 +8,7 @@ import dbus
 import dbus.mainloop.glib
 import signal
 import fcntl
+import os
 
 
 class ProviderApp(QCoreApplication):
@@ -42,6 +43,11 @@ def main():
     fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     app = ProviderApp(sys.argv)
+    try:
+        os.mkdir(os.path.expanduser('~/.everpad/'))
+        os.mkdir(os.path.expanduser('~/.everpad/data/'))
+    except OSError:
+        pass
     app.exec_()
 
 if __name__ == '__main__':

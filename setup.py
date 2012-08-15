@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.9999'
+version = '1.2'
 
 setup(name='everpad',
     version=version,

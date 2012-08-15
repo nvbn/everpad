@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys
 import os
 
-version = '0.9999'
+version = '1.2'
 
 def get_files():
     packages = find_packages(exclude=['tests'])

@@ -1,3 +1,11 @@
+everpad (1.2.0-0~oneiric) oneiric; urgency=low
+
+  * Fix sync
+  * Read only resources
+  * Bug fix
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Thu, 16 Aug 2012 00:10:00 +0900
+
 everpad (1.0.5-0~oneiric) oneiric; urgency=low
 
   * Fix big icon in dash

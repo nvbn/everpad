@@ -52,7 +52,8 @@ class Indicator(QSystemTrayIcon):
                 action.setEnabled(False)
             else:
                 self.menu.addAction(self.tr('Last sync: %s') % 
-                    self.app.provider.get_last_sync())
+                    self.app.provider.get_last_sync(),
+                Slot()(self.app.provider.sync))
         else:
             self.menu.addAction(self.tr('Authorisation'), self.auth)
         self.menu.addSeparator()

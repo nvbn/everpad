@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../..')
-from PySide.QtCore import QThread, Slot, QTimer
+from PySide.QtCore import QThread, Slot, QTimer, Signal, QWaitCondition, QMutex
 from evernote.edam.type.ttypes import Note, Notebook, Tag, NoteSortOrder
 from evernote.edam.notestore.ttypes import NoteFilter
 from sqlalchemy.orm.exc import NoResultFound
@@ -21,26 +21,45 @@ from everpad.provider import models
 from everpad.const import STATUS_NONE, STATUS_SYNC
 from base64 import b64encode, b64decode
 from datetime import datetime
+import time
+SYNC_DELAY = 10 * 60 * 1000
 
 
 class SyncThread(QThread):
+    force_sync_signal = Signal()
     """Sync notes with evernote thread"""
     def __init__(self, app, *args, **kwargs):
         QThread.__init__(self, *args, **kwargs)
         self.app = app
+        self.status = STATUS_NONE
+        self.last_sync = datetime.now()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.sync)
+        self.timer.start(SYNC_DELAY)
+        self.wait_condition = QWaitCondition()
+        self.mutex = QMutex()
 
     def run(self):
         self.session = get_db_session()
         self.sq = self.session.query
         self.auth_token = get_auth_token()
         self.note_store = get_note_store(self.auth_token)
-        self.timer = QTimer(self)
-        self.timer.setInterval(60 * 5000)
-        self.timer.timeout.connect(self.perform)
         self.perform()
-        self.timer.start()
+        while True:
+            self.mutex.lock()
+            self.wait_condition.wait(self.mutex)
+            self.perform()
+            self.mutex.unlock()
+
+    def force_sync(self):
+        self.timer.stop()
+        self.sync()
+        self.timer.start(SYNC_DELAY)
 
     @Slot()
+    def sync(self):
+        self.wait_condition.wakeAll()
+
     def perform(self):
         """Perform all sync"""
         self.status = STATUS_SYNC

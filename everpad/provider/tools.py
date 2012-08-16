@@ -29,7 +29,7 @@ def set_auth_token(token):
 
 def get_db_session(db_path=None):
     if not db_path:
-        db_path = os.path.expanduser('~/.config/everpad.db')
+        db_path = os.path.expanduser('~/.everpad/everpad.db')
     engine = create_engine('sqlite:///%s' % db_path)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)

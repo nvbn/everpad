@@ -217,8 +217,7 @@ class SyncThread(QThread):
                     models.Note.guid == note.guid,
                 ).one()
                 notes_ids.append(nt.id)
-                if nt.updated > note.updated:
-                    updated = True
+                if nt.updated < note.updated:
                     note = self.note_store.getNote(
                         self.auth_token, note.guid,
                         True, True, True, True,

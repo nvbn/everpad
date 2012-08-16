@@ -42,12 +42,12 @@ def main():
     fp = open('/tmp/everpad-provider.lock', 'w')
     fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    app = ProviderApp(sys.argv)
     try:
         os.mkdir(os.path.expanduser('~/.everpad/'))
         os.mkdir(os.path.expanduser('~/.everpad/data/'))
     except OSError:
         pass
+    app = ProviderApp(sys.argv)
     app.exec_()
 
 if __name__ == '__main__':

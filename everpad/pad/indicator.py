@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, '../..')
-from PySide.QtCore import Slot, QTranslator, QLocale, Signal
+from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad
@@ -115,6 +115,7 @@ class Indicator(QSystemTrayIcon):
 class PadApp(QApplication):
     def __init__(self, *args, **kwargs):
         QApplication.__init__(self, *args, **kwargs)
+        self.settings = QSettings('everpad', 'everpad-pad')
         self.translator = QTranslator()
         if not self.translator.load('i18n/%s' % QLocale.system().name()):
             self.translator.load('/usr/share/everpad/lang/%s' % QLocale.system().name())

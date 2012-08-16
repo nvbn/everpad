@@ -30,6 +30,13 @@ class Editor(QMainWindow):
         self.init_controls()
         self.load_note(note)
         self.mark_untouched()
+        geometry = self.app.settings.value("note-geometry-%d" % self.note.id)
+        if geometry:
+            self.restoreGeometry(geometry)
+        options = self.app.settings.value('note-options-%d' % self.note.id)
+        if options:
+            self.options.setChecked(True)
+            self.show_options()
 
     def init_controls(self):
         self.ui.tags.hide()
@@ -196,6 +203,14 @@ class Editor(QMainWindow):
     def close(self):
         self.hide()
         self.closed = True
+        self.app.settings.setValue(
+            "note-geometry-%d" % self.note.id, 
+            self.saveGeometry(),
+        )
+        self.app.settings.setValue(
+            'note-options-%d' % self.note.id,
+            self.options.isChecked(),
+        )
 
     def open_res(self, path, *args):  # event
         subprocess.Popen(['xdg-open', path])

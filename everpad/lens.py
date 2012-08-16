@@ -5,6 +5,7 @@ from gi.repository import Gio, Unity
 from singlet.utils import run_lens
 from everpad.tools import get_provider, get_pad
 from everpad.basetypes import Note, Tag, Notebook, Place
+from BeautifulSoup import BeautifulSoup
 import dbus
 import sys
 provider = get_provider()
@@ -56,9 +57,9 @@ class EverpadLens(SingleScopeLens):
         ):
             note = Note.from_tuple(note_struct)
             results.append(str(note.id),
-                'everpad-note', self.category, "text/html",
-                note.title, '', ''
-            )
+                'everpad-note', self.category, "text/html", note.title,
+                ''.join(BeautifulSoup(note.content).findAll(text=True)),
+            '')
 
     def handle_uri(self, scope, id):
         get_pad().open(int(id))

@@ -3,9 +3,9 @@ sys.path.append('../..')
 from PySide.QtGui import (
     QMainWindow, QIcon, QPixmap,
     QLabel, QVBoxLayout, QFrame,
-    QMessageBox,
+    QMessageBox, QAction,
 )
-from PySide.QtCore import Slot, Qt
+from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider
@@ -14,6 +14,7 @@ from BeautifulSoup import BeautifulSoup
 from functools import partial
 import dbus
 import subprocess
+import webbrowser
 
 
 class Editor(QMainWindow):
@@ -47,9 +48,10 @@ class Editor(QMainWindow):
         self.ui.resourceArea.setFixedWidth(100)
         self.ui.resourceArea.setWidget(frame)
         self.ui.resourceArea.hide()
-        # self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.tags.textChanged.connect(self.mark_touched)
         self.ui.notebook.currentIndexChanged.connect(self.mark_touched)
+        self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.content.customContextMenuRequested.connect(self.context_menu)
 
     def init_menu(self):
         self.ui.actionSave.triggered.connect(self.save)
@@ -208,3 +210,19 @@ class Editor(QMainWindow):
         self.touched = False
         self.ui.actionSave.setEnabled(False)
         self.save_btn.setEnabled(False)
+
+    @Slot(QPoint)
+    def context_menu(self, pos):
+        menu = self.ui.content.createStandardContextMenu(pos)
+        cursor = self.ui.content.cursorForPosition(pos)
+        char_format = cursor.charFormat()
+        if char_format.isAnchor():
+            url = char_format.anchorHref()
+            open_action = QAction(self.tr("Open Link"), menu)
+            open_action.triggered.connect(Slot()(lambda: webbrowser.open(url)))
+            copy_action = QAction(self.tr("Copy Link"), menu)
+            copy_action.triggered.connect(Slot()(lambda: self.app.clipboard().setText(url)))
+            menu.insertAction(menu.actions()[0], open_action)
+            menu.insertAction(menu.actions()[0], copy_action)
+            menu.insertSeparator(menu.actions()[2])
+        menu.exec_(self.ui.content.mapToGlobal(pos))

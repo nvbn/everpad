@@ -223,7 +223,7 @@ class SyncThread(QThread):
                         self.auth_token, note.guid,
                         True, True, True, True,
                     )
-                    nt.from_api(note, self.sq)
+                    nt.from_api(note, self.session)
                     self.note_resources_remote(note, nt)
             except NoResultFound:
                 note = self.note_store.getNote(
@@ -231,7 +231,7 @@ class SyncThread(QThread):
                     True, True, True, True,
                 )
                 nt = models.Note(guid=note.guid)
-                nt.from_api(note, self.sq)
+                nt.from_api(note, self.session)
                 self.session.add(nt)
                 notes_ids.append(nt.id)
                 self.note_resources_remote(note, nt)

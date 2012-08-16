@@ -80,6 +80,7 @@ class Note(DbusSendable):
         ('updated', 'x'),
         ('notebook', 'i'),
         ('tags', 'as'),
+        ('place', 's'),
     )
 
 
@@ -104,4 +105,11 @@ class Resource(DbusSendable):
         ('file_name', 's'),
         ('file_path', 's'),
         ('mime', 's'),
+    )
+
+
+class Place(DbusSendable):
+    fields = (
+        ('id', 'i'),
+        ('name', 's'),
     )

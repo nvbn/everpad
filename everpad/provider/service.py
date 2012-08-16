@@ -1,7 +1,7 @@
 import sys
 sys.path.append('../..')
 from everpad.provider.models import (
-    Note, Notebook, Tag, Resource,
+    Note, Notebook, Tag, Resource, Place,
     ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
 )
 from everpad.provider.tools import get_db_session
@@ -51,10 +51,10 @@ class ProviderService(dbus.service.Object):
             raise DBusException('Note not found')
 
     @dbus.service.method(
-        "com.everpad.Provider", in_signature='saiaiii',
+        "com.everpad.Provider", in_signature='saiaiiii',
         out_signature='a%s' % btype.Note.signature,
     )
-    def find_notes(self, words, notebooks, tags,
+    def find_notes(self, words, notebooks, tags, place,
         limit=100, order=btype.Note.ORDER_UPDATED,
     ):
         filters = []
@@ -72,7 +72,10 @@ class ProviderService(dbus.service.Object):
             filters.append(
                 Note.tags.any(Tag.id.in_(tags)),
             )
-
+        if place:
+            filters.append(
+                Note.place_id == place,
+            )
         qs = self.sq(Note).filter(and_(
             Note.action != ACTION_DELETE,
         *filters)).order_by({
@@ -209,10 +212,19 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider", 
+        in_signature='', out_signature='a%s' % btype.Place.signature,
+    )
+    def list_places(self):
+        place = map(lambda place:
+            btype.Place.from_obj(place).struct,
+        self.sq(Place).all())
+        return place
+
+    @dbus.service.method(
+        "com.everpad.Provider", 
         in_signature='', out_signature='i',
     )
     def get_status(self):
-        print self.app.sync_thread.status, 'eeee'
         return self.app.sync_thread.status
 
     @dbus.service.method(

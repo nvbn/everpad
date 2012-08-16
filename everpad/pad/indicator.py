@@ -38,8 +38,8 @@ class Indicator(QSystemTrayIcon):
         if keyring.get_password('everpad', 'oauth_token'):
             for note_struct in self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
-                dbus.Array([], signature='i'), 20,
-                Note.ORDER_UPDATED_DESC,
+                dbus.Array([], signature='i'), 0,
+                20, Note.ORDER_UPDATED_DESC,
             ):
                 note = Note.from_tuple(note_struct)
                 self.menu.addAction(note.title[:40], Slot()(

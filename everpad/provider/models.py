@@ -5,6 +5,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from BeautifulSoup import BeautifulSoup
 from base64 import b64decode, b64encode
 import os
+import urllib
+import json
 
 Base = declarative_base()
 
@@ -36,6 +38,8 @@ class Note(Base):
         backref="notes",
     )
     resources = relationship("Resource")
+    place_id = Column(Integer, ForeignKey('places.id'))
+    place = relationship("Place", backref='note')
     action = Column(Integer)
 
     @property
@@ -73,9 +77,19 @@ class Note(Base):
             self.notebook = self.session.query(Notebook).filter(
                 Notebook.default == True,
             ).one()
-        print val, self.notebook
+        
+    @property
+    def place_dbus(self):
+        if self.place:
+            return self.place.name
+        return ''
 
-    def from_api(self, note, query):
+    @place_dbus.setter
+    def place_dbus(self, val):
+        if val:
+            self.set_place(val)
+
+    def from_api(self, note,session):
         """Fill data from api"""
         soup = BeautifulSoup(note.content.decode('utf8'))
         content = reduce(
@@ -88,13 +102,39 @@ class Note(Base):
         self.updated = note.updated
         self.action = ACTION_NONE
         if note.notebookGuid:
-            self.notebook = query(Notebook).filter(
+            self.notebook = session.query(Notebook).filter(
                 Notebook.guid == note.notebookGuid,
             ).one()
         if note.tagGuids:
-            self.tags = query(Tag).filter(
+            self.tags = session.query(Tag).filter(
                 Tag.guid.in_(note.tagGuids),
             ).all()
+        place_name = None
+        if note.attributes.placeName:
+            place_name = note.attributes.placeName
+        elif note.attributes.longitude:
+            data = json.loads(urllib.urlopen(
+                'http://maps.googleapis.com/maps/api/geocode/json?latlng=%.4f,%.4f&sensor=false' % (
+                    note.attributes.latitude,
+                    note.attributes.longitude,
+                ),
+            ).read())
+            try:
+                place_name = data['results'][0]['formatted_address']
+            except (IndexError, KeyError):
+                pass
+        if place_name:
+            self.set_place(place_name, session)
+
+    def set_place(self, name, session):
+        try:
+            place = session.query(Place).filter(
+                Place.name == name,
+            ).one()
+        except NoResultFound:
+            place = Place(name=name)
+            session.add(place)
+        self.place = place
 
 
 class Notebook(Base):
@@ -154,3 +194,9 @@ class Resource(Base):
         self.file_path = os.path.join(path, self.file_name)
         with open(self.file_path, 'w') as data:
             data.write(resource.data.body)
+
+
+class Place(Base):
+    __tablename__ = 'places'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)

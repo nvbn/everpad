@@ -1,10 +1,10 @@
 import sys
-sys.path.append('..')
+sys.path.insert(0, '..')
 from singlet.lens import SingleScopeLens, IconViewCategory, ListViewCategory
 from gi.repository import Gio, Unity
 from singlet.utils import run_lens
 from everpad.tools import get_provider, get_pad
-from everpad.basetypes import Note, Tag, Notebook
+from everpad.basetypes import Note, Tag, Notebook, Place
 import dbus
 import sys
 provider = get_provider()
@@ -32,7 +32,11 @@ class EverpadLens(SingleScopeLens):
         for notebook_struct in provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             notebooks.add_option(str(notebook.id), notebook.name, icon)
-        self._lens.props.filters = [notebooks, tags]
+        places = Unity.RadioOptionFilter.new('places', 'Places', icon, True)
+        for place_struct in provider.list_places():
+            place = Place.from_tuple(place_struct)
+            places.add_option(str(place.id), place.name, icon)
+        self._lens.props.filters = [notebooks, tags, places]
 
     category = ListViewCategory("Notes", 'everpad-lens')
 
@@ -41,9 +45,14 @@ class EverpadLens(SingleScopeLens):
             notebooks = [self.notebook_filter_id]
         else:
             notebooks = dbus.Array([], signature='i')
+        if self.place_filter_id:
+            place = self.place_filter_id
+        else:
+            place = 0
         tags = dbus.Array(self.tag_filter_ids, signature='i')
         for note_struct in provider.find_notes(
-            search, notebooks, tags, 100, Note.ORDER_TITLE,
+            search, notebooks, tags, place,
+            100, Note.ORDER_TITLE,
         ):
             note = Note.from_tuple(note_struct)
             results.append(str(note.id),
@@ -64,6 +73,11 @@ class EverpadLens(SingleScopeLens):
             self.notebook_filter_id = int(notebook.props.id)
         else:
             self.notebook_filter_id = None
+        place = scope.get_filter('places').get_active_option()
+        if place:
+            self.place_filter_id = int(place.props.id)
+        else:
+            self.place_filter_id = None
         SingleScopeLens.on_filtering_changed(self, scope)
 
 

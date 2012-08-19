@@ -1,4 +1,5 @@
 import dbus
+import keyring
 
 
 def get_provider(bus=None):
@@ -13,3 +14,7 @@ def get_pad(bus=None):
     pad = bus.get_object("com.everpad.App", "/EverpadService")
     dbus.Interface(pad, "com.everpad.App")
     return pad
+
+
+def get_auth_token():
+    return keyring.get_password('everpad', 'oauth_token')

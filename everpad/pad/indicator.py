@@ -3,8 +3,9 @@ sys.path.insert(0, '../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
-from everpad.tools import get_provider, get_pad
+from everpad.tools import get_provider, get_pad, get_auth_token
 from everpad.pad.editor import Editor
+from everpad.pad.management import Management
 from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST, STATUS_SYNC
 from functools import partial
 import everpad.monkey
@@ -31,11 +32,12 @@ class Indicator(QSystemTrayIcon):
         self.setContextMenu(self.menu)
         self.menu.aboutToShow.connect(self.update)
         self.opened_notes = {}
+        self.management = None
 
     @Slot()
     def update(self):
         self.menu.clear()
-        if keyring.get_password('everpad', 'oauth_token'):
+        if get_auth_token():
             for note_struct in self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,
@@ -54,8 +56,7 @@ class Indicator(QSystemTrayIcon):
                 self.menu.addAction(self.tr('Last sync: %s') % 
                     self.app.provider.get_last_sync(),
                 Slot()(self.app.provider.sync))
-        else:
-            self.menu.addAction(self.tr('Authorisation'), self.auth)
+        self.menu.addAction(self.tr('Settings and Management'), self.show_management)
         self.menu.addSeparator()
         self.menu.addAction(self.tr('Exit'), self.exit)
 
@@ -84,6 +85,15 @@ class Indicator(QSystemTrayIcon):
             self.app.provider.create_note(note_struct),
         )
         self.open(note)
+
+    @Slot()
+    def show_management(self):
+        print 'yeeee'
+        if not self.management or getattr(self.management, 'closed', True):
+            self.management = Management(self.app)
+            self.management.show()
+        else:
+            self.management.activateWindow()
 
     @Slot()
     def auth(self):

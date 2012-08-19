@@ -108,6 +108,15 @@ class ProviderService(dbus.service.Object):
             raise DBusException('Notebook does not exist')
 
     @dbus.service.method(
+        "com.everpad.Provider", in_signature='i',
+        out_signature='i',
+    )
+    def get_notebook_notes_count(self, id):
+        return self.sq(Note).filter(
+            Note.notebook_id == id,
+        ).count()
+
+    @dbus.service.method(
         "com.everpad.Provider", in_signature='',
         out_signature='a%s' % btype.Tag.signature,
     )

@@ -19,10 +19,6 @@ ACTION_DELETE = 2
 ACTION_CHANGE = 3
 
 
-def get_auth_token():
-    return keyring.get_password('everpad', 'oauth_token')
-
-
 def set_auth_token(token):
     keyring.set_password('everpad', 'oauth_token', token)
 

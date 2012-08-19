@@ -14,9 +14,9 @@ from evernote.edam.error.ttypes import EDAMUserException
 from everpad.provider.tools import (
     ACTION_NONE, ACTION_CREATE,
     ACTION_CHANGE, ACTION_DELETE,
-    get_db_session, get_auth_token,
-    get_note_store,
+    get_db_session, get_note_store,
 )
+from everpad.tools import get_auth_token
 from everpad.provider import models
 from everpad.const import STATUS_NONE, STATUS_SYNC
 from base64 import b64encode, b64decode

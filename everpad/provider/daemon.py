@@ -2,7 +2,8 @@ import sys
 sys.path.insert(0, '../..')
 from everpad.provider.service import ProviderService
 from everpad.provider.sync import SyncThread
-from everpad.provider.tools import get_auth_token, set_auth_token
+from everpad.provider.tools import set_auth_token
+from everpad.tools import get_auth_token
 from PySide.QtCore import QCoreApplication, Slot
 import dbus
 import dbus.mainloop.glib

@@ -12,7 +12,15 @@ from everpad.interface.notebook import Ui_Notebook
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider, get_auth_token
 from everpad.basetypes import Note, Notebook, Resource
+from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST
+from everpad import monkey
 from functools import partial
+import urllib
+import urlparse
+import subprocess
+import webbrowser
+import oauth2 as oauth
+import os
 
 
 class Management(QDialog):
@@ -38,6 +46,7 @@ class Management(QDialog):
         self.ui.syncDelayBox.currentIndexChanged.connect(self.delay_changed)
         self.ui.tabWidget.currentChanged.connect(self.update_tabs)
         self.ui.createNotebook.clicked.connect(self.create_notebook)
+        self.ui.authBtn.clicked.connect(self.change_auth)
         self.update_tabs()
 
     @Slot()
@@ -48,7 +57,7 @@ class Management(QDialog):
             self.init_notebooks()
         else:
             self.ui.authBtn.setText('Authorise')
-            self.ui.notebookTab.setEnabled(Fale)
+            self.ui.notebookTab.setEnabled(False)
 
     @Slot(int)
     def delay_changed(self, index):
@@ -56,6 +65,32 @@ class Management(QDialog):
             int(self.ui.syncDelayBox.itemData(index)),
         )
 
+    @Slot()
+    def change_auth(self):
+        if get_auth_token():
+            self.app.provider.remove_authentication()
+        else:
+            consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
+            client = oauth.Client(consumer)
+            resp, content = client.request(
+                'https://%s/oauth?oauth_callback=' % HOST + urllib.quote('http://localhost:15216/'), 
+            'GET')
+            data = dict(urlparse.parse_qsl(content))
+            url = 'https://%s/OAuth.action?oauth_token=' % HOST + urllib.quote(data['oauth_token'])
+            webbrowser.open(url)
+            os.system('killall everpad-web-auth')
+            try:
+                subprocess.Popen([
+                    'everpad-web-auth', '--token', data['oauth_token'],
+                    '--secret', data['oauth_token_secret'],
+                ])
+            except OSError:
+                subprocess.Popen([
+                    'python', '../auth.py', '--token',
+                    data['oauth_token'], '--secret',
+                    data['oauth_token_secret'],
+                ])
+        self.update_tabs()
 
     def init_notebooks(self):
         frame = QFrame()

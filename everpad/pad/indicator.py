@@ -6,19 +6,13 @@ from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad, get_auth_token
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
-from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST, STATUS_SYNC
+from everpad.const import STATUS_SYNC
 from functools import partial
-import everpad.monkey
 import signal
 import dbus
 import dbus.service
 import dbus.mainloop.glib
 import argparse
-import oauth2 as oauth
-import subprocess
-import webbrowser
-import urllib
-import urlparse
 import keyring
 import fcntl
 import os
@@ -94,29 +88,6 @@ class Indicator(QSystemTrayIcon):
             self.management.show()
         else:
             self.management.activateWindow()
-
-    @Slot()
-    def auth(self):
-        consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
-        client = oauth.Client(consumer)
-        resp, content = client.request(
-            'https://%s/oauth?oauth_callback=' % HOST + urllib.quote('http://localhost:15216/'), 
-        'GET')
-        data = dict(urlparse.parse_qsl(content))
-        url = 'https://%s/OAuth.action?oauth_token=' % HOST + urllib.quote(data['oauth_token'])
-        webbrowser.open(url)
-        os.system('killall everpad-web-auth')
-        try:
-            subprocess.Popen([
-                'everpad-web-auth', '--token', data['oauth_token'],
-                '--secret', data['oauth_token_secret'],
-            ])
-        except OSError:
-            subprocess.Popen([
-                'python', '../auth.py', '--token',
-                data['oauth_token'], '--secret',
-                data['oauth_token_secret'],
-            ])
 
     @Slot()
     def exit(self):

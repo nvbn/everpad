@@ -2,8 +2,9 @@ import sys
 sys.path.insert(0, '../..')
 from everpad.provider.service import ProviderService
 from everpad.provider.sync import SyncThread
-from everpad.provider.tools import set_auth_token
+from everpad.provider.tools import set_auth_token, get_db_session
 from everpad.tools import get_auth_token
+from everpad.provider import models
 from PySide.QtCore import QCoreApplication, Slot, QSettings
 import dbus
 import dbus.mainloop.glib
@@ -37,6 +38,21 @@ class ProviderApp(QCoreApplication):
     @Slot()
     def on_remove_authenticated(self):
         self.sync_thread.quit()
+        set_auth_token('')
+        session = get_db_session()
+        session.query(models.Note).delete(
+            synchronize_session='fetch',
+        )
+        session.query(models.Resource).delete(
+            synchronize_session='fetch',
+        )
+        session.query(models.Notebook).delete(
+            synchronize_session='fetch',
+        )
+        session.query(models.Tag).delete(
+            synchronize_session='fetch',
+        )
+        session.commit()
 
 
 def main():

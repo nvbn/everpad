@@ -211,20 +211,20 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider", 
-        in_signature=btype.Notebook.signature,
+        in_signature='s',
         out_signature=btype.Notebook.signature,
     )
-    def create_notebook(self, notebook):
-        nb = btype.Notebook.from_tuple(notebook)
+    def create_notebook(self, name):
         if self.sq(Note).filter(
-            Notebook.name == nb.name,
+            Notebook.name == name,
         ).count():
             raise DBusException(
                 'Notebook with this name already exist',
             )
-        notebook = Notebook(action=ACTION_CREATE)
-        nb.give_to_obj(notebook)
-        notebook.id = None
+        notebook = Notebook(
+            action=ACTION_CREATE,
+            name=name, default=False,
+        )
         self.session.add(notebook)
         self.session.commit()
         return btype.Notebook.from_obj(notebook).struct

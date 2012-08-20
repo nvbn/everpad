@@ -37,6 +37,7 @@ class Management(QDialog):
         self.ui.syncDelayBox.setCurrentIndex(active_index)
         self.ui.syncDelayBox.currentIndexChanged.connect(self.delay_changed)
         self.ui.tabWidget.currentChanged.connect(self.update_tabs)
+        self.ui.createNotebook.clicked.connect(self.create_notebook)
         self.update_tabs()
 
     @Slot()
@@ -105,27 +106,41 @@ class Management(QDialog):
             self.update_tabs()
 
     def change_notebook(self, notebook):
-        old_name = notebook.name
-        names = map(lambda nb: Notebook.from_tuple(nb).name,
-            self.app.provider.list_notebooks())
-        try:
-            names.remove(old_name)
-        except ValueError:
-            pass
-        name, status = QInputDialog.getText(self, 
-            self.tr('Change notebook name'),
-            self.tr('Enter notebook name:'),
+        name, status = self._notebook_new_name(
+            self.tr('Change notebook name'), notebook.name,
         )
-        while name in names and status:
-            name, status = QInputDialog.getText(self, 
-                self.tr('Change notebook name'),
-                self.tr('Notebook with this name already exist. Enter notebook name'),
-            )
         if status:
             notebook.name = name
             self.app.provider.update_notebook(notebook.struct)
             self.app.send_notify(u'Notebook "%s" renamed!' % notebook.name)
             self.update_tabs()
+
+    @Slot()
+    def create_notebook(self):
+        name, status = self._notebook_new_name(
+            self.tr('Create new notebook'),
+        )
+        if status:
+            self.app.provider.create_notebook(name)
+            self.app.send_notify(u'Notebook "%s" created!' % name)
+            self.update_tabs()
+
+    def _notebook_new_name(self, title, exclude=''):
+        names = map(lambda nb: Notebook.from_tuple(nb).name,
+            self.app.provider.list_notebooks(),
+        )
+        try:
+            names.remove(exclude)
+        except ValueError:
+            pass
+        name, status = QInputDialog.getText(self, title,
+            self.tr('Enter notebook name:'),
+        )
+        while name in names and status:
+            name, status = QInputDialog.getText(self, title,
+                self.tr('Notebook with this name already exist. Enter notebook name'),
+            )
+        return name, status
 
     def closeEvent(self, event):
         event.ignore()

@@ -4,7 +4,7 @@ from everpad.provider.service import ProviderService
 from everpad.provider.sync import SyncThread
 from everpad.provider.tools import set_auth_token
 from everpad.tools import get_auth_token
-from PySide.QtCore import QCoreApplication, Slot
+from PySide.QtCore import QCoreApplication, Slot, QSettings
 import dbus
 import dbus.mainloop.glib
 import signal
@@ -15,6 +15,7 @@ import os
 class ProviderApp(QCoreApplication):
     def __init__(self, *args, **kwargs):
         QCoreApplication.__init__(self, *args, **kwargs)
+        self.settings = QSettings('everpad', 'everpad-provider')
         session_bus = dbus.SessionBus()
         self.bus = dbus.service.BusName("com.everpad.Provider", session_bus)
         self.service = ProviderService(self, session_bus, '/EverpadProvider')

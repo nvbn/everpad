@@ -18,11 +18,11 @@ from everpad.provider.tools import (
 )
 from everpad.tools import get_auth_token
 from everpad.provider import models
-from everpad.const import STATUS_NONE, STATUS_SYNC
+from everpad.const import STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY
 from base64 import b64encode, b64decode
 from datetime import datetime
 import time
-SYNC_DELAY = 10 * 60 * 1000
+SYNC_MANUAL = -1
 
 
 class SyncThread(QThread):
@@ -35,9 +35,15 @@ class SyncThread(QThread):
         self.last_sync = datetime.now()
         self.timer = QTimer()
         self.timer.timeout.connect(self.sync)
-        self.timer.start(SYNC_DELAY)
+        self.update_timer()
         self.wait_condition = QWaitCondition()
         self.mutex = QMutex()
+
+    def update_timer(self):
+        self.timer.stop()
+        delay = int(self.app.settings.value('sync_delay') or 0) or DEFAULT_SYNC_DELAY
+        if delay != SYNC_MANUAL:
+            self.timer.start(delay)
 
     def run(self):
         self.session = get_db_session()
@@ -54,7 +60,7 @@ class SyncThread(QThread):
     def force_sync(self):
         self.timer.stop()
         self.sync()
-        self.timer.start(SYNC_DELAY)
+        self.update_timer()
 
     @Slot()
     def sync(self):
@@ -64,9 +70,14 @@ class SyncThread(QThread):
         """Perform all sync"""
         self.status = STATUS_SYNC
         self.last_sync = datetime.now()
-        self.local_changes()
-        self.remote_changes()
-        self.status = STATUS_NONE
+        try:
+            self.local_changes()
+            self.remote_changes()
+        except Exception, e:  # maybe log this
+            print e
+            self.session.rollback()
+        finally:
+            self.status = STATUS_NONE
 
     def local_changes(self):
         """Send local changes to evernote server"""
@@ -93,14 +104,28 @@ class SyncThread(QThread):
                 kwargs['guid'] = notebook.guid
             nb = Notebook(**kwargs)
             if notebook.action == ACTION_CHANGE:
-                nb = self.note_store.updateNotebook(
-                    self.auth_token, nb,
-                )
+                while True:
+                    try:
+                        nb = self.note_store.updateNotebook(
+                            self.auth_token, nb,
+                        )
+                        break
+                    except EDAMUserException, e:
+                        notebook.name = notebook.name + '*'  # shit, but work
+                        print e
             elif notebook.action == ACTION_CREATE:
                 nb = self.note_store.createNotebook(
                     self.auth_token, nb,
                 )
                 notebook.guid = nb.guid
+            elif notebook.action == ACTION_DELETE and False:  # not allowed for app now
+                try:
+                    self.note_store.expungeNotebook(
+                        self.auth_token, notebook.guid,
+                    )
+                    self.session.delete(notebook)
+                except EDAMUserException:
+                    print e
             notebook.action = ACTION_NONE
         self.session.commit()
 

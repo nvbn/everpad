@@ -10,7 +10,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
 from PySide.QtCore import Signal, QObject, Qt
 import everpad.basetypes as btype
-from everpad.const import STATUS_NONE, STATUS_SYNC
+from everpad.const import STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY
 import dbus
 import dbus.service
 
@@ -93,7 +93,7 @@ class ProviderService(dbus.service.Object):
     def list_notebooks(self):
         return map(lambda notebook:
             btype.Notebook.from_obj(notebook).struct,
-        self.sq(Notebook).all())
+        self.sq(Notebook).filter(Notebook.action != ACTION_DELETE))
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
@@ -115,6 +115,44 @@ class ProviderService(dbus.service.Object):
         return self.sq(Note).filter(
             Note.notebook_id == id,
         ).count()
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature=btype.Notebook.signature,
+        out_signature=btype.Notebook.signature,
+    )
+    def update_notebook(self, notebook_struct):
+        try:
+            notebook = btype.Notebook.from_tuple(notebook_struct)
+            nb = self.sq(Notebook).filter(
+                Notebook.id == notebook.id,
+            ).one()
+            if self.sq(Notebook).filter(and_(
+                Notebook.id != notebook.id,
+                Notebook.name == notebook.name,
+            )).count():
+                raise DBusException(
+                    'Notebook with this name already exist',
+                )
+            nb.action = ACTION_CHANGE
+            self.session.commit()
+            notebook.give_to_obj(nb)    
+            return btype.Notebook.from_obj(nb).struct
+        except NoResultFound:
+            raise DBusException('Notebook does not exist')
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='i',
+        out_signature='b',
+    )
+    def delete_notebook(self, id):
+        try:
+            self.sq(Notebook).filter(
+                Notebook.id == id,
+            ).one().action = ACTION_DELETE
+            self.session.commit()
+            return True
+        except NoResultFound:
+            raise DBusException('Notebook does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
@@ -251,3 +289,18 @@ class ProviderService(dbus.service.Object):
         if self.app.sync_thread.status != STATUS_SYNC:
             self.app.sync_thread.force_sync()
         return
+
+    @dbus.service.method(
+        "com.everpad.Provider", 
+        in_signature='i', out_signature='',
+    )
+    def set_sync_delay(self, delay):
+        self.app.settings.setValue('sync_delay', str(delay))
+        self.app.sync_thread.update_timer()
+
+    @dbus.service.method(
+        "com.everpad.Provider", 
+        in_signature='', out_signature='i',
+    )
+    def get_sync_delay(self):
+        return int(self.app.settings.value('sync_delay') or 0) or DEFAULT_SYNC_DELAY

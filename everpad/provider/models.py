@@ -87,7 +87,7 @@ class Note(Base):
     @place_dbus.setter
     def place_dbus(self, val):
         if val:
-            self.set_place(val)
+            self.set_place(val, self.session)
 
     def from_api(self, note,session):
         """Fill data from api"""

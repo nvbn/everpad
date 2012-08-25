@@ -3,18 +3,22 @@ sys.path.append('../..')
 from PySide.QtGui import (
     QMainWindow, QIcon, QPixmap,
     QLabel, QVBoxLayout, QFrame,
-    QMessageBox, QAction,
+    QMessageBox, QAction, QFileDialog,
+    QMenu,
 )
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider
-from everpad.basetypes import Note, Notebook, Resource
+from everpad.basetypes import Note, Notebook, Resource, NONE_ID
 from BeautifulSoup import BeautifulSoup
 from functools import partial
 import dbus
 import subprocess
 import webbrowser
+import magic
+import os
+import shutil
 
 
 class Editor(QMainWindow):
@@ -24,6 +28,7 @@ class Editor(QMainWindow):
         QMainWindow.__init__(self, *args, **kwargs)
         self.app = app
         self.closed = False
+        self.resource_labels = {}
         self.ui = Ui_Editor()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
@@ -106,6 +111,11 @@ class Editor(QMainWindow):
             self.ui.content.paste,
         )
         self.ui.toolBar.addSeparator()
+        self.ui.toolBar.addAction(
+            QIcon.fromTheme('add'), self.tr('Attache file'),
+            self.attach_file,
+        )
+        self.ui.toolBar.addSeparator()
         self.options = self.ui.toolBar.addAction(
             QIcon.fromTheme('gtk-properties'), 
             self.tr('Options'), self.show_options,
@@ -124,17 +134,8 @@ class Editor(QMainWindow):
             self.app.provider.get_note_resources(note.id),
         )
         if self.resources:
-            self.ui.resourceArea.show()
             for res in self.resources:
-                label = QLabel()
-                if 'image' in res.mime:
-                    pixmap = QPixmap(res.file_path).scaledToWidth(100)
-                    label.setPixmap(pixmap)
-                    label.setMask(pixmap.mask())
-                else:
-                    label.setText(res.file_name)
-                label.mouseReleaseEvent = partial(self.open_res, res.file_path)
-                self.ui.resourceArea.widget().layout().addWidget(label)
+                self._put_resource(res)
 
     def update_note(self):
         notebook_index = self.ui.notebook.currentIndex()
@@ -177,6 +178,11 @@ class Editor(QMainWindow):
     def save(self):
         self.update_note()
         self.app.provider.update_note(self.note.struct)
+        self.app.provider.update_note_resources(
+            self.note.struct, map(lambda res:
+                res.struct, self.resources,
+            ),
+        )
         self.app.send_notify(u'Note "%s" saved!' % self.note.title)
 
     @Slot()
@@ -212,14 +218,85 @@ class Editor(QMainWindow):
             self.options.isChecked(),
         )
 
-    def open_res(self, path, *args):  # event
-        subprocess.Popen(['xdg-open', path])
+    def open_res(self, res, event):
+        button = event.button()
+        if button == Qt.LeftButton:
+            subprocess.Popen(['xdg-open', res.file_path])
+        elif button == Qt.RightButton:
+            menu = QMenu(self)
+            menu.addAction(
+                self.tr('Remove Resource'), Slot()(partial(
+                    self.remove_res, res=res,
+                ))
+            )
+            menu.addAction(
+                self.tr('Save As'), Slot()(partial(
+                    self.save_res, res=res,
+                ))
+            )
+            menu.exec_(event.globalPos())
+
+    def remove_res(self, res):
+        msg_box = QMessageBox(
+            QMessageBox.Critical,
+            self.tr("You try to delete resource"),
+            self.tr("Are you sure want to delete this resource?"),
+            QMessageBox.Yes | QMessageBox.No
+        )
+        ret = msg_box.exec_()
+        if ret == QMessageBox.Yes:
+            self.resources.remove(res)
+            self.resource_labels[res].hide()
+            del self.resource_labels[res]
+            self.mark_touched()
+
+
+    def save_res(self, res):
+        name, filters = QFileDialog.getSaveFileName()
+        if name:
+            shutil.copyfile(res.file_path, name)
 
     @Slot()
     def mark_touched(self):
         self.touched = True
         self.ui.actionSave.setEnabled(True)
         self.save_btn.setEnabled(True)
+
+    def _put_resource(self, res):
+        label = QLabel()
+        if 'image' in res.mime:
+            pixmap = QPixmap(res.file_path).scaledToWidth(100)
+            label.setPixmap(pixmap)
+            label.setMask(pixmap.mask())
+        else:
+            label.setText(res.file_name)
+        label.mouseReleaseEvent = partial(self.open_res, res)
+        self.ui.resourceArea.widget().layout().addWidget(label)
+        self.ui.resourceArea.show()
+        self.resource_labels[res] = label
+
+    @Slot()
+    def attach_file(self):
+        mime = magic.open(magic.MIME_TYPE)
+        mime.load()
+        for name in QFileDialog.getOpenFileNames()[0]:
+            dest = os.path.expanduser('~/.everpad/data/%d/' % self.note.id)
+            try:
+                os.mkdir(dest)
+            except OSError:
+                pass
+            file_name = name.split('/')[-1]
+            file_path = os.path.join(dest, file_name)
+            shutil.copyfile(name, file_path)
+            res = Resource(
+                id=NONE_ID,
+                file_path=file_path,
+                file_name=file_name,
+                mime=mime.file(file_path.encode('utf8')),
+            )
+            self.resources.append(res)
+            self._put_resource(res)
+            self.mark_touched()
 
     def mark_untouched(self):
         self.touched = False

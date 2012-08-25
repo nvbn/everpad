@@ -199,6 +199,37 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider", 
+        in_signature='%sa%s' % (
+            btype.Note.signature,
+            btype.Resource.signature,
+        ), out_signature='b',
+    )
+    def update_note_resources(self, note, resources):
+        received_note = btype.Note.from_tuple(note)
+        try:
+            note = self.sq(Note).filter(
+                Note.id == received_note.id,
+            ).one()
+        except NoResultFound:
+            raise DBusException('Note not found')
+        self.sq(Resource).filter(
+            Resource.note_id == note.id,
+        ).delete()
+        for res_struct in resources:
+            res = Resource(
+                action=ACTION_CREATE,
+                note_id=note.id,
+            )
+            btype.Resource.from_tuple(res_struct).give_to_obj(res)
+            res.id = None
+            self.session.add(res)
+        if note.action != ACTION_CREATE:
+            note.action = ACTION_CHANGE
+        self.session.commit()
+        return btype.Note.from_obj(note).struct
+
+    @dbus.service.method(
+        "com.everpad.Provider", 
         in_signature='i', out_signature='b',
     )
     def delete_note(self, id):

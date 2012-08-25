@@ -14,7 +14,8 @@ Client support:
  - notes
  - tags
  - notebooks
- - read only resources (in git version)
+ - resources
+ - places
 
 Installation
 ============

@@ -1,7 +1,10 @@
 import sys
 sys.path.append('../..')
 from PySide.QtCore import QThread, Slot, QTimer, Signal, QWaitCondition, QMutex
-from evernote.edam.type.ttypes import Note, Notebook, Tag, NoteSortOrder
+from evernote.edam.type.ttypes import (
+    Note, Notebook, Tag, NoteSortOrder,
+    Resource, Data, ResourceAttributes,
+)
 from evernote.edam.notestore.ttypes import NoteFilter
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_
@@ -124,7 +127,7 @@ class SyncThread(QThread):
                         self.auth_token, notebook.guid,
                     )
                     self.session.delete(notebook)
-                except EDAMUserException:
+                except EDAMUserException, e:
                     print e
             notebook.action = ACTION_NONE
         self.session.commit()
@@ -173,6 +176,17 @@ class SyncThread(QThread):
                 kwargs['guid'] = note.guid
             nt = Note(**kwargs)
             if note.action == ACTION_CHANGE:
+                nt.resources = map(lambda res: Resource(
+                    noteGuid=note.guid,
+                    data=Data(body=open(res.file_path).read()),
+                    mime=res.mime,
+                    attributes=ResourceAttributes(
+                        fileName=res.file_name.encode('utf8'),
+                    ),
+                ), self.sq(models.Resource).filter(and_(
+                    models.Resource.note_id == note.id, 
+                    models.Resource.action != models.ACTION_DELETE,
+                )))
                 nt = self.note_store.updateNote(self.auth_token, nt)
             elif note.action == ACTION_CREATE:
                 nt = self.note_store.createNote(self.auth_token, nt)
@@ -201,6 +215,7 @@ class SyncThread(QThread):
                 nb = models.Notebook(guid=notebook.guid)
                 nb.from_api(notebook)
                 self.session.add(nb)
+                self.session.commit()
                 notebooks_ids.append(nb.id)
         if len(notebooks_ids):
             self.sq(models.Notebook).filter(
@@ -223,6 +238,7 @@ class SyncThread(QThread):
                 tg = models.Tag(guid=tag.guid)
                 tg.from_api(tag)
                 self.session.add(tg)
+                self.session.commit()
                 tags_ids.append(tg.id)
         if len(tags_ids):
             self.sq(models.Tag).filter(
@@ -257,6 +273,7 @@ class SyncThread(QThread):
                 nt = models.Note(guid=note.guid)
                 nt.from_api(note, self.session)
                 self.session.add(nt)
+                self.session.commit()
                 notes_ids.append(nt.id)
                 self.note_resources_remote(note, nt)
         if len(notes_ids):
@@ -282,6 +299,7 @@ class SyncThread(QThread):
                 )
                 rs.from_api(resource)
                 self.session.add(rs)
+                self.session.commit()
                 resources_ids.append(rs.id)
         if len(resources_ids):
             self.sq(models.Resource).filter(and_(

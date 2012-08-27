@@ -249,7 +249,8 @@ class Editor(QMainWindow):
             self.resource_labels[res].hide()
             del self.resource_labels[res]
             self.mark_touched()
-
+            if not self.resources:
+                self.ui.resourceArea.hide()
 
     def save_res(self, res):
         name, filters = QFileDialog.getSaveFileName()

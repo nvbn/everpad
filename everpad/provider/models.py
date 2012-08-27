@@ -182,7 +182,10 @@ class Resource(Base):
 
     def from_api(self, resource):
         """Fill data from api"""
-        self.file_name = resource.attributes.fileName.decode('utf8')
+        if resource.attributes.fileName:
+            self.file_name = resource.attributes.fileName.decode('utf8')
+        else:
+            self.file_name = resource.guid.decode('utf8')
         self.hash = b64encode(resource.data.bodyHash)
         self.action = ACTION_NONE
         self.mime = resource.mime.decode('utf8')

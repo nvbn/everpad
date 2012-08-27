@@ -246,13 +246,24 @@ class SyncThread(QThread):
             ).delete(synchronize_session='fetch')
         self.session.commit()
 
+    def _iter_all_notes(self):
+        """Iterate all notes"""
+        offset = 0
+        while True:
+            note_list = self.note_store.findNotes(self.auth_token, NoteFilter(
+                order=NoteSortOrder.UPDATED,
+                ascending=False,
+            ), offset, EDAM_USER_NOTES_MAX)
+            for note in note_list.notes:
+                yield note
+            offset = note_list.startIndex + len(note_list.notes)
+            if note_list.totalNotes - offset <= 0:
+                break
+
     def notes_remote(self):
         """Receive notes from server"""
         notes_ids = []
-        for note in self.note_store.findNotes(self.auth_token, NoteFilter(
-            order=NoteSortOrder.UPDATED,
-            ascending=False,
-        ), 0, EDAM_USER_NOTES_MAX).notes:  # TODO: think about more than 100000 notes
+        for note in self._iter_all_notes():
             try:
                 nt = self.sq(models.Note).filter(
                     models.Note.guid == note.guid,

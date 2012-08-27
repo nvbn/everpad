@@ -1,3 +1,11 @@
+everpad (1.5.1-0~oneiric) oneiric; urgency=low
+
+  * Fix notes with resource withou file name
+  * Sync more than 50 notes
+  * Fix missing deps
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 25 Aug 2012 19:11:00 +0400
+
 everpad (1.5.0-0~oneiric) oneiric; urgency=low
 
   * Modify resources

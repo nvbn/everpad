@@ -179,9 +179,9 @@ class Editor(QMainWindow):
         self.update_note()
         self.app.provider.update_note(self.note.struct)
         self.app.provider.update_note_resources(
-            self.note.struct, map(lambda res:
+            self.note.struct, dbus.Array(map(lambda res:
                 res.struct, self.resources,
-            ),
+            ), signature=Resource.signature),
         )
         self.app.send_notify(u'Note "%s" saved!' % self.note.title)
 

@@ -4,13 +4,13 @@ from PySide.QtGui import (
     QMainWindow, QIcon, QPixmap,
     QLabel, QVBoxLayout, QFrame,
     QMessageBox, QAction, QFileDialog,
-    QMenu,
+    QMenu, QCompleter, QStringListModel,
 )
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider
-from everpad.basetypes import Note, Notebook, Resource, NONE_ID
+from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
 from BeautifulSoup import BeautifulSoup
 from functools import partial
 import dbus
@@ -21,7 +21,7 @@ import os
 import shutil
 
 
-class Editor(QMainWindow):
+class Editor(QMainWindow):  # TODO: kill this god shit
     """Note editor"""
 
     def __init__(self, app, note, *args, **kwargs):
@@ -54,6 +54,16 @@ class Editor(QMainWindow):
         for notebook_struct in self.app.provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             self.ui.notebook.addItem(notebook.name, userData=notebook.id)
+        self.tags_list = map(lambda tag:
+            Tag.from_tuple(tag).name,
+            self.app.provider.list_tags(),
+        )
+        self.completer = QCompleter()
+        self.completer_model = QStringListModel()
+        self.completer.setModel(self.completer_model)
+        self.completer.activated.connect(self.update_completion)
+        self.update_completion()
+        self.ui.tags.setCompleter(self.completer)
         frame = QFrame()
         frame.setLayout(QVBoxLayout())
         frame.setFixedWidth(100)
@@ -61,6 +71,7 @@ class Editor(QMainWindow):
         self.ui.resourceArea.setWidget(frame)
         self.ui.resourceArea.hide()
         self.ui.tags.textChanged.connect(self.mark_touched)
+        self.ui.tags.textEdited.connect(self.update_completion)
         self.ui.notebook.currentIndexChanged.connect(self.mark_touched)
         self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.content.customContextMenuRequested.connect(self.context_menu)
@@ -320,3 +331,18 @@ class Editor(QMainWindow):
             menu.insertAction(menu.actions()[0], copy_action)
             menu.insertSeparator(menu.actions()[2])
         menu.exec_(self.ui.content.mapToGlobal(pos))
+
+    @Slot()
+    def update_completion(self):
+        orig_text = self.ui.tags.text()
+        text = ', '.join(orig_text.replace(', ', ',').split(',')[:-1])
+        tags = []
+        for tag in self.tags_list:
+            if ',' in orig_text:
+                if orig_text[-1] not in (',', ' '):
+                    tags.append('%s,%s' % (text, tag))
+                tags.append('%s, %s' % (text, tag))
+            else:
+                tags.append(tag)
+        if tags != self.completer_model.stringList():
+            self.completer_model.setStringList(tags)

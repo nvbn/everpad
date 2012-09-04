@@ -11,6 +11,7 @@ import dbus.mainloop.glib
 import signal
 import fcntl
 import os
+import getpass
 
 
 class ProviderApp(QCoreApplication):
@@ -57,7 +58,7 @@ class ProviderApp(QCoreApplication):
 
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    fp = open('/tmp/everpad-provider.lock', 'w')
+    fp = open('/tmp/everpad-provider-%s.lock' % getpass.getuser(), 'w')
     fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     try:

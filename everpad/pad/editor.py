@@ -137,7 +137,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.note = note
         notebook_index = self.ui.notebook.findData(note.notebook)
         self.ui.notebook.setCurrentIndex(notebook_index)
-        self.ui.content.setHtml("<h2>%s</h2><a href='#' />\n%s" % (
+        self.ui.content.setHtml("<h2>%s</h2><p></p>\n%s" % (
             note.title, note.content,
         ))
         self.ui.tags.setText(', '.join(note.tags))

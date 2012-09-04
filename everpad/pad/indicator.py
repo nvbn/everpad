@@ -16,6 +16,7 @@ import argparse
 import keyring
 import fcntl
 import os
+import getpass
 
 
 class Indicator(QSystemTrayIcon):
@@ -132,7 +133,7 @@ def main():
     parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
     args = parser.parse_args(sys.argv[1:])
-    fp = open('/tmp/everpad.lock', 'w')
+    fp = open('/tmp/everpad-%s.lock' % getpass.getuser(), 'w')
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
         app = PadApp(sys.argv)

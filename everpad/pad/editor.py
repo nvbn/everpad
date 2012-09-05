@@ -151,6 +151,31 @@ class TagEdit(object):
             self.completer_model.setStringList(tags)
 
 
+class NotebookEdit(object):
+    """Abstraction for notebook edit"""
+
+    def __init__(self, app, widget, on_change):
+        """Init and connect signals"""
+        self.app = app
+        self.widget = widget
+        for notebook_struct in self.app.provider.list_notebooks():
+            notebook = Notebook.from_tuple(notebook_struct)
+            self.widget.addItem(notebook.name, userData=notebook.id)
+        self.widget.currentIndexChanged.connect(Slot()(on_change))
+
+    @property
+    def notebook(self):
+        """Get notebook"""
+        notebook_index = self.widget.currentIndex()
+        return self.widget.itemData(notebook_index)
+
+    @notebook.setter
+    def notebook(self, val):
+        """Set notebook"""
+        notebook_index = self.widget.findData(val)
+        self.widget.setCurrentIndex(notebook_index)
+
+
 class Editor(QMainWindow):  # TODO: kill this god shit
     """Note editor"""
 
@@ -169,6 +194,9 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.tag_edit = TagEdit(
             self.app, self.ui.tags, self.mark_touched,
         )
+        self.notebook_edit = NotebookEdit(
+            self.app, self.ui.notebook, self.mark_touched,
+        )
         self.load_note(note)
         self.mark_untouched()
         geometry = self.app.settings.value("note-geometry-%d" % self.note.id)
@@ -183,34 +211,15 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.tags.hide()
         self.ui.notebook.hide()
         self.ui.menubar.hide()
-        # self.ui.content.textChanged.connect(self.text_changed)
         self.ui.resourceArea.hide()
         self.init_menu()
         self.init_toolbar()
-        for notebook_struct in self.app.provider.list_notebooks():
-            notebook = Notebook.from_tuple(notebook_struct)
-            self.ui.notebook.addItem(notebook.name, userData=notebook.id)
-        # self.tags_list = map(lambda tag:
-        #     Tag.from_tuple(tag).name,
-        #     self.app.provider.list_tags(),
-        # )
-        # self.completer = QCompleter()
-        # self.completer_model = QStringListModel()
-        # self.completer.setModel(self.completer_model)
-        # self.completer.activated.connect(self.update_completion)
-        # self.update_completion()
-        # self.ui.tags.setCompleter(self.completer)
         frame = QFrame()
         frame.setLayout(QVBoxLayout())
         frame.setFixedWidth(100)
         self.ui.resourceArea.setFixedWidth(100)
         self.ui.resourceArea.setWidget(frame)
         self.ui.resourceArea.hide()
-        # self.ui.tags.textChanged.connect(self.mark_touched)
-        # self.ui.tags.textEdited.connect(self.update_completion)
-        self.ui.notebook.currentIndexChanged.connect(self.mark_touched)
-        # self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
-        # self.ui.content.customContextMenuRequested.connect(self.context_menu)
 
     def init_menu(self):
         self.ui.actionSave.triggered.connect(self.save)
@@ -271,8 +280,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
 
     def load_note(self, note):
         self.note = note
-        notebook_index = self.ui.notebook.findData(note.notebook)
-        self.ui.notebook.setCurrentIndex(notebook_index)
+        self.notebook_edit.notebook = note.notebook
         self.note_edit.title = note.title
         self.note_edit.content = note.content
         self.tag_edit.tags = note.tags
@@ -284,8 +292,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
                 self._put_resource(res)
 
     def update_note(self):
-        notebook_index = self.ui.notebook.currentIndex()
-        self.note.notebook = self.ui.notebook.itemData(notebook_index)
+        self.note.notebook = self.notebook_edit.notebook
         self.note.title = self.note_edit.title
         self.note.content = self.note_edit.content
         self.note.tags = dbus.Array(self.tag_edit.tags, signature='s')

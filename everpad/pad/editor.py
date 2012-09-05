@@ -22,6 +22,87 @@ import os
 import shutil
 
 
+class NoteEdit(object):
+    """Note edit abstraction"""
+
+    def __init__(self, app, widget, on_text_change):
+        """Init and connect signals"""
+        self.app = app
+        self.widget = widget
+        self._on_text_change = on_text_change
+        self._title = None
+        self._content = None
+        self.default_font = self.widget.textCursor().charFormat().font()
+        self.widget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.widget.customContextMenuRequested.connect(self.context_menu)
+        self.widget.textChanged.connect(self.text_changed)
+
+    @property
+    def title(self):
+        """Cache title and return"""
+        self._title = self.widget.toPlainText().split('\n')[0]
+        return self._title
+
+    @title.setter
+    def title(self, val):
+        """Set title"""
+        self._title = val
+        self.apply()
+
+    @property
+    def content(self):
+        """Cache content and return"""
+        soup = BeautifulSoup(self.widget.toHtml())
+        self._content = reduce(
+            lambda txt, cur: txt + unicode(cur),
+            soup.find('body').contents[2:], 
+        u'')
+        return self._content
+
+    @content.setter
+    def content(self, val):
+        """Set content"""
+        self._content = val
+        self.apply()
+
+    def apply(self):
+        """Apply title and content when filled"""
+        if self._title and self._content:
+            self.widget.setHtml("<h2>%s</h2><p></p>\n%s" % (
+                self._title, self._content,
+            ))
+
+    @Slot(QPoint)
+    def context_menu(self, pos):
+        """Show custom context menu"""
+        menu = self.widget.createStandardContextMenu(pos)
+        cursor = self.widget.cursorForPosition(pos)
+        char_format = cursor.charFormat()
+        if char_format.isAnchor():
+            url = char_format.anchorHref()
+            open_action = QAction(self.tr("Open Link"), menu)
+            open_action.triggered.connect(Slot()(lambda: webbrowser.open(url)))
+            copy_action = QAction(self.tr("Copy Link"), menu)
+            copy_action.triggered.connect(Slot()(lambda: self.app.clipboard().setText(url)))
+            menu.insertAction(menu.actions()[0], open_action)
+            menu.insertAction(menu.actions()[0], copy_action)
+            menu.insertSeparator(menu.actions()[2])
+        menu.exec_(self.widget.mapToGlobal(pos))
+
+    @Slot()
+    def text_changed(self):
+        """On text change slot with head/non head"""
+        cursor = self.widget.textCursor()
+        line = cursor.blockNumber()
+        column = cursor.columnNumber()
+        if (line, column) == (1, 0):
+            format = QTextCharFormat()
+            format.setFont(self.default_font)
+            cursor.setCharFormat(format)
+            self.widget.setTextCursor(cursor)
+        self._on_text_change()
+
+
 class Editor(QMainWindow):  # TODO: kill this god shit
     """Note editor"""
 
@@ -34,7 +115,9 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
         self.init_controls()
-        self.default_font = self.ui.content.textCursor().charFormat().font()
+        self.note_edit = NoteEdit(
+            self.app, self.ui.content, self.text_changed,
+        )
         self.load_note(note)
         self.mark_untouched()
         geometry = self.app.settings.value("note-geometry-%d" % self.note.id)
@@ -49,7 +132,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.tags.hide()
         self.ui.notebook.hide()
         self.ui.menubar.hide()
-        self.ui.content.textChanged.connect(self.text_changed)
+        # self.ui.content.textChanged.connect(self.text_changed)
         self.ui.resourceArea.hide()
         self.init_menu()
         self.init_toolbar()
@@ -75,8 +158,8 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.tags.textChanged.connect(self.mark_touched)
         self.ui.tags.textEdited.connect(self.update_completion)
         self.ui.notebook.currentIndexChanged.connect(self.mark_touched)
-        self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.content.customContextMenuRequested.connect(self.context_menu)
+        # self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
+        # self.ui.content.customContextMenuRequested.connect(self.context_menu)
 
     def init_menu(self):
         self.ui.actionSave.triggered.connect(self.save)
@@ -139,9 +222,8 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.note = note
         notebook_index = self.ui.notebook.findData(note.notebook)
         self.ui.notebook.setCurrentIndex(notebook_index)
-        self.ui.content.setHtml("<h2>%s</h2><p></p>\n%s" % (
-            note.title, note.content,
-        ))
+        self.note_edit.title = note.title
+        self.note_edit.content = note.content
         self.ui.tags.setText(', '.join(note.tags))
         self.resources = map(Resource.from_tuple,
             self.app.provider.get_note_resources(note.id),
@@ -153,19 +235,12 @@ class Editor(QMainWindow):  # TODO: kill this god shit
     def update_note(self):
         notebook_index = self.ui.notebook.currentIndex()
         self.note.notebook = self.ui.notebook.itemData(notebook_index)
-        self.note.title = self.get_title()
-        soup = BeautifulSoup(self.ui.content.toHtml())
-        self.note.content = reduce(
-            lambda txt, cur: txt + unicode(cur),
-            soup.find('body').contents[2:], 
-        u'')
+        self.note.title = self.note_edit.title
+        self.note.content = self.note_edit.content
         self.note.tags = dbus.Array(map(
             lambda tag: tag.strip(),
             self.ui.tags.text().split(','),
         ), signature='s')
-
-    def get_title(self):
-        return self.ui.content.toPlainText().split('\n')[0]
 
     def closeEvent(self, event):
         event.ignore()
@@ -182,18 +257,9 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.ui.tags.hide()
             self.ui.notebook.hide()
 
-    @Slot()
     def text_changed(self):
-        self.setWindowTitle(u'Everpad / %s' % self.get_title())
+        self.setWindowTitle(u'Everpad / %s' % self.note_edit.title)
         self.mark_touched()
-        cursor = self.ui.content.textCursor()
-        line = cursor.blockNumber()
-        column = cursor.columnNumber()
-        if (line, column) == (1, 0):
-            format = QTextCharFormat()
-            format.setFont(self.default_font)
-            cursor.setCharFormat(format)
-            self.ui.content.setTextCursor(cursor)
 
     @Slot()
     def save(self):
@@ -326,21 +392,21 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.actionSave.setEnabled(False)
         self.save_btn.setEnabled(False)
 
-    @Slot(QPoint)
-    def context_menu(self, pos):
-        menu = self.ui.content.createStandardContextMenu(pos)
-        cursor = self.ui.content.cursorForPosition(pos)
-        char_format = cursor.charFormat()
-        if char_format.isAnchor():
-            url = char_format.anchorHref()
-            open_action = QAction(self.tr("Open Link"), menu)
-            open_action.triggered.connect(Slot()(lambda: webbrowser.open(url)))
-            copy_action = QAction(self.tr("Copy Link"), menu)
-            copy_action.triggered.connect(Slot()(lambda: self.app.clipboard().setText(url)))
-            menu.insertAction(menu.actions()[0], open_action)
-            menu.insertAction(menu.actions()[0], copy_action)
-            menu.insertSeparator(menu.actions()[2])
-        menu.exec_(self.ui.content.mapToGlobal(pos))
+    # @Slot(QPoint)
+    # def context_menu(self, pos):
+    #     menu = self.ui.content.createStandardContextMenu(pos)
+    #     cursor = self.ui.content.cursorForPosition(pos)
+    #     char_format = cursor.charFormat()
+    #     if char_format.isAnchor():
+    #         url = char_format.anchorHref()
+    #         open_action = QAction(self.tr("Open Link"), menu)
+    #         open_action.triggered.connect(Slot()(lambda: webbrowser.open(url)))
+    #         copy_action = QAction(self.tr("Copy Link"), menu)
+    #         copy_action.triggered.connect(Slot()(lambda: self.app.clipboard().setText(url)))
+    #         menu.insertAction(menu.actions()[0], open_action)
+    #         menu.insertAction(menu.actions()[0], copy_action)
+    #         menu.insertSeparator(menu.actions()[2])
+    #     menu.exec_(self.ui.content.mapToGlobal(pos))
 
     @Slot()
     def update_completion(self):

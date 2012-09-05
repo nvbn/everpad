@@ -25,8 +25,9 @@ import shutil
 class NoteEdit(object):
     """Note edit abstraction"""
 
-    def __init__(self, app, widget, on_change):
+    def __init__(self, parent, app, widget, on_change):
         """Init and connect signals"""
+        self.parent = parent
         self.app = app
         self.widget = widget
         self._on_change = on_change
@@ -80,9 +81,9 @@ class NoteEdit(object):
         char_format = cursor.charFormat()
         if char_format.isAnchor():
             url = char_format.anchorHref()
-            open_action = QAction(self.tr("Open Link"), menu)
+            open_action = QAction(self.parent.tr("Open Link"), menu)
             open_action.triggered.connect(Slot()(lambda: webbrowser.open(url)))
-            copy_action = QAction(self.tr("Copy Link"), menu)
+            copy_action = QAction(self.parent.tr("Copy Link"), menu)
             copy_action.triggered.connect(Slot()(lambda: self.app.clipboard().setText(url)))
             menu.insertAction(menu.actions()[0], open_action)
             menu.insertAction(menu.actions()[0], copy_action)
@@ -106,8 +107,9 @@ class NoteEdit(object):
 class TagEdit(object):
     """Abstraction for tag edit"""
 
-    def __init__(self, app, widget, on_change):
+    def __init__(self, parent, app, widget, on_change):
         """Init and connect signals"""
+        self.parent = parent
         self.app = app
         self.widget = widget
         self.tags_list = map(lambda tag:
@@ -154,8 +156,9 @@ class TagEdit(object):
 class NotebookEdit(object):
     """Abstraction for notebook edit"""
 
-    def __init__(self, app, widget, on_change):
+    def __init__(self, parent, app, widget, on_change):
         """Init and connect signals"""
+        self.parent = parent
         self.app = app
         self.widget = widget
         for notebook_struct in self.app.provider.list_notebooks():
@@ -176,6 +179,117 @@ class NotebookEdit(object):
         self.widget.setCurrentIndex(notebook_index)
 
 
+class ResourceEdit(object):
+    """Abstraction for notebook edit"""
+
+    def __init__(self, parent, app, widget, on_change):
+        """Init and connect signals"""
+        self.parent = parent
+        self.app = app
+        self.widget = widget
+        self.note = None
+        self.on_change = on_change
+        self._resource_labels = {}
+        self._resources = []
+        frame = QFrame()
+        frame.setLayout(QVBoxLayout())
+        frame.setFixedWidth(100)
+        self.widget.setFixedWidth(100)
+        self.widget.setWidget(frame)
+        self.widget.hide()
+
+    @property
+    def resources(self):
+        """Get resources"""
+        return self._resources
+
+    @resources.setter
+    def resources(self, val):
+        """Set resources"""
+        self._resources = val
+        for res in val:
+            self._put(res)
+
+    def _put(self, res):
+        """Put resource on widget"""
+        label = QLabel()
+        if 'image' in res.mime:
+            pixmap = QPixmap(res.file_path).scaledToWidth(100)
+            label.setPixmap(pixmap)
+            label.setMask(pixmap.mask())
+        else:
+            label.setText(res.file_name)
+        label.mouseReleaseEvent = partial(self.click, res)
+        self.widget.widget().layout().addWidget(label)
+        self.widget.show()
+        self._resource_labels[res] = label
+
+    def click(self, res, event):
+        """Open resource"""
+        button = event.button()
+        if button == Qt.LeftButton:
+            subprocess.Popen(['xdg-open', res.file_path])
+        elif button == Qt.RightButton:
+            menu = QMenu(self.parent)
+            menu.addAction(
+                self.parent.tr('Remove Resource'), Slot()(partial(
+                    self.remove, res=res,
+                ))
+            )
+            menu.addAction(
+                self.parent.tr('Save As'), Slot()(partial(
+                    self.save, res=res,
+                ))
+            )
+            menu.exec_(event.globalPos())
+
+    def remove(self, res):
+        """Remove resource"""
+        msg_box = QMessageBox(
+            QMessageBox.Critical,
+            self.parent.tr("You try to delete resource"),
+            self.parent.tr("Are you sure want to delete this resource?"),
+            QMessageBox.Yes | QMessageBox.No
+        )
+        ret = msg_box.exec_()
+        if ret == QMessageBox.Yes:
+            self._resources.remove(res)
+            self._resource_labels[res].hide()
+            del self._resource_labels[res]
+            self.on_change()
+            if not self._resources:
+                self.widget.hide()
+
+    def save(self, res):
+        """Save resource"""
+        name, filters = QFileDialog.getSaveFileName()
+        if name:
+            shutil.copyfile(res.file_path, name)
+
+    @Slot()
+    def add(self):
+        mime = magic.open(magic.MIME_TYPE)
+        mime.load()
+        for name in QFileDialog.getOpenFileNames()[0]:
+            dest = os.path.expanduser('~/.everpad/data/%d/' % self.note.id)
+            try:
+                os.mkdir(dest)
+            except OSError:
+                pass
+            file_name = name.split('/')[-1]
+            file_path = os.path.join(dest, file_name)
+            shutil.copyfile(name, file_path)
+            res = Resource(
+                id=NONE_ID,
+                file_path=file_path,
+                file_name=file_name,
+                mime=mime.file(file_path.encode('utf8')),
+            )
+            self._resources.append(res)
+            self._put(res)
+            self.on_change()
+
+
 class Editor(QMainWindow):  # TODO: kill this god shit
     """Note editor"""
 
@@ -183,20 +297,10 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         QMainWindow.__init__(self, *args, **kwargs)
         self.app = app
         self.closed = False
-        self.resource_labels = {}
         self.ui = Ui_Editor()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
         self.init_controls()
-        self.note_edit = NoteEdit(
-            self.app, self.ui.content, self.text_changed,
-        )
-        self.tag_edit = TagEdit(
-            self.app, self.ui.tags, self.mark_touched,
-        )
-        self.notebook_edit = NotebookEdit(
-            self.app, self.ui.notebook, self.mark_touched,
-        )
         self.load_note(note)
         self.mark_untouched()
         geometry = self.app.settings.value("note-geometry-%d" % self.note.id)
@@ -206,20 +310,31 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         if options:
             self.options.setChecked(True)
             self.show_options()
+        self.resource_edit.note = note
 
     def init_controls(self):
         self.ui.tags.hide()
         self.ui.notebook.hide()
         self.ui.menubar.hide()
         self.ui.resourceArea.hide()
+        self.note_edit = NoteEdit(
+            self, self.app, 
+            self.ui.content, self.text_changed,
+        )
+        self.tag_edit = TagEdit(
+            self, self.app, 
+            self.ui.tags, self.mark_touched,
+        )
+        self.notebook_edit = NotebookEdit(
+            self, self.app, 
+            self.ui.notebook, self.mark_touched,
+        )
+        self.resource_edit = ResourceEdit(
+            self, self.app, 
+            self.ui.resourceArea, self.mark_touched,
+        )
         self.init_menu()
         self.init_toolbar()
-        frame = QFrame()
-        frame.setLayout(QVBoxLayout())
-        frame.setFixedWidth(100)
-        self.ui.resourceArea.setFixedWidth(100)
-        self.ui.resourceArea.setWidget(frame)
-        self.ui.resourceArea.hide()
 
     def init_menu(self):
         self.ui.actionSave.triggered.connect(self.save)
@@ -269,7 +384,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.toolBar.addSeparator()
         self.ui.toolBar.addAction(
             QIcon.fromTheme('add'), self.tr('Attache file'),
-            self.attach_file,
+            self.resource_edit.add,
         )
         self.ui.toolBar.addSeparator()
         self.options = self.ui.toolBar.addAction(
@@ -284,12 +399,9 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.note_edit.title = note.title
         self.note_edit.content = note.content
         self.tag_edit.tags = note.tags
-        self.resources = map(Resource.from_tuple,
+        self.resource_edit.resources = map(Resource.from_tuple,
             self.app.provider.get_note_resources(note.id),
         )
-        if self.resources:
-            for res in self.resources:
-                self._put_resource(res)
 
     def update_note(self):
         self.note.notebook = self.notebook_edit.notebook
@@ -323,7 +435,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.app.provider.update_note(self.note.struct)
         self.app.provider.update_note_resources(
             self.note.struct, dbus.Array(map(lambda res:
-                res.struct, self.resources,
+                res.struct, self.resource_edit.resources,
             ), signature=Resource.signature),
         )
         self.app.send_notify(u'Note "%s" saved!' % self.note.title)
@@ -361,86 +473,11 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.options.isChecked(),
         )
 
-    def open_res(self, res, event):
-        button = event.button()
-        if button == Qt.LeftButton:
-            subprocess.Popen(['xdg-open', res.file_path])
-        elif button == Qt.RightButton:
-            menu = QMenu(self)
-            menu.addAction(
-                self.tr('Remove Resource'), Slot()(partial(
-                    self.remove_res, res=res,
-                ))
-            )
-            menu.addAction(
-                self.tr('Save As'), Slot()(partial(
-                    self.save_res, res=res,
-                ))
-            )
-            menu.exec_(event.globalPos())
-
-    def remove_res(self, res):
-        msg_box = QMessageBox(
-            QMessageBox.Critical,
-            self.tr("You try to delete resource"),
-            self.tr("Are you sure want to delete this resource?"),
-            QMessageBox.Yes | QMessageBox.No
-        )
-        ret = msg_box.exec_()
-        if ret == QMessageBox.Yes:
-            self.resources.remove(res)
-            self.resource_labels[res].hide()
-            del self.resource_labels[res]
-            self.mark_touched()
-            if not self.resources:
-                self.ui.resourceArea.hide()
-
-    def save_res(self, res):
-        name, filters = QFileDialog.getSaveFileName()
-        if name:
-            shutil.copyfile(res.file_path, name)
-
     @Slot()
     def mark_touched(self):
         self.touched = True
         self.ui.actionSave.setEnabled(True)
         self.save_btn.setEnabled(True)
-
-    def _put_resource(self, res):
-        label = QLabel()
-        if 'image' in res.mime:
-            pixmap = QPixmap(res.file_path).scaledToWidth(100)
-            label.setPixmap(pixmap)
-            label.setMask(pixmap.mask())
-        else:
-            label.setText(res.file_name)
-        label.mouseReleaseEvent = partial(self.open_res, res)
-        self.ui.resourceArea.widget().layout().addWidget(label)
-        self.ui.resourceArea.show()
-        self.resource_labels[res] = label
-
-    @Slot()
-    def attach_file(self):
-        mime = magic.open(magic.MIME_TYPE)
-        mime.load()
-        for name in QFileDialog.getOpenFileNames()[0]:
-            dest = os.path.expanduser('~/.everpad/data/%d/' % self.note.id)
-            try:
-                os.mkdir(dest)
-            except OSError:
-                pass
-            file_name = name.split('/')[-1]
-            file_path = os.path.join(dest, file_name)
-            shutil.copyfile(name, file_path)
-            res = Resource(
-                id=NONE_ID,
-                file_path=file_path,
-                file_name=file_name,
-                mime=mime.file(file_path.encode('utf8')),
-            )
-            self.resources.append(res)
-            self._put_resource(res)
-            self.mark_touched()
 
     def mark_untouched(self):
         self.touched = False

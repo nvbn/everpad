@@ -5,7 +5,7 @@ from everpad.provider.models import (
     ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
 )
 from everpad.provider.tools import get_db_session
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
 from PySide.QtCore import Signal, QObject, Qt
@@ -174,6 +174,10 @@ class ProviderService(dbus.service.Object):
         )
         btype.Note.from_tuple(data).give_to_obj(note)
         note.id = None
+        try:
+            note.updated = self.sq(func.max(Note.created)).one()[0]
+        except (NoResultFound, IndexError):
+            note.updated = 0
         self.session.add(note)
         self.session.commit()
         return btype.Note.from_obj(note).struct

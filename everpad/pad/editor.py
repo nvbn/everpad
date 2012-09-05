@@ -25,11 +25,11 @@ import shutil
 class NoteEdit(object):
     """Note edit abstraction"""
 
-    def __init__(self, app, widget, on_text_change):
+    def __init__(self, app, widget, on_change):
         """Init and connect signals"""
         self.app = app
         self.widget = widget
-        self._on_text_change = on_text_change
+        self._on_change = on_change
         self._title = None
         self._content = None
         self.default_font = self.widget.textCursor().charFormat().font()
@@ -100,7 +100,55 @@ class NoteEdit(object):
             format.setFont(self.default_font)
             cursor.setCharFormat(format)
             self.widget.setTextCursor(cursor)
-        self._on_text_change()
+        self._on_change()
+
+
+class TagEdit(object):
+    """Abstraction for tag edit"""
+
+    def __init__(self, app, widget, on_change):
+        """Init and connect signals"""
+        self.app = app
+        self.widget = widget
+        self.tags_list = map(lambda tag:
+            Tag.from_tuple(tag).name,
+            self.app.provider.list_tags(),
+        )
+        self.completer = QCompleter()
+        self.completer_model = QStringListModel()
+        self.completer.setModel(self.completer_model)
+        self.completer.activated.connect(self.update_completion)
+        self.update_completion()
+        self.widget.setCompleter(self.completer)
+        self.widget.textChanged.connect(Slot()(on_change))
+        self.widget.textEdited.connect(self.update_completion)
+
+    @property
+    def tags(self):
+        """Get tags"""
+        return map(lambda tag: tag.strip(),
+            self.widget.text().split(','))
+
+    @tags.setter
+    def tags(self, val):
+        """Set tags"""
+        self.widget.setText(', '.join(val))
+
+    @Slot()
+    def update_completion(self):
+        """Update completion model with exist tags"""
+        orig_text = self.widget.text()
+        text = ', '.join(orig_text.replace(', ', ',').split(',')[:-1])
+        tags = []
+        for tag in self.tags_list:
+            if ',' in orig_text:
+                if orig_text[-1] not in (',', ' '):
+                    tags.append('%s,%s' % (text, tag))
+                tags.append('%s, %s' % (text, tag))
+            else:
+                tags.append(tag)
+        if tags != self.completer_model.stringList():
+            self.completer_model.setStringList(tags)
 
 
 class Editor(QMainWindow):  # TODO: kill this god shit
@@ -117,6 +165,9 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.init_controls()
         self.note_edit = NoteEdit(
             self.app, self.ui.content, self.text_changed,
+        )
+        self.tag_edit = TagEdit(
+            self.app, self.ui.tags, self.mark_touched,
         )
         self.load_note(note)
         self.mark_untouched()
@@ -139,24 +190,24 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         for notebook_struct in self.app.provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             self.ui.notebook.addItem(notebook.name, userData=notebook.id)
-        self.tags_list = map(lambda tag:
-            Tag.from_tuple(tag).name,
-            self.app.provider.list_tags(),
-        )
-        self.completer = QCompleter()
-        self.completer_model = QStringListModel()
-        self.completer.setModel(self.completer_model)
-        self.completer.activated.connect(self.update_completion)
-        self.update_completion()
-        self.ui.tags.setCompleter(self.completer)
+        # self.tags_list = map(lambda tag:
+        #     Tag.from_tuple(tag).name,
+        #     self.app.provider.list_tags(),
+        # )
+        # self.completer = QCompleter()
+        # self.completer_model = QStringListModel()
+        # self.completer.setModel(self.completer_model)
+        # self.completer.activated.connect(self.update_completion)
+        # self.update_completion()
+        # self.ui.tags.setCompleter(self.completer)
         frame = QFrame()
         frame.setLayout(QVBoxLayout())
         frame.setFixedWidth(100)
         self.ui.resourceArea.setFixedWidth(100)
         self.ui.resourceArea.setWidget(frame)
         self.ui.resourceArea.hide()
-        self.ui.tags.textChanged.connect(self.mark_touched)
-        self.ui.tags.textEdited.connect(self.update_completion)
+        # self.ui.tags.textChanged.connect(self.mark_touched)
+        # self.ui.tags.textEdited.connect(self.update_completion)
         self.ui.notebook.currentIndexChanged.connect(self.mark_touched)
         # self.ui.content.setContextMenuPolicy(Qt.CustomContextMenu)
         # self.ui.content.customContextMenuRequested.connect(self.context_menu)
@@ -224,7 +275,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.notebook.setCurrentIndex(notebook_index)
         self.note_edit.title = note.title
         self.note_edit.content = note.content
-        self.ui.tags.setText(', '.join(note.tags))
+        self.tag_edit.tags = note.tags
         self.resources = map(Resource.from_tuple,
             self.app.provider.get_note_resources(note.id),
         )
@@ -237,10 +288,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.note.notebook = self.ui.notebook.itemData(notebook_index)
         self.note.title = self.note_edit.title
         self.note.content = self.note_edit.content
-        self.note.tags = dbus.Array(map(
-            lambda tag: tag.strip(),
-            self.ui.tags.text().split(','),
-        ), signature='s')
+        self.note.tags = dbus.Array(self.tag_edit.tags, signature='s')
 
     def closeEvent(self, event):
         event.ignore()
@@ -391,34 +439,3 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.touched = False
         self.ui.actionSave.setEnabled(False)
         self.save_btn.setEnabled(False)
-
-    # @Slot(QPoint)
-    # def context_menu(self, pos):
-    #     menu = self.ui.content.createStandardContextMenu(pos)
-    #     cursor = self.ui.content.cursorForPosition(pos)
-    #     char_format = cursor.charFormat()
-    #     if char_format.isAnchor():
-    #         url = char_format.anchorHref()
-    #         open_action = QAction(self.tr("Open Link"), menu)
-    #         open_action.triggered.connect(Slot()(lambda: webbrowser.open(url)))
-    #         copy_action = QAction(self.tr("Copy Link"), menu)
-    #         copy_action.triggered.connect(Slot()(lambda: self.app.clipboard().setText(url)))
-    #         menu.insertAction(menu.actions()[0], open_action)
-    #         menu.insertAction(menu.actions()[0], copy_action)
-    #         menu.insertSeparator(menu.actions()[2])
-    #     menu.exec_(self.ui.content.mapToGlobal(pos))
-
-    @Slot()
-    def update_completion(self):
-        orig_text = self.ui.tags.text()
-        text = ', '.join(orig_text.replace(', ', ',').split(',')[:-1])
-        tags = []
-        for tag in self.tags_list:
-            if ',' in orig_text:
-                if orig_text[-1] not in (',', ' '):
-                    tags.append('%s,%s' % (text, tag))
-                tags.append('%s, %s' % (text, tag))
-            else:
-                tags.append(tag)
-        if tags != self.completer_model.stringList():
-            self.completer_model.setStringList(tags)

@@ -5,6 +5,7 @@ from PySide.QtGui import (
     QLabel, QVBoxLayout, QFrame,
     QMessageBox, QAction, QFileDialog,
     QMenu, QCompleter, QStringListModel,
+    QTextCharFormat,
 )
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.editor import Ui_Editor
@@ -33,6 +34,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
         self.init_controls()
+        self.default_font = self.ui.content.textCursor().charFormat().font()
         self.load_note(note)
         self.mark_untouched()
         geometry = self.app.settings.value("note-geometry-%d" % self.note.id)
@@ -184,6 +186,14 @@ class Editor(QMainWindow):  # TODO: kill this god shit
     def text_changed(self):
         self.setWindowTitle(u'Everpad / %s' % self.get_title())
         self.mark_touched()
+        cursor = self.ui.content.textCursor()
+        line = cursor.blockNumber()
+        column = cursor.columnNumber()
+        if (line, column) == (1, 0):
+            format = QTextCharFormat()
+            format.setFont(self.default_font)
+            cursor.setCharFormat(format)
+            self.ui.content.setTextCursor(cursor)
 
     @Slot()
     def save(self):

@@ -36,3 +36,8 @@ msgstr "Блокноты"
 #: lens.py:47
 msgid "Places"
 msgstr "Места"
+
+#: lens.py:54
+msgid "Notes"
+msgstr "Заметки"
+

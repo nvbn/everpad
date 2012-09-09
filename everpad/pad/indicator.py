@@ -100,8 +100,8 @@ class PadApp(QApplication):
         QApplication.__init__(self, *args, **kwargs)
         self.settings = QSettings('everpad', 'everpad-pad')
         self.translator = QTranslator()
-        if not self.translator.load('i18n/%s' % QLocale.system().name()):
-            self.translator.load('/usr/share/everpad/lang/%s' % QLocale.system().name())
+        if not self.translator.load('../../i18n/%s' % QLocale.system().name()):
+            self.translator.load('/usr/share/everpad/i18n/%s' % QLocale.system().name())
         self.installTranslator(self.translator)
         self.icon = QIcon.fromTheme('everpad-mono', QIcon('../../everpad-mono.png'))
         self.indicator = Indicator(self, self.icon)

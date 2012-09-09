@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2012-09-09 19:47+MSK\n"
+"POT-Creation-Date: 2012-09-10 03:39+MSK\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,23 +15,27 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: lens.py:29
+#: lens.py:30
 msgid "Everpad Lens"
 msgstr ""
 
-#: lens.py:30
+#: lens.py:31
 msgid "Search Everpad"
 msgstr ""
 
-#: lens.py:39
+#: lens.py:40
 msgid "Tags"
 msgstr ""
 
-#: lens.py:43
+#: lens.py:44
 msgid "Notebooks"
 msgstr ""
 
-#: lens.py:47
+#: lens.py:48
 msgid "Places"
+msgstr ""
+
+#: lens.py:54
+msgid "Notes"
 msgstr ""
 

@@ -37,11 +37,11 @@ class Management(QDialog):
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
         for delay in (5, 10, 15, 30):
-            self.ui.syncDelayBox.addItem('%d minutes' % delay,
+            self.ui.syncDelayBox.addItem(self.tr('%d minutes') % delay,
                 userData=str(delay * 60 * 1000),
             )
-        self.ui.syncDelayBox.addItem('One hour', userData='3600000')
-        self.ui.syncDelayBox.addItem('Manual', userData='-1')
+        self.ui.syncDelayBox.addItem(self.tr('One hour'), userData='3600000')
+        self.ui.syncDelayBox.addItem(self.tr('Manual'), userData='-1')
         active_index = self.ui.syncDelayBox.findData(str(
             self.app.provider.get_sync_delay(),
         ))
@@ -56,11 +56,11 @@ class Management(QDialog):
     @Slot()
     def update_tabs(self):
         if get_auth_token():
-            self.ui.authBtn.setText('Remove Authorisation')
+            self.ui.authBtn.setText(self.tr('Remove Authorisation'))
             self.ui.notebookTab.setEnabled(True)
             self.init_notebooks()
         else:
-            self.ui.authBtn.setText('Authorise')
+            self.ui.authBtn.setText(self.tr('Authorise'))
             self.ui.notebookTab.setEnabled(False)
         self.ui.autoStart.setCheckState(Qt.Checked
             if os.path.isfile(self.startup_file)

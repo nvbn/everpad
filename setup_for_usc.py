@@ -57,5 +57,7 @@ setup(name='everpad',
             'bin/everpad', 'bin/everpad-lens',
             'bin/everpad-provider', 'bin/everpad-web-auth',
         ])
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/ru_RU.qm']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/ru/LC_MESSAGES', ['i18n/ru/LC_MESSAGES/everpad.mo']),
     ] + get_files(),
 )

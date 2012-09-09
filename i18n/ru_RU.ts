@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="ru_RU" sourcelanguage="ru">
+<TS version="2.0" language="ru_RU">
 <context>
     <name>Dialog</name>
     <message>
@@ -231,6 +231,31 @@
         <location filename="everpad/pad/management.py" line="197"/>
         <source>Notebook with this name already exist. Enter notebook name</source>
         <translation>Блокнот с таким именем уже существует. Введите новое название</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/management.py" line="40"/>
+        <source>%d minutes</source>
+        <translation>%d минут</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/management.py" line="43"/>
+        <source>One hour</source>
+        <translation>Час</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/management.py" line="44"/>
+        <source>Manual</source>
+        <translation>Вручную</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/management.py" line="59"/>
+        <source>Remove Authorisation</source>
+        <translation>Выйти</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/management.py" line="63"/>
+        <source>Authorise</source>
+        <translation>Авторизовать</translation>
     </message>
 </context>
 <context>

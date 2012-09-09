@@ -8,14 +8,15 @@ from everpad.basetypes import Note, Tag, Notebook, Place
 from BeautifulSoup import BeautifulSoup
 import dbus
 import sys
+import os
 import gettext
 
 
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'i18n')
 if not os.path.isdir(path):
     path = '/usr/share/locale/'
-gettext.bindtextdomain('everpad-lens', path)
-gettext.textdomain('everpad-lens')
+gettext.bindtextdomain('everpad', path)
+gettext.textdomain('everpad')
 _ = gettext.gettext
 
 
@@ -50,7 +51,7 @@ class EverpadLens(SingleScopeLens):
             places.add_option(str(place.id), place.name, icon)
         self._lens.props.filters = [notebooks, tags, places]
 
-    category = ListViewCategory("Notes", 'everpad-lens')
+    category = ListViewCategory(_("Notes"), 'everpad-lens')
 
     def search(self, search, results):
         if self.notebook_filter_id:

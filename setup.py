@@ -42,6 +42,8 @@ setup(name='everpad',
             'data/everpad-lens.png', 'data/everpad-note.png',
         ]),
         ('/usr/share/applications', ['data/everpad.desktop']),
+        ('/usr/share/everpad/i18n/', ['i18n/ru_RU.qm']),
+        ('share/locale/ru/LC_MESSAGES', ['i18n/ru/LC_MESSAGES/everpad.mo']),
         ('/usr/share/unity/lenses/everpad', ['data/everpad.lens']),
         ('/usr/share/dbus-1/services', [
             'data/unity-lens-everpad.service',

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Sun Aug 19 19:11:31 2012
+# Created: Sun Sep  9 19:04:03 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -30,10 +30,17 @@ class Ui_Dialog(object):
         self.gridLayout.addWidget(self.authBtn, 0, 1, 1, 1)
         self.label_2 = QtGui.QLabel(self.tab)
         self.label_2.setObjectName("label_2")
-        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_2, 2, 0, 1, 1)
         self.syncDelayBox = QtGui.QComboBox(self.tab)
         self.syncDelayBox.setObjectName("syncDelayBox")
-        self.gridLayout.addWidget(self.syncDelayBox, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.syncDelayBox, 2, 1, 1, 1)
+        self.label_3 = QtGui.QLabel(self.tab)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout.addWidget(self.label_3, 3, 0, 1, 1)
+        self.autoStart = QtGui.QCheckBox(self.tab)
+        self.autoStart.setText("")
+        self.autoStart.setObjectName("autoStart")
+        self.gridLayout.addWidget(self.autoStart, 3, 1, 1, 1)
         self.tabWidget.addTab(self.tab, "")
         self.notebookTab = QtGui.QWidget()
         self.notebookTab.setEnabled(False)
@@ -45,7 +52,7 @@ class Ui_Dialog(object):
         self.scrollArea.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 408, 256))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 333, 191))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout_2.addWidget(self.scrollArea)
@@ -71,6 +78,7 @@ class Ui_Dialog(object):
         self.label.setText(QtGui.QApplication.translate("Dialog", "Authorisation", None, QtGui.QApplication.UnicodeUTF8))
         self.authBtn.setText(QtGui.QApplication.translate("Dialog", "Authorise", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Sync delay", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("Dialog", "Start with system", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.createNotebook.setText(QtGui.QApplication.translate("Dialog", "Create Notebook", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.notebookTab), QtGui.QApplication.translate("Dialog", "Manage Notebooks", None, QtGui.QApplication.UnicodeUTF8))

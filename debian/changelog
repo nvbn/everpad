@@ -1,3 +1,11 @@
+everpad (1.6-0~oneiric) oneiric; urgency=low
+
+  * Tags completion
+  * Support multi user
+  * Bug fix
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 9 Sep 2012 18:36:00 +0400
+
 everpad (1.5.1-0~oneiric) oneiric; urgency=low
 
   * Fix notes with resource withou file name

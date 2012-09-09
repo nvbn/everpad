@@ -21,6 +21,7 @@ import subprocess
 import webbrowser
 import oauth2 as oauth
 import os
+import shutil
 
 
 class Management(QDialog):
@@ -30,6 +31,8 @@ class Management(QDialog):
         QDialog.__init__(self, *args, **kwargs)
         self.app = app
         self.closed = False
+        self.startup_path = os.path.expanduser('~/.config/autostart/')
+        self.startup_file = os.path.join(self.startup_path, 'everpad.desktop')
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
@@ -47,6 +50,7 @@ class Management(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.update_tabs)
         self.ui.createNotebook.clicked.connect(self.create_notebook)
         self.ui.authBtn.clicked.connect(self.change_auth)
+        self.ui.autoStart.stateChanged.connect(self.auto_start_state)
         self.update_tabs()
 
     @Slot()
@@ -58,6 +62,23 @@ class Management(QDialog):
         else:
             self.ui.authBtn.setText('Authorise')
             self.ui.notebookTab.setEnabled(False)
+        self.ui.autoStart.setCheckState(Qt.Checked
+            if os.path.isfile(self.startup_file)
+        else Qt.Unchecked)
+
+    @Slot()
+    def auto_start_state(self):
+        if self.ui.autoStart.checkState() == Qt.Unchecked:
+            try:
+                os.unlink(self.startup_file)
+            except OSError:
+                pass
+        else:
+            print self.startup_file
+            shutil.copyfile(
+                '/usr/share/applications/everpad.desktop',
+                self.startup_file,
+            )
 
     @Slot(int)
     def delay_changed(self, index):

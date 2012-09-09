@@ -8,6 +8,17 @@ from everpad.basetypes import Note, Tag, Notebook, Place
 from BeautifulSoup import BeautifulSoup
 import dbus
 import sys
+import gettext
+
+
+path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'i18n')
+if not os.path.isdir(path):
+    path = '/usr/share/locale/'
+gettext.bindtextdomain('everpad-lens', path)
+gettext.textdomain('everpad-lens')
+_ = gettext.gettext
+
+
 provider = get_provider()
 
 
@@ -15,8 +26,8 @@ class EverpadLens(SingleScopeLens):
 
     class Meta:
         name = 'everpad'
-        description = 'Everpad Lens'
-        search_hint = 'Search Everpad'
+        description = _('Everpad Lens')
+        search_hint = _('Search Everpad')
         icon = 'everpad-lens'
         search_on_blank = True
         bus_name = 'net.launchpad.Unity.Lens.EverpadLens'
@@ -25,15 +36,15 @@ class EverpadLens(SingleScopeLens):
     def __init__(self):
         SingleScopeLens.__init__(self)
         icon = Gio.ThemedIcon.new("/usr/share/icons/unity-icon-theme/places/svg/group-recent.svg")
-        tags = Unity.CheckOptionFilter.new('tags', 'Tags', icon, True)
+        tags = Unity.CheckOptionFilter.new('tags', _('Tags'), icon, True)
         for tag_struct in provider.list_tags():
             tag = Tag.from_tuple(tag_struct)
             tags.add_option(str(tag.id), tag.name, icon)
-        notebooks = Unity.RadioOptionFilter.new('notebooks', 'Notebooks', icon, True)
+        notebooks = Unity.RadioOptionFilter.new('notebooks', _('Notebooks'), icon, True)
         for notebook_struct in provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             notebooks.add_option(str(notebook.id), notebook.name, icon)
-        places = Unity.RadioOptionFilter.new('places', 'Places', icon, True)
+        places = Unity.RadioOptionFilter.new('places', _('Places'), icon, True)
         for place_struct in provider.list_places():
             place = Place.from_tuple(place_struct)
             places.add_option(str(place.id), place.name, icon)

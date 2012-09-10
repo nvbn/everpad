@@ -58,14 +58,16 @@ class Indicator(QSystemTrayIcon):
     def open(self, note):
         old_note_window = self.opened_notes.get(note.id, None)
         if old_note_window and not getattr(old_note_window, 'closed', True):
-            self.opened_notes[note.id].activateWindow()
+            editor = self.opened_notes[note.id]
+            editor.activateWindow()
         else:
             editor = Editor(self.app, note)
             editor.show()
             self.opened_notes[note.id] = editor
+        return editor
 
     @Slot()
-    def create(self):
+    def create(self, attach=None):
         note_struct = Note(  # maybe replace NONE's to somthing better
             id=NONE_ID,
             title=self.tr('New note'),
@@ -79,11 +81,12 @@ class Indicator(QSystemTrayIcon):
         note = Note.from_tuple(
             self.app.provider.create_note(note_struct),
         )
-        self.open(note)
+        editor = self.open(note)
+        if attach:
+            editor.resource_edit.add_attach(attach)
 
     @Slot()
     def show_management(self):
-        print 'yeeee'
         if not self.management or getattr(self.management, 'closed', True):
             self.management = Management(self.app)
             self.management.show()
@@ -126,12 +129,23 @@ class EverpadService(dbus.service.Object):
     def create(self):
         self.app.indicator.create()
 
+    @dbus.service.method("com.everpad.App", in_signature='s', out_signature='')
+    def create_wit_attach(self, name):
+        self.app.indicator.create(name)
+
+    @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
+    def settings(self):
+        self.app.indicator.show_management()
+
 
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     parser = argparse.ArgumentParser()
+    parser.add_argument('attach', type=str, nargs='?', help='attach file to new note')
     parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
+    parser.add_argument('--settings', action='store_true', help='settings and management')
+
     args = parser.parse_args(sys.argv[1:])
     fp = open('/tmp/everpad-%s.lock' % getpass.getuser(), 'w')
     try:
@@ -143,9 +157,13 @@ def main():
         bus = dbus.service.BusName("com.everpad.App", session_bus)
         service = EverpadService(app, session_bus, '/EverpadService')
         if args.open:
-            app.open(args.open)
+            app.indicator.open(args.open)
         if args.create:
-            app.create()
+            app.indicator.create()
+        if args.settings:
+            app.indicator.show_management()
+        if args.attach:
+            app.indicator.create(args.attach)
         app.exec_()
     except IOError:
         pad = get_pad()
@@ -153,6 +171,10 @@ def main():
             pad.open(args.open)
         if args.create:
             pad.create()
+        if args.settings:
+            pad.settings()
+        if args.attach:
+            pad.create_wit_attach(args.attach)
         sys.exit(0)
 
 if __name__ == '__main__':

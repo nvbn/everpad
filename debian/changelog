@@ -1,3 +1,9 @@
+everpad (1.7-0~oneiric) oneiric; urgency=low
+
+  * Drag-n-drop attach
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 11 Sep 2012 01:12:00 +0400
+
 everpad (1.6-0~oneiric) oneiric; urgency=low
 
   * Tags completion

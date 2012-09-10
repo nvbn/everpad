@@ -197,6 +197,8 @@ class ResourceEdit(object):
         self.widget.setFixedWidth(100)
         self.widget.setWidget(frame)
         self.widget.hide()
+        self.mime = magic.open(magic.MIME_TYPE)
+        self.mime.load()
 
     @property
     def resources(self):
@@ -268,26 +270,28 @@ class ResourceEdit(object):
 
     @Slot()
     def add(self):
-        mime = magic.open(magic.MIME_TYPE)
-        mime.load()
         for name in QFileDialog.getOpenFileNames()[0]:
-            dest = os.path.expanduser('~/.everpad/data/%d/' % self.note.id)
-            try:
-                os.mkdir(dest)
-            except OSError:
-                pass
-            file_name = name.split('/')[-1]
-            file_path = os.path.join(dest, file_name)
-            shutil.copyfile(name, file_path)
-            res = Resource(
-                id=NONE_ID,
-                file_path=file_path,
-                file_name=file_name,
-                mime=mime.file(file_path.encode('utf8')),
-            )
-            self._resources.append(res)
-            self._put(res)
-            self.on_change()
+            self.add_attach(name)
+
+
+    def add_attach(self, name):
+        dest = os.path.expanduser('~/.everpad/data/%d/' % self.note.id)
+        try:
+            os.mkdir(dest)
+        except OSError:
+            pass
+        file_name = name.split('/')[-1]
+        file_path = os.path.join(dest, file_name)
+        shutil.copyfile(name, file_path)
+        res = Resource(
+            id=NONE_ID,
+            file_path=file_path,
+            file_name=file_name,
+            mime=self.mime.file(file_path.encode('utf8')),
+        )
+        self._resources.append(res)
+        self._put(res)
+        self.on_change()
 
 
 class Editor(QMainWindow):  # TODO: kill this god shit

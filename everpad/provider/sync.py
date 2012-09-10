@@ -21,7 +21,13 @@ from everpad.provider.tools import (
 )
 from everpad.tools import get_auth_token
 from everpad.provider import models
-from everpad.const import STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY
+from everpad.const import (
+    STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY,
+    SYNC_STATE_START, SYNC_STATE_NOTEBOOKS_LOCAL,
+    SYNC_STATE_TAGS_LOCAL, SYNC_STATE_NOTES_LOCAL, 
+    SYNC_STATE_NOTEBOOKS_REMOTE, SYNC_STATE_TAGS_REMOTE, 
+    SYNC_STATE_NOTES_REMOTE, SYNC_STATE_FINISH,
+)
 from base64 import b64encode, b64decode
 from datetime import datetime
 import time
@@ -29,8 +35,10 @@ SYNC_MANUAL = -1
 
 
 class SyncThread(QThread):
-    force_sync_signal = Signal()
     """Sync notes with evernote thread"""
+    force_sync_signal = Signal()
+    sync_state_changed = Signal(int)
+
     def __init__(self, app, *args, **kwargs):
         QThread.__init__(self, *args, **kwargs)
         self.app = app
@@ -73,25 +81,32 @@ class SyncThread(QThread):
         """Perform all sync"""
         self.status = STATUS_SYNC
         self.last_sync = datetime.now()
+        self.sync_state_changed.emit(SYNC_STATE_START)
         try:
             self.local_changes()
             self.remote_changes()
         except Exception, e:  # maybe log this
-            print e
             self.session.rollback()
         finally:
+            self.sync_state_changed.emit(SYNC_STATE_FINISH)
             self.status = STATUS_NONE
 
     def local_changes(self):
         """Send local changes to evernote server"""
+        self.sync_state_changed.emit(SYNC_STATE_NOTEBOOKS_LOCAL)
         self.notebooks_local()
+        self.sync_state_changed.emit(SYNC_STATE_TAGS_LOCAL)
         self.tags_local()
+        self.sync_state_changed.emit(SYNC_STATE_NOTES_LOCAL)
         self.notes_local()
 
     def remote_changes(self):
         """Receive remote changes from evernote"""
+        self.sync_state_changed.emit(SYNC_STATE_NOTEBOOKS_REMOTE)
         self.notebooks_remote()
+        self.sync_state_changed.emit(SYNC_STATE_TAGS_REMOTE)
         self.tags_remote()
+        self.sync_state_changed.emit(SYNC_STATE_NOTES_REMOTE)
         self.notes_remote()
 
     def notebooks_local(self):

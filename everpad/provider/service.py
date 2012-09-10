@@ -339,3 +339,9 @@ class ProviderService(dbus.service.Object):
     )
     def get_sync_delay(self):
         return int(self.app.settings.value('sync_delay') or 0) or DEFAULT_SYNC_DELAY
+
+    @dbus.service.signal(
+        'com.everpad.provider', signature='i',
+    )
+    def sync_state_changed(self, state):
+        return

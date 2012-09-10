@@ -6,7 +6,7 @@ from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad, get_auth_token
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
-from everpad.const import STATUS_SYNC
+from everpad.const import STATUS_SYNC, SYNC_STATES, SYNC_STATE_START, SYNC_STATE_FINISH
 from functools import partial
 import signal
 import dbus
@@ -114,6 +114,12 @@ class PadApp(QApplication):
         self.indicator.showMessage('Everpad', text,
             QSystemTrayIcon.Information)
 
+    def on_sync_state_changed(self, state):
+        self.launcher.update({
+            'progress': float(state + 1) / len(SYNC_STATES),
+            'progress-visible': state not in (SYNC_STATE_START, SYNC_STATE_FINISH),
+        })
+
 
 class EverpadService(dbus.service.Object):
     def __init__(self, app, *args, **kwargs):
@@ -138,6 +144,31 @@ class EverpadService(dbus.service.Object):
         self.app.indicator.show_management()
 
 
+class UnityLauncher(dbus.service.Object):
+    def __init__(self, app_uri, *args, **kwargs):
+        self.app_uri = app_uri
+        self.data = {}
+        dbus.service.Object.__init__(self, *args, **kwargs)
+
+    def update(self, data):
+        self.data = data
+        self.Update(self.app_uri, data)
+
+    @dbus.service.signal(
+        dbus_interface='com.canonical.Unity.LauncherEntry',
+        signature=("sa{sv}")
+    )
+    def Update(self, app_uri, properties):
+        return
+
+    @dbus.service.method(
+        dbus_interface='com.canonical.Unity.LauncherEntry',
+        in_signature="", out_signature="sa{sv}",
+    )
+    def Query(self):
+        return self.app_uri, self.data
+
+
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     parser = argparse.ArgumentParser()
@@ -145,7 +176,6 @@ def main():
     parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
     parser.add_argument('--settings', action='store_true', help='settings and management')
-
     args = parser.parse_args(sys.argv[1:])
     fp = open('/tmp/everpad-%s.lock' % getpass.getuser(), 'w')
     try:
@@ -154,6 +184,12 @@ def main():
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         session_bus = dbus.SessionBus()
         app.provider = get_provider(session_bus) 
+        app.launcher = UnityLauncher('application://everpad.desktop', session_bus, '/')
+        app.provider.connect_to_signal(
+            'sync_state_changed',
+            app.on_sync_state_changed, 
+            dbus_interface="com.everpad.provider",
+        )
         bus = dbus.service.BusName("com.everpad.App", session_bus)
         service = EverpadService(app, session_bus, '/EverpadService')
         if args.open:

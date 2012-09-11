@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Thu Aug 16 18:35:16 2012
+# Created: Tue Sep 11 17:43:45 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -19,9 +19,10 @@ class Ui_Editor(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.content = QtGui.QTextEdit(self.centralwidget)
-        self.content.setObjectName("content")
-        self.horizontalLayout.addWidget(self.content)
+        self.contentView = QtWebKit.QWebView(self.centralwidget)
+        self.contentView.setUrl(QtCore.QUrl("about:blank"))
+        self.contentView.setObjectName("contentView")
+        self.horizontalLayout.addWidget(self.contentView)
         self.resourceArea = QtGui.QScrollArea(self.centralwidget)
         self.resourceArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.resourceArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -98,3 +99,4 @@ class Ui_Editor(object):
         self.actionCopy.setText(QtGui.QApplication.translate("Editor", "Copy", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPaste.setText(QtGui.QApplication.translate("Editor", "Paste", None, QtGui.QApplication.UnicodeUTF8))
 
+from PySide import QtWebKit

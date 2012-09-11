@@ -71,7 +71,7 @@ class Indicator(QSystemTrayIcon):
         note_struct = Note(  # maybe replace NONE's to somthing better
             id=NONE_ID,
             title=self.tr('New note'),
-            content=self.tr("<p>New note content</p>"),
+            content=self.tr("New note content"),
             tags=dbus.Array([], signature='i'),
             notebook=NONE_ID,
             created=NONE_VAL,

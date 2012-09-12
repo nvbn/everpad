@@ -15,7 +15,6 @@ from everpad.tools import get_provider
 from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
 from BeautifulSoup import BeautifulSoup
 from functools import partial
-from base64 import b64encode, b64decode
 import dbus
 import subprocess
 import webbrowser
@@ -445,6 +444,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.setWindowIcon(get_icon())
         self.init_controls()
         self.load_note(note)
+        self.update_title()
         self.mark_untouched()
         geometry = self.app.settings.value("note-geometry-%d" % self.note.id)
         if geometry:
@@ -554,8 +554,11 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.ui.notebook.hide()
 
     def text_changed(self):
-        self.setWindowTitle(u'Everpad / %s' % self.note_edit.title)
+        self.update_title()
         self.mark_touched()
+
+    def update_title(self):
+        self.setWindowTitle(u'Everpad / %s' % self.note_edit.title)
 
     @Slot()
     def save(self):

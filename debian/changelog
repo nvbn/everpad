@@ -1,3 +1,12 @@
+everpad (1.8-0~oneiric) oneiric; urgency=low
+
+  * New webkit based editor
+  * Readonly support of en-media and en-todo
+  * Support of new python-keyring
+  * Base text formating
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Wed, 13 Sep 2012 00:01:01 +0400
+
 everpad (1.7-0~oneiric) oneiric; urgency=low
 
   * Drag-n-drop attach via unity launcher

@@ -34,6 +34,7 @@ class ContentEdit(QObject):
         'p', 'pre', 'q', 's', 'samp', 'small', 'span', 'strike',
         'strong', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot',
         'th', 'thead', 'title', 'tr', 'tt', 'u', 'ul', 'var', 'xmp',
+        'en-media', 'en-todo', 'en-crypt',
     )
     _disallowed_attrs = (
         'id', 'class', 'onclick', 'ondblclick',
@@ -109,6 +110,7 @@ class ContentEdit(QObject):
             res = self.parent.resource_edit.get_by_hash(media['hash'])  # shit!
             if res:
                 media['src'] = 'file://%s' % res.file_path
+                res.in_content = True
             else:
                 media['src'] = ''
         self._content = unicode(soup)
@@ -317,6 +319,7 @@ class ResourceEdit(object):
         self.widget.show()
         self._resource_labels[res] = label
         self._res_hash[res.hash] = res
+        res.in_content = False
 
     def get_by_hash(self, hash):
         return self._res_hash.get(hash)
@@ -328,11 +331,12 @@ class ResourceEdit(object):
             subprocess.Popen(['xdg-open', res.file_path])
         elif button == Qt.RightButton:
             menu = QMenu(self.parent)
-            menu.addAction(
-                self.parent.tr('Remove Resource'), Slot()(partial(
-                    self.remove, res=res,
-                ))
-            )
+            if not res.in_content:
+                menu.addAction(
+                    self.parent.tr('Remove Resource'), Slot()(partial(
+                        self.remove, res=res,
+                    ))
+                )
             menu.addAction(
                 self.parent.tr('Save As'), Slot()(partial(
                     self.save, res=res,

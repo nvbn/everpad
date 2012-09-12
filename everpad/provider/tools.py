@@ -10,7 +10,6 @@ from sqlalchemy.orm import sessionmaker
 from everpad.provider.models import Base
 from everpad.const import HOST
 import os
-import keyring
 
 
 ACTION_NONE = 0
@@ -20,6 +19,7 @@ ACTION_CHANGE = 3
 
 
 def set_auth_token(token):
+    import keyring
     keyring.set_password('everpad', 'oauth_token', token)
 
 

@@ -13,7 +13,6 @@ import dbus
 import dbus.service
 import dbus.mainloop.glib
 import argparse
-import keyring
 import fcntl
 import os
 import getpass

@@ -1,5 +1,4 @@
 import dbus
-import keyring
 
 
 def get_provider(bus=None):
@@ -17,4 +16,5 @@ def get_pad(bus=None):
 
 
 def get_auth_token():
+    import keyring
     return keyring.get_password('everpad', 'oauth_token')

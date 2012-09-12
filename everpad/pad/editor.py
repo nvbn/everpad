@@ -15,6 +15,7 @@ from everpad.tools import get_provider
 from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
 from BeautifulSoup import BeautifulSoup
 from functools import partial
+from base64 import b64encode, b64decode
 import dbus
 import subprocess
 import webbrowser
@@ -22,20 +23,37 @@ import magic
 import os
 import shutil
 
-html = """
-<!DOCTYPE html>
-<html>
-<body>
-<form>
-<h2 contenteditable="true" id='title'>%(title)s</h2>
-<div contenteditable="true" id='content'>%(content)s</div>
-</form>
-</body>
-</html>
-"""
-
 
 class ContentEdit(QObject):
+    _allowed_tags = (
+        'a', 'abbr', 'acronym', 'address', 'area', 'b', 'bdo',
+        'big', 'blockquote', 'br', 'caption', 'center', 'cite',
+        'code', 'col', 'colgroup', 'dd', 'del', 'dfn', 'div',
+        'dl', 'dt', 'em', 'font', 'h1', 'h2', 'h3', 'h4', 'h5',
+        'h6', 'hr', 'i', 'img', 'ins', 'kbd', 'li', 'map', 'ol',
+        'p', 'pre', 'q', 's', 'samp', 'small', 'span', 'strike',
+        'strong', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot',
+        'th', 'thead', 'title', 'tr', 'tt', 'u', 'ul', 'var', 'xmp',
+    )
+    _disallowed_attrs = (
+        'id', 'class', 'onclick', 'ondblclick',
+        'accesskey', 'data', 'dynsrc', 'tabindex',
+    )
+    _protocols = (
+        'http', 'https', 'file',
+    )
+    _html = """
+        <!DOCTYPE html>
+        <html>
+        <body>
+        <form>
+        <h2 contenteditable="true" id='title'>%(title)s</h2>
+        <div contenteditable="true" id='content'>%(content)s</div>
+        </form>
+        </body>
+        </html>
+    """
+
     copy_available = Signal(bool)
     def __init__(self, parent, app, widget, on_change):
         QObject.__init__(self)
@@ -69,9 +87,12 @@ class ContentEdit(QObject):
         for todo in soup.findAll('input', {'type': 'checkbox'}):
             todo.name = 'en-todo'
             del todo['type']
+        for media in soup.findAll('img'):
+            media.name = 'en-media'
+            del media['src']
         self._content = reduce(
              lambda txt, cur: txt + unicode(cur),
-             soup.find(id='content').contents, 
+             self._sanitize(soup.find(id='content')).contents, 
         u'')
         return self._content
 
@@ -83,13 +104,39 @@ class ContentEdit(QObject):
             todo.name = 'input'
             todo['type'] = 'checkbox'
             self.changed_by_default = True
+        for media in soup.findAll('en-media'):
+            media.name = 'img'
+            res = self.parent.resource_edit.get_by_hash(media['hash'])  # shit!
+            if res:
+                media['src'] = 'file://%s' % res.file_path
+            else:
+                media['src'] = ''
         self._content = unicode(soup)
         self.apply()
+
+    def _sanitize(self, soup):  # TODO: optimize it
+        for tag in soup.findAll(True):
+            if tag.name in self._allowed_tags:
+                for attr in self._disallowed_attrs:
+                    try:
+                        del tag[attr]
+                    except KeyError:
+                        pass
+                try:
+                    if not sum(map(
+                        lambda proto: tag['href'].find(proto + '://') == 0, 
+                    self._protocols)):
+                        del tag['href']
+                except KeyError:
+                    pass
+            else:
+                tag.hidden = True
+        return soup
 
     def apply(self):
         """Apply title and content when filled"""
         if self._title and self._content:
-            self.widget.setHtml(html % {
+            self.widget.setHtml(self._html % {
                 'title': self._title, 
                 'content': self._content,
             })
@@ -234,6 +281,7 @@ class ResourceEdit(object):
         self.on_change = on_change
         self._resource_labels = {}
         self._resources = []
+        self._res_hash = {}
         frame = QFrame()
         frame.setLayout(QVBoxLayout())
         frame.setFixedWidth(100)
@@ -268,6 +316,10 @@ class ResourceEdit(object):
         self.widget.widget().layout().addWidget(label)
         self.widget.show()
         self._resource_labels[res] = label
+        self._res_hash[res.hash] = res
+
+    def get_by_hash(self, hash):
+        return self._res_hash.get(hash)
 
     def click(self, res, event):
         """Open resource"""
@@ -442,13 +494,13 @@ class Editor(QMainWindow):  # TODO: kill this god shit
 
     def load_note(self, note):
         self.note = note
+        self.resource_edit.resources = map(Resource.from_tuple,
+            self.app.provider.get_note_resources(note.id),
+        )
         self.notebook_edit.notebook = note.notebook
         self.note_edit.title = note.title
         self.note_edit.content = note.content
         self.tag_edit.tags = note.tags
-        self.resource_edit.resources = map(Resource.from_tuple,
-            self.app.provider.get_note_resources(note.id),
-        )
 
     def update_note(self):
         self.note.notebook = self.notebook_edit.notebook

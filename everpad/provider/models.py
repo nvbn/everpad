@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 from BeautifulSoup import BeautifulSoup
-from base64 import b64decode, b64encode
+import binascii
 import os
 import urllib
 import json
@@ -186,7 +186,7 @@ class Resource(Base):
             self.file_name = resource.attributes.fileName.decode('utf8')
         else:
             self.file_name = resource.guid.decode('utf8')
-        self.hash = b64encode(resource.data.bodyHash)
+        self.hash = binascii.b2a_hex(resource.data.bodyHash)
         self.action = ACTION_NONE
         self.mime = resource.mime.decode('utf8')
         path = os.path.expanduser('~/.everpad/data/%s/' % self.note_id)

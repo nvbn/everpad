@@ -105,6 +105,7 @@ class Resource(DbusSendable):
         ('file_name', 's'),
         ('file_path', 's'),
         ('mime', 's'),
+        ('hash', 's'),
     )
 
 

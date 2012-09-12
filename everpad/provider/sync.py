@@ -28,8 +28,8 @@ from everpad.const import (
     SYNC_STATE_NOTEBOOKS_REMOTE, SYNC_STATE_TAGS_REMOTE, 
     SYNC_STATE_NOTES_REMOTE, SYNC_STATE_FINISH,
 )
-from base64 import b64encode, b64decode
 from datetime import datetime
+import binascii
 import time
 SYNC_MANUAL = -1
 
@@ -316,7 +316,7 @@ class SyncThread(QThread):
                     models.Resource.guid == resource.guid,
                 ).one()
                 resources_ids.append(rs.id)
-                if b64decode(rs.hash) != resource.data.bodyHash:
+                if rs.hash != binascii.b2a_hex(resource.data.bodyHash):
                     rs.from_api(resource)
             except NoResultFound:
                 rs = models.Resource(

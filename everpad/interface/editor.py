@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Tue Sep 11 17:43:45 2012
+# Created: Wed Sep 12 21:19:53 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_Editor(object):
     def setupUi(self, Editor):
         Editor.setObjectName("Editor")
-        Editor.resize(351, 333)
+        Editor.resize(565, 381)
         self.centralwidget = QtGui.QWidget(Editor)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
@@ -29,7 +29,7 @@ class Ui_Editor(object):
         self.resourceArea.setWidgetResizable(True)
         self.resourceArea.setObjectName("resourceArea")
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 76, 238))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 76, 286))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.resourceArea.setWidget(self.scrollAreaWidgetContents)
         self.horizontalLayout.addWidget(self.resourceArea)
@@ -45,7 +45,7 @@ class Ui_Editor(object):
         self.verticalLayout.addLayout(self.options)
         Editor.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(Editor)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 351, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 565, 25))
         self.menubar.setObjectName("menubar")
         self.menuFIle = QtGui.QMenu(self.menubar)
         self.menuFIle.setObjectName("menuFIle")

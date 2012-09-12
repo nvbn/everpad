@@ -24,6 +24,15 @@ import os
 import shutil
 
 
+class Page(QWebPage):
+    def __init__(self):
+        QWebPage.__init__(self)
+        self.current = None
+
+    def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
+        self.current = message
+
+
 class ContentEdit(QObject):
     _allowed_tags = (
         'a', 'abbr', 'acronym', 'address', 'area', 'b', 'bdo',
@@ -46,10 +55,11 @@ class ContentEdit(QObject):
     _html = """
         <!DOCTYPE html>
         <html>
+        <script>console.log('123123');</script>
         <body>
         <form>
-        <h2 contenteditable="true" id='title'>%(title)s</h2>
-        <div contenteditable="true" id='content'>%(content)s</div>
+        <h2 onfocus='console.log("head")' contenteditable="true" id='title'>%(title)s</h2>
+        <div onfocus='console.log("body")' contenteditable="true" id='content'>%(content)s</div>
         </form>
         </body>
         </html>
@@ -61,6 +71,7 @@ class ContentEdit(QObject):
         self.parent = parent
         self.app = app
         self.widget = widget
+        self.page = Page()
         self._on_change = on_change
         self._title = None
         self._content = None
@@ -71,7 +82,7 @@ class ContentEdit(QObject):
     @property
     def title(self):
         """Cache title and return"""
-        soup = BeautifulSoup(self.widget.page().mainFrame().toHtml())
+        soup = BeautifulSoup(self.page.mainFrame().toHtml())
         self._title = soup.find(id='title').text
         return self._title
 
@@ -84,7 +95,7 @@ class ContentEdit(QObject):
     @property
     def content(self):
         """Cache content and return"""
-        soup = BeautifulSoup(self.widget.page().mainFrame().toHtml())
+        soup = BeautifulSoup(self.page.mainFrame().toHtml())
         for todo in soup.findAll('input', {'type': 'checkbox'}):
             todo.name = 'en-todo'
             del todo['type']
@@ -138,36 +149,38 @@ class ContentEdit(QObject):
     def apply(self):
         """Apply title and content when filled"""
         if self._title and self._content:
-            self.widget.setHtml(self._html % {
+            self.page.mainFrame().setHtml(self._html % {
                 'title': self._title, 
                 'content': self._content,
             })
-            page = self.widget.page()
-            page.selectionChanged.connect(self.selection_changed)
-            page.setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
-            page.linkClicked.connect(self.link_clicked)
-            page.linkHovered.connect(self.link_hovered)
-            page.contentsChanged.connect(self.page_changed)
+            self.widget.setPage(self.page)
+            self.page.selectionChanged.connect(self.selection_changed)
+            self.page.setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+            self.page.linkClicked.connect(self.link_clicked)
+            self.page.linkHovered.connect(self.link_hovered)
+            self.page.contentsChanged.connect(self.page_changed)
 
     @Slot()
     def selection_changed(self):
-        self.copy_available.emit(len(self.widget.page().selectedText()) > 0)
+        self.copy_available.emit(
+            len(self.page.selectedText()) > 0 and self.page.current == 'body'
+        )
 
     @Slot()
     def copy(self):
-        self.widget.page().action(QWebPage.Copy).trigger()
+        self.page.action(QWebPage.Copy).trigger()
 
     @Slot()
     def cut(self):
-        self.widget.page().action(QWebPage.Cut).trigger()
+        self.page.action(QWebPage.Cut).trigger()
 
     @Slot()
     def paste(self):
-        self.widget.page().action(QWebPage.Paste).trigger()
+        self.page.action(QWebPage.Paste).trigger()
 
     @Slot()
     def select_all(self):
-        self.widget.page().action(QWebPage.SelectAll).trigger()
+        self.page.action(QWebPage.SelectAll).trigger()
 
     @Slot(QUrl)
     def link_clicked(self, url):
@@ -176,15 +189,15 @@ class ContentEdit(QObject):
     @Slot(QPoint)
     def context_menu(self, pos):
         """Show custom context menu"""
-        menu = self.widget.page().createStandardContextMenu()
+        menu = self.page.createStandardContextMenu()
         menu.clear()
-        menu.addAction(self.widget.page().action(QWebPage.Cut))
-        menu.addAction(self.widget.page().action(QWebPage.Copy))
-        menu.addAction(self.widget.page().action(QWebPage.Paste))
+        menu.addAction(self.page.action(QWebPage.Cut))
+        menu.addAction(self.page.action(QWebPage.Copy))
+        menu.addAction(self.page.action(QWebPage.Paste))
         if self._hovered_url:
-            menu.addAction(self.widget.page().action(QWebPage.CopyLinkToClipboard))
+            menu.addAction(self.page.action(QWebPage.CopyLinkToClipboard))
         menu.addSeparator()
-        menu.addAction(self.widget.page().action(QWebPage.SelectAll))
+        menu.addAction(self.page.action(QWebPage.SelectAll))
         menu.exec_(self.widget.mapToGlobal(pos))
 
     @Slot(unicode, unicode, unicode)
@@ -194,6 +207,23 @@ class ContentEdit(QObject):
     @Slot()
     def page_changed(self):
         self._on_change()
+
+    def _action_with_icon(self, action_type, icon_name):
+        action = self.page.action(action_type)
+        action.setIcon(QIcon.fromTheme(icon_name))
+        self.copy_available.connect(action.setEnabled)
+        return action
+
+    def get_format_actions(self):
+        return map(lambda action: self._action_with_icon(*action), (
+            (QWebPage.ToggleBold, 'format-text-bold'),
+            (QWebPage.ToggleItalic, 'format-text-italic'),
+            (QWebPage.ToggleUnderline, 'format-text-underline'),
+            (QWebPage.AlignCenter, 'format-justify-center'),
+            (QWebPage.AlignJustified, 'format-justify-fill'),
+            (QWebPage.AlignLeft, 'format-justify-left'),
+            (QWebPage.AlignRight, 'format-justify-right'),
+        ))
 
 
 class TagEdit(object):
@@ -468,22 +498,24 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.delete,
         )
         self.ui.toolBar.addSeparator()
-        cut = self.ui.toolBar.addAction(
-            QIcon.fromTheme('edit-cut'), self.tr('Cut'),
-            self.note_edit.cut,
-        )
-        self.note_edit.copy_available.connect(cut.setEnabled)
-        cut.setEnabled(False)
-        copy = self.ui.toolBar.addAction(
-            QIcon.fromTheme('edit-copy'), self.tr('Copy'),
-            self.note_edit.copy,
-        )
-        self.note_edit.copy_available.connect(copy.setEnabled)
-        copy.setEnabled(False)
-        self.ui.toolBar.addAction(
-            QIcon.fromTheme('edit-paste'), self.tr('Paste'),
-            self.note_edit.paste,
-        )
+        for action in self.note_edit.get_format_actions():
+            self.ui.toolBar.addAction(action)
+        # cut = self.ui.toolBar.addAction(
+        #     QIcon.fromTheme('edit-cut'), self.tr('Cut'),
+        #     self.note_edit.cut,
+        # )
+        # self.note_edit.copy_available.connect(cut.setEnabled)
+        # cut.setEnabled(False)
+        # copy = self.ui.toolBar.addAction(
+        #     QIcon.fromTheme('edit-copy'), self.tr('Copy'),
+        #     self.note_edit.copy,
+        # )
+        # self.note_edit.copy_available.connect(copy.setEnabled)
+        # copy.setEnabled(False)
+        # self.ui.toolBar.addAction(
+        #     QIcon.fromTheme('edit-paste'), self.tr('Paste'),
+        #     self.note_edit.paste,
+        # )
         self.ui.toolBar.addSeparator()
         self.ui.toolBar.addAction(
             QIcon.fromTheme('add'), self.tr('Attache file'),

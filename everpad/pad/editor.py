@@ -25,12 +25,16 @@ import shutil
 
 
 class Page(QWebPage):
-    def __init__(self):
+    def __init__(self, edit):
         QWebPage.__init__(self)
         self.current = None
+        self.edit = edit
 
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
-        self.current = message
+        if message in ('head', 'body'):
+            self.current = message
+        if message == 'change':
+            self.edit.page_changed()  # shit!
 
 
 class ContentEdit(QObject):
@@ -55,7 +59,6 @@ class ContentEdit(QObject):
     _html = """
         <!DOCTYPE html>
         <html>
-        <script>console.log('123123');</script>
         <body>
         <form>
         <h2 onfocus='console.log("head")' contenteditable="true" id='title'>%(title)s</h2>
@@ -71,7 +74,7 @@ class ContentEdit(QObject):
         self.parent = parent
         self.app = app
         self.widget = widget
-        self.page = Page()
+        self.page = Page(self)
         self._on_change = on_change
         self._title = None
         self._content = None
@@ -98,7 +101,10 @@ class ContentEdit(QObject):
         soup = BeautifulSoup(self.page.mainFrame().toHtml())
         for todo in soup.findAll('input', {'type': 'checkbox'}):
             todo.name = 'en-todo'
+            if todo.get('checked') == 'false':
+                del todo['checked']
             del todo['type']
+            del todo['onchange']
         for media in soup.findAll('img'):
             media.name = 'en-media'
             del media['src']
@@ -115,6 +121,10 @@ class ContentEdit(QObject):
         for todo in soup.findAll('en-todo'):
             todo.name = 'input'
             todo['type'] = 'checkbox'
+            todo['onchange'] = """(function(_this){
+                console.log("change");
+                _this.setAttribute("checked", _this.checked);
+            })(this)"""  # shit but works =)
             self.changed_by_default = True
         for media in soup.findAll('en-media'):
             media.name = 'img'
@@ -500,22 +510,6 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.toolBar.addSeparator()
         for action in self.note_edit.get_format_actions():
             self.ui.toolBar.addAction(action)
-        # cut = self.ui.toolBar.addAction(
-        #     QIcon.fromTheme('edit-cut'), self.tr('Cut'),
-        #     self.note_edit.cut,
-        # )
-        # self.note_edit.copy_available.connect(cut.setEnabled)
-        # cut.setEnabled(False)
-        # copy = self.ui.toolBar.addAction(
-        #     QIcon.fromTheme('edit-copy'), self.tr('Copy'),
-        #     self.note_edit.copy,
-        # )
-        # self.note_edit.copy_available.connect(copy.setEnabled)
-        # copy.setEnabled(False)
-        # self.ui.toolBar.addAction(
-        #     QIcon.fromTheme('edit-paste'), self.tr('Paste'),
-        #     self.note_edit.paste,
-        # )
         self.ui.toolBar.addSeparator()
         self.ui.toolBar.addAction(
             QIcon.fromTheme('add'), self.tr('Attache file'),

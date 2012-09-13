@@ -357,7 +357,8 @@ class ResourceEdit(object):
         self.widget.widget().layout().addWidget(label)
         self.widget.show()
         self._resource_labels[res] = label
-        self._res_hash[res.hash] = res
+        if hasattr(res, 'hash'):
+            self._res_hash[res.hash] = res
         res.in_content = False
 
     def get_by_hash(self, hash):

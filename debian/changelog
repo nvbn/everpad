@@ -1,3 +1,9 @@
+everpad (1.8.1-0~oneiric) oneiric; urgency=low
+
+  * Fix adding resources
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Wed, 14 Sep 2012 01:56:01 +0400
+
 everpad (1.8-0~oneiric) oneiric; urgency=low
 
   * New webkit based editor

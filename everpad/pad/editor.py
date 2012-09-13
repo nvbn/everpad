@@ -21,6 +21,7 @@ import webbrowser
 import magic
 import os
 import shutil
+import hashlib
 
 
 class Page(QWebPage):
@@ -357,8 +358,7 @@ class ResourceEdit(object):
         self.widget.widget().layout().addWidget(label)
         self.widget.show()
         self._resource_labels[res] = label
-        if hasattr(res, 'hash'):
-            self._res_hash[res.hash] = res
+        self._res_hash[res.hash] = res
         res.in_content = False
 
     def get_by_hash(self, hash):
@@ -427,6 +427,7 @@ class ResourceEdit(object):
             file_path=file_path,
             file_name=file_name,
             mime=self.mime.file(file_path.encode('utf8')),
+            hash=hashlib.md5(open(file_name).read()).hexdigest(),
         )
         self._resources.append(res)
         self._put(res)

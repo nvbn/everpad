@@ -204,9 +204,11 @@ class ContentEdit(QObject):
         menu.addAction(self.page.action(QWebPage.Cut))
         menu.addAction(self.page.action(QWebPage.Copy))
         menu.addAction(self.page.action(QWebPage.Paste))
+        menu.addAction(self.page.action(QWebPage.PasteAndMatchStyle))
         if self._hovered_url:
             menu.addAction(self.page.action(QWebPage.CopyLinkToClipboard))
         menu.addSeparator()
+        menu.addAction(self.page.action(QWebPage.RemoveFormat))
         menu.addAction(self.page.action(QWebPage.SelectAll))
         menu.exec_(self.widget.mapToGlobal(pos))
 

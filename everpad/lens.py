@@ -31,6 +31,7 @@ class EverpadLens(SingleScopeLens):
         search_hint = _('Search Everpad')
         icon = 'everpad-lens'
         search_on_blank = True
+        search_in_global = True
         bus_name = 'net.launchpad.Unity.Lens.EverpadLens'
         bus_path = '/net/launchpad/unity/lens/everpad'
 
@@ -50,6 +51,7 @@ class EverpadLens(SingleScopeLens):
             place = Place.from_tuple(place_struct)
             places.add_option(str(place.id), place.name, icon)
         self._lens.props.filters = [notebooks, tags, places]
+        self._lens.props.search_in_global = True
 
     category = ListViewCategory(_("Notes"), 'everpad-lens')
 

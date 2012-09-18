@@ -21,11 +21,11 @@ Installation
 ============
 For ubuntu user `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
 
-``add-apt-repository ppa:nvbn-rm/ppa``
+``sudo add-apt-repository ppa:nvbn-rm/ppa``
 
-``apt-get update``
+``sudo apt-get update``
 
-``apt-get install everpad`` 
+``sudo apt-get install everpad`` 
 
 Developers can clone this repository and install via ``setup.py``
 

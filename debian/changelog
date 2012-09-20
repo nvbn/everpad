@@ -1,3 +1,12 @@
+everpad (1.9-0~oneiric) oneiric; urgency=low
+
+  * Provider now work in offline
+  * Hotkeys in editor
+  * Lens now search in globals
+  * Bug fixes
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Wed, 14 Sep 2012 01:56:01 +0400
+
 everpad (1.8.2-0~oneiric) oneiric; urgency=low
 
   * Fix adding resources

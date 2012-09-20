@@ -31,6 +31,7 @@ from everpad.const import (
 from datetime import datetime
 import binascii
 import time
+import socket
 SYNC_MANUAL = -1
 
 
@@ -57,16 +58,27 @@ class SyncThread(QThread):
             self.timer.start(delay)
 
     def run(self):
-        self.session = get_db_session()
-        self.sq = self.session.query
-        self.auth_token = get_auth_token()
-        self.note_store = get_note_store(self.auth_token)
-        self.perform()
+        self.init_db()
+        self.init_network()
         while True:
             self.mutex.lock()
             self.wait_condition.wait(self.mutex)
             self.perform()
             self.mutex.unlock()
+            time.sleep(1)  # prevent cpu eating
+
+    def init_db(self):
+        self.session = get_db_session()
+        self.sq = self.session.query
+
+    def init_network(self):
+        while True:
+            try:
+                self.auth_token = get_auth_token()
+                self.note_store = get_note_store(self.auth_token)
+                break
+            except socket.gaierror:
+                time.sleep(30)
 
     def force_sync(self):
         self.timer.stop()
@@ -87,6 +99,8 @@ class SyncThread(QThread):
             self.remote_changes()
         except Exception, e:  # maybe log this
             self.session.rollback()
+            self.init_db()
+            print e
         finally:
             self.sync_state_changed.emit(SYNC_STATE_FINISH)
             self.status = STATUS_NONE

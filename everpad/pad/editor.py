@@ -5,7 +5,7 @@ from PySide.QtGui import (
     QLabel, QVBoxLayout, QFrame,
     QMessageBox, QAction, QFileDialog,
     QMenu, QCompleter, QStringListModel,
-    QTextCharFormat,
+    QTextCharFormat, QShortcut, QKeySequence,
 )
 from PySide.QtCore import Slot, Qt, QPoint, QObject, Signal, QUrl
 from PySide.QtWebKit import QWebPage
@@ -81,6 +81,17 @@ class ContentEdit(QObject):
         self._hovered_url = None
         self.widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.widget.customContextMenuRequested.connect(self.context_menu)
+        for key, action in (
+            ('Ctrl+b', QWebPage.ToggleBold),
+            ('Ctrl+i', QWebPage.ToggleItalic), 
+            ('Ctrl+u', QWebPage.ToggleUnderline),
+        ):
+            QShortcut(
+                QKeySequence(self.app.tr(key)),
+                self.widget,
+            ).activated.connect(
+                Slot()(partial(self._action_for_key, action)),
+            )
 
     @property
     def title(self):
@@ -175,23 +186,7 @@ class ContentEdit(QObject):
         self.copy_available.emit(
             len(self.page.selectedText()) > 0 and self.page.current == 'body'
         )
-
-    @Slot()
-    def copy(self):
-        self.page.action(QWebPage.Copy).trigger()
-
-    @Slot()
-    def cut(self):
-        self.page.action(QWebPage.Cut).trigger()
-
-    @Slot()
-    def paste(self):
-        self.page.action(QWebPage.Paste).trigger()
-
-    @Slot()
-    def select_all(self):
-        self.page.action(QWebPage.SelectAll).trigger()
-
+   
     @Slot(QUrl)
     def link_clicked(self, url):
         webbrowser.open(url.toString())
@@ -225,6 +220,10 @@ class ContentEdit(QObject):
         action.setIcon(QIcon.fromTheme(icon_name))
         self.copy_available.connect(action.setEnabled)
         return action
+
+    def _action_for_key(self, action):
+        if self.page.current == 'body':
+            self.page.action(action).trigger()
 
     def get_format_actions(self):
         return map(lambda action: self._action_with_icon(*action), (
@@ -481,21 +480,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self, self.app, 
             self.ui.resourceArea, self.mark_touched,
         )
-        self.init_menu()
         self.init_toolbar()
-
-    def init_menu(self):
-        self.ui.actionSave.triggered.connect(self.save)
-        self.ui.actionSave_and_close.triggered.connect(self.save_and_close)
-        self.ui.actionDelete.triggered.connect(self.delete)
-        self.ui.actionClose.triggered.connect(self.close)
-        self.note_edit.copy_available.connect(self.ui.actionCopy.setEnabled)
-        self.ui.actionCopy.setEnabled(False)
-        self.ui.actionCopy.triggered.connect(self.note_edit.copy)
-        self.note_edit.copy_available.connect(self.ui.actionCut.setEnabled)
-        self.ui.actionCut.setEnabled(False)
-        self.ui.actionCut.triggered.connect(self.note_edit.cut)
-        self.ui.actionPaste.triggered.connect(self.note_edit.paste)
 
     def init_toolbar(self):
         self.save_btn = self.ui.toolBar.addAction(

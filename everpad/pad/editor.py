@@ -231,6 +231,7 @@ class ContentEdit(QObject):
             (QWebPage.ToggleBold, 'format-text-bold'),
             (QWebPage.ToggleItalic, 'format-text-italic'),
             (QWebPage.ToggleUnderline, 'format-text-underline'),
+            (QWebPage.ToggleStrikethrough, 'format-text-strikethrough'),
             (QWebPage.AlignCenter, 'format-justify-center'),
             (QWebPage.AlignJustified, 'format-justify-fill'),
             (QWebPage.AlignLeft, 'format-justify-left'),

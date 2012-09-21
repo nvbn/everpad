@@ -4,7 +4,7 @@ from singlet.lens import SingleScopeLens, IconViewCategory, ListViewCategory
 from gi.repository import Gio, Unity
 from singlet.utils import run_lens
 from everpad.tools import get_provider, get_pad
-from everpad.basetypes import Note, Tag, Notebook, Place
+from everpad.basetypes import Note, Tag, Notebook, Place, Resource
 from BeautifulSoup import BeautifulSoup
 import dbus
 import sys
@@ -52,6 +52,7 @@ class EverpadLens(SingleScopeLens):
             places.add_option(str(place.id), place.name, icon)
         self._lens.props.filters = [notebooks, tags, places]
         self._lens.props.search_in_global = True
+        self._scope.connect('preview-uri', self.preview)
 
     category = ListViewCategory(_("Notes"), 'everpad-lens')
 
@@ -74,6 +75,30 @@ class EverpadLens(SingleScopeLens):
                 'everpad-note', self.category, "text/html", note.title,
                 ''.join(BeautifulSoup(note.content).findAll(text=True)),
             '')
+
+    def preview(self, scope, id):
+        note = Note.from_tuple(provider.get_note(int(id)))
+        soup = BeautifulSoup(note.content)
+        for tag in soup.findAll():
+            text = tag.text
+            if tag.name in (
+                'br', 'p', 'div', 'li', 
+                'ol', 'en-media', 'en-todo',
+            ):
+                text += '\n'
+            tag.replaceWith(text)
+        preview = Unity.GenericPreview.new(note.title, soup.prettify(), None)
+        edit = Unity.PreviewAction.new("edit", "Edit", None)
+        image = None
+        for _res in provider.get_note_resources(note.id):
+            res = Resource.from_tuple(_res)
+            if 'image' in res.mime:
+                image = 'file://%s' % res.file_path
+        if image:
+            preview.props.image_source_uri = image
+        edit.connect('activated', self.handle_uri)
+        preview.add_action(edit)
+        return preview
 
     def handle_uri(self, scope, id):
         get_pad().open(int(id))

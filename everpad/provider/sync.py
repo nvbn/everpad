@@ -101,7 +101,7 @@ class SyncThread(QThread):
         except Exception, e:  # maybe log this
             self.session.rollback()
             self.init_db()
-            print e
+            self.app.log(e)
         finally:
             self.sync_state_changed.emit(SYNC_STATE_FINISH)
             self.status = STATUS_NONE
@@ -129,6 +129,7 @@ class SyncThread(QThread):
         for notebook in self.sq(models.Notebook).filter(
             models.Notebook.action != ACTION_NONE,
         ):
+            self.app.log('Notebook %s local' % notebook.name)
             kwargs = dict(
                 name=notebook.name[:EDAM_NOTEBOOK_NAME_LEN_MAX].strip().encode('utf8'),
                 defaultNotebook=notebook.default,
@@ -167,6 +168,7 @@ class SyncThread(QThread):
         for tag in self.sq(models.Tag).filter(
             models.Tag.action != ACTION_NONE,
         ):
+            self.app.log('Tag %s local' % tag.name)
             kwargs = dict(
                 name=tag.name[:EDAM_TAG_NAME_LEN_MAX].strip().encode('utf8'),
             )
@@ -191,6 +193,7 @@ class SyncThread(QThread):
             models.Note.action != ACTION_NONE,
             models.Note.action != ACTION_NOEXSIST,
         )):
+            self.app.log('Note %s local' % note.title)
             kwargs = dict(
                 title=note.title[:EDAM_NOTE_TITLE_LEN_MAX].strip().encode('utf8'),
                 content= (u"""
@@ -235,6 +238,7 @@ class SyncThread(QThread):
         """Receive notebooks from server"""
         notebooks_ids = []
         for notebook in self.note_store.listNotebooks(self.auth_token):
+            self.app.log('Notebook %s remote' % notebook.name)
             try:
                 nb = self.sq(models.Notebook).filter(
                     models.Notebook.guid == notebook.guid,
@@ -258,6 +262,7 @@ class SyncThread(QThread):
         """Receive tags from server"""
         tags_ids = []
         for tag in self.note_store.listTags(self.auth_token):
+            self.app.log('Tag %s remote' % tag.name)
             try:
                 tg = self.sq(models.Tag).filter(
                     models.Tag.guid == tag.guid,
@@ -295,6 +300,7 @@ class SyncThread(QThread):
         """Receive notes from server"""
         notes_ids = []
         for note in self._iter_all_notes():
+            self.app.log('Note %s remote' % note.title)
             try:
                 nt = self.sq(models.Note).filter(
                     models.Note.guid == note.guid,

@@ -16,6 +16,7 @@ Client support:
  - notebooks
  - resources
  - places
+ - en-* tags
 
 Installation
 ============
@@ -28,6 +29,16 @@ For ubuntu user `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
 ``sudo apt-get install everpad`` 
 
 Developers can clone this repository and install via ``setup.py``
+
+Some errors?
+============
+For debug output you need:
+``killall everpad everpad-provider everpad-lens``
+``everpad-provider -- verbose``
+And in second terminal:
+``everpad``
+And in third:
+``everpad-lens``
 
 Want to help?
 =============

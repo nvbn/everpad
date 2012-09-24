@@ -12,12 +12,14 @@ import signal
 import fcntl
 import os
 import getpass
+import argparse
 
 
 class ProviderApp(QCoreApplication):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, verbose, *args, **kwargs):
         QCoreApplication.__init__(self, *args, **kwargs)
         self.settings = QSettings('everpad', 'everpad-provider')
+        self.verbose = verbose
         session_bus = dbus.SessionBus()
         self.bus = dbus.service.BusName("com.everpad.Provider", session_bus)
         self.service = ProviderService(self, session_bus, '/EverpadProvider')
@@ -58,6 +60,10 @@ class ProviderApp(QCoreApplication):
         )
         session.commit()
 
+    def log(self, data):
+        if self.verbose:
+            print data
+
 
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -69,7 +75,10 @@ def main():
         os.mkdir(os.path.expanduser('~/.everpad/data/'))
     except OSError:
         pass
-    app = ProviderApp(sys.argv)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--verbose', action='store_true', help='verbose output')
+    args = parser.parse_args(sys.argv[1:])
+    app = ProviderApp(args.verbose, sys.argv)
     app.exec_()
 
 if __name__ == '__main__':

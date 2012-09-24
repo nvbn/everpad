@@ -18,6 +18,7 @@ from everpad.provider.tools import (
     ACTION_NONE, ACTION_CREATE,
     ACTION_CHANGE, ACTION_DELETE,
     get_db_session, get_note_store,
+    ACTION_NOEXSIST,
 )
 from everpad.tools import get_auth_token
 from everpad.provider import models
@@ -186,9 +187,10 @@ class SyncThread(QThread):
 
     def notes_local(self):
         """Send loacl notes changes to server"""
-        for note in self.sq(models.Note).filter(
+        for note in self.sq(models.Note).filter(and_(
             models.Note.action != ACTION_NONE,
-        ):
+            models.Note.action != ACTION_NOEXSIST,
+        )):
             kwargs = dict(
                 title=note.title[:EDAM_NOTE_TITLE_LEN_MAX].strip().encode('utf8'),
                 content= (u"""
@@ -317,9 +319,10 @@ class SyncThread(QThread):
                 notes_ids.append(nt.id)
                 self.note_resources_remote(note, nt)
         if len(notes_ids):
-            self.sq(models.Note).filter(
-                ~models.Note.id.in_(notes_ids)
-            ).delete(synchronize_session='fetch')        
+            self.sq(models.Note).filter(and_(
+                ~models.Note.id.in_(notes_ids),
+                models.Note.action != ACTION_NOEXSIST,
+            )).delete(synchronize_session='fetch')        
         self.session.commit()
 
     def note_resources_remote(self, note_api, note_model):

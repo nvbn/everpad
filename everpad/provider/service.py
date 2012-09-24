@@ -3,6 +3,7 @@ sys.path.append('../..')
 from everpad.provider.models import (
     Note, Notebook, Tag, Resource, Place,
     ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
+    ACTION_NOEXSIST,
 )
 from everpad.provider.tools import get_db_session
 from sqlalchemy import or_, and_, func
@@ -78,6 +79,7 @@ class ProviderService(dbus.service.Object):
             )
         qs = self.sq(Note).filter(and_(
             Note.action != ACTION_DELETE,
+            Note.action != ACTION_NOEXSIST,
         *filters)).order_by({
             btype.Note.ORDER_TITLE: Note.title,
             btype.Note.ORDER_UPDATED: Note.updated,
@@ -170,7 +172,7 @@ class ProviderService(dbus.service.Object):
     )
     def create_note(self, data):
         note = Note(
-            action=ACTION_CREATE,
+            action=ACTION_NOEXSIST,
         )
         btype.Note.from_tuple(data).give_to_obj(note)
         note.id = None
@@ -196,7 +198,9 @@ class ProviderService(dbus.service.Object):
         except NoResultFound:
             raise DBusException('Note not found')
         received_note.give_to_obj(note)
-        if note.action != ACTION_CREATE:
+        if note.action == ACTION_NOEXSIST:
+            note.action = ACTION_CREATE
+        elif note.action != ACTION_CREATE:
             note.action = ACTION_CHANGE
         self.session.commit()
         return btype.Note.from_obj(note).struct

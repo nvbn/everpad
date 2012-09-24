@@ -16,6 +16,7 @@ ACTION_NONE = 0
 ACTION_CREATE = 1
 ACTION_DELETE = 2
 ACTION_CHANGE = 3
+ACTION_NOEXSIST = 4
 
 
 def set_auth_token(token):

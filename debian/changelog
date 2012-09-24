@@ -1,3 +1,11 @@
+everpad (1.9.1-0~oneiric) oneiric; urgency=low
+
+  * Fix resource uploading
+  * Fix sync untouched notes
+  * Increase lens limit to 1000
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Mon, 24 Sep 2012 21:27:01 +0400
+
 everpad (1.9-0~oneiric) oneiric; urgency=low
 
   * Provider now work in offline

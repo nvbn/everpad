@@ -429,7 +429,7 @@ class ResourceEdit(object):
             file_path=file_path,
             file_name=file_name,
             mime=self.mime.file(file_path.encode('utf8')),
-            hash=hashlib.md5(open(file_name).read()).hexdigest(),
+            hash=hashlib.md5(open(file_path).read()).hexdigest(),
         )
         self._resources.append(res)
         self._put(res)

@@ -244,6 +244,15 @@ class ContentEdit(QObject):
             (QWebPage.AlignRight, 'format-justify-right'),
         ))
 
+    def paste_res(self, res):
+        self.page.mainFrame().findFirstElement('#content').appendInside(
+            '<img src="%s" hash="%s" type="%s" />' % (
+                'file://' + res.file_path,
+                res.hash, res.mime,
+            ),
+        )
+        self.page_changed()
+
 
 class TagEdit(object):
     """Abstraction for tag edit"""
@@ -380,6 +389,12 @@ class ResourceEdit(object):
             subprocess.Popen(['xdg-open', res.file_path])
         elif button == Qt.RightButton:
             menu = QMenu(self.parent)
+            if res.mime.find('image') == 0:
+                menu.addAction(
+                    self.parent.tr('Put to Content'), Slot()(partial(
+                        self.to_content, res=res,
+                    )),
+                )
             if not res.in_content:
                 menu.addAction(
                     self.parent.tr('Remove Resource'), Slot()(partial(
@@ -392,6 +407,10 @@ class ResourceEdit(object):
                 ))
             )
             menu.exec_(event.globalPos())
+
+    def to_content(self, res):
+        res.in_content = True
+        self.parent.note_edit.paste_res(res)
 
     def remove(self, res):
         """Remove resource"""
@@ -420,7 +439,6 @@ class ResourceEdit(object):
     def add(self):
         for name in QFileDialog.getOpenFileNames()[0]:
             self.add_attach(name)
-
 
     def add_attach(self, name):
         dest = os.path.expanduser('~/.everpad/data/%d/' % self.note.id)

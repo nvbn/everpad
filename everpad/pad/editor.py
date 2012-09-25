@@ -22,6 +22,7 @@ import magic
 import os
 import shutil
 import hashlib
+import urllib
 
 
 class Page(QWebPage):
@@ -423,7 +424,11 @@ class ResourceEdit(object):
             pass
         file_name = name.split('/')[-1]
         file_path = os.path.join(dest, file_name)
-        shutil.copyfile(name, file_path)
+        if os.path.isfile(name):
+            shutil.copyfile(name, file_path)
+        else:
+            with open(file_path, 'w') as res_file:
+                res_file.write(urllib.urlopen(name).read())
         res = Resource(
             id=NONE_ID,
             file_path=file_path,

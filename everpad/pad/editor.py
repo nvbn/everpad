@@ -200,7 +200,9 @@ class ContentEdit(QObject):
         menu.addAction(self.page.action(QWebPage.Cut))
         menu.addAction(self.page.action(QWebPage.Copy))
         menu.addAction(self.page.action(QWebPage.Paste))
-        menu.addAction(self.page.action(QWebPage.PasteAndMatchStyle))
+        paste_wo = self.page.action(QWebPage.PasteAndMatchStyle)
+        paste_wo.setText(self.app.tr('Paste as Plain Text'))
+        menu.addAction(paste_wo)
         if self._hovered_url:
             menu.addAction(self.page.action(QWebPage.CopyLinkToClipboard))
         menu.addSeparator()

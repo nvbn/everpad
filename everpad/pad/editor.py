@@ -118,8 +118,9 @@ class ContentEdit(QObject):
             del todo['type']
             del todo['onchange']
         for media in soup.findAll('img'):
-            media.name = 'en-media'
-            del media['src']
+            if media.get('hash'):
+                media.name = 'en-media'
+                del media['src']
         self._content = reduce(
              lambda txt, cur: txt + unicode(cur),
              self._sanitize(soup.find(id='content')).contents, 
@@ -139,13 +140,16 @@ class ContentEdit(QObject):
             })(this)"""  # shit but works =)
             self.changed_by_default = True
         for media in soup.findAll('en-media'):
-            media.name = 'img'
-            res = self.parent.resource_edit.get_by_hash(media['hash'])  # shit!
-            if res:
-                media['src'] = 'file://%s' % res.file_path
-                res.in_content = True
+            if media.get('hash'):  # evernote android app error
+                media.name = 'img'
+                res = self.parent.resource_edit.get_by_hash(media['hash'])  # shit!
+                if res:
+                    media['src'] = 'file://%s' % res.file_path
+                    res.in_content = True
+                else:
+                    media['src'] = ''
             else:
-                media['src'] = ''
+                media.hidden = True
         self._content = unicode(soup)
         self.apply()
 

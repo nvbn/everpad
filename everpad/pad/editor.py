@@ -453,15 +453,9 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         geometry = self.app.settings.value("note-geometry-%d" % self.note.id)
         if geometry:
             self.restoreGeometry(geometry)
-        options = self.app.settings.value('note-options-%d' % self.note.id)
-        if options:
-            self.options.setChecked(True)
-            self.show_options()
         self.resource_edit.note = note
 
     def init_controls(self):
-        self.ui.tags.hide()
-        self.ui.notebook.hide()
         self.ui.menubar.hide()
         self.ui.resourceArea.hide()
         self.note_edit = ContentEdit(
@@ -506,11 +500,6 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.resource_edit.add,
         )
         self.ui.toolBar.addSeparator()
-        self.options = self.ui.toolBar.addAction(
-            QIcon.fromTheme('gtk-properties'), 
-            self.tr('Options'), self.show_options,
-        )
-        self.options.setCheckable(True)
 
     def load_note(self, note):
         self.note = note
@@ -533,15 +522,6 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         if self.touched:
             self.save()
         self.close()
-
-    @Slot()
-    def show_options(self):
-        if self.options.isChecked():  # action checked after emit
-            self.ui.tags.show()
-            self.ui.notebook.show()
-        else:
-            self.ui.tags.hide()
-            self.ui.notebook.hide()
 
     def text_changed(self):
         self.update_title()
@@ -589,10 +569,6 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.app.settings.setValue(
             "note-geometry-%d" % self.note.id, 
             self.saveGeometry(),
-        )
-        self.app.settings.setValue(
-            'note-options-%d' % self.note.id,
-            self.options.isChecked(),
         )
 
     @Slot()

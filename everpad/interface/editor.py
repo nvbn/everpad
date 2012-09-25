@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Wed Sep 12 21:19:53 2012
+# Created: Tue Sep 25 21:52:27 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -44,6 +44,10 @@ class Ui_Editor(object):
         self.options.addWidget(self.tags)
         self.verticalLayout.addLayout(self.options)
         Editor.setCentralWidget(self.centralwidget)
+        self.toolBar = QtGui.QToolBar(Editor)
+        self.toolBar.setMovable(False)
+        self.toolBar.setObjectName("toolBar")
+        Editor.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.menubar = QtGui.QMenuBar(Editor)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 565, 25))
         self.menubar.setObjectName("menubar")
@@ -52,10 +56,6 @@ class Ui_Editor(object):
         self.menuEdit = QtGui.QMenu(self.menubar)
         self.menuEdit.setObjectName("menuEdit")
         Editor.setMenuBar(self.menubar)
-        self.toolBar = QtGui.QToolBar(Editor)
-        self.toolBar.setMovable(False)
-        self.toolBar.setObjectName("toolBar")
-        Editor.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionSave = QtGui.QAction(Editor)
         self.actionSave.setObjectName("actionSave")
         self.actionSave_and_close = QtGui.QAction(Editor)
@@ -88,9 +88,9 @@ class Ui_Editor(object):
         self.notebook.setToolTip(QtGui.QApplication.translate("Editor", "Select notebook", None, QtGui.QApplication.UnicodeUTF8))
         self.tags.setToolTip(QtGui.QApplication.translate("Editor", "Note tags", None, QtGui.QApplication.UnicodeUTF8))
         self.tags.setPlaceholderText(QtGui.QApplication.translate("Editor", "Commas separated tags", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("Editor", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFIle.setTitle(QtGui.QApplication.translate("Editor", "Note", None, QtGui.QApplication.UnicodeUTF8))
         self.menuEdit.setTitle(QtGui.QApplication.translate("Editor", "Edit", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("Editor", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave.setText(QtGui.QApplication.translate("Editor", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_and_close.setText(QtGui.QApplication.translate("Editor", "Save and close", None, QtGui.QApplication.UnicodeUTF8))
         self.actionDelete.setText(QtGui.QApplication.translate("Editor", "Delete", None, QtGui.QApplication.UnicodeUTF8))

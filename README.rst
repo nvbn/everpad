@@ -1,3 +1,9 @@
+Please vote for these bugs, they greatly hinder development:
+============================================================
+https://bugs.launchpad.net/ubuntu/+source/openssl/+bug/965371
+https://bugs.launchpad.net/appmenu-qt/+bug/1057167
+
+
 Everpad
 =======
 

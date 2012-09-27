@@ -14,6 +14,8 @@ import everpad.basetypes as btype
 from everpad.const import STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY
 import dbus
 import dbus.service
+import time
+
 
 class ProviderServiceQObject(QObject):
     authenticate_signal = Signal(str)
@@ -176,10 +178,8 @@ class ProviderService(dbus.service.Object):
         )
         btype.Note.from_tuple(data).give_to_obj(note)
         note.id = None
-        try:
-            note.updated = self.sq(func.max(Note.created)).one()[0]
-        except (NoResultFound, IndexError):
-            note.updated = 0
+        note.updated = int(time.time() * 1000)
+        note.created = int(time.time() * 1000)
         self.session.add(note)
         self.session.commit()
         return btype.Note.from_obj(note).struct
@@ -202,6 +202,7 @@ class ProviderService(dbus.service.Object):
             note.action = ACTION_CREATE
         elif note.action != ACTION_CREATE:
             note.action = ACTION_CHANGE
+        note.updated = int(time.time() * 1000)
         self.session.commit()
         return btype.Note.from_obj(note).struct
 

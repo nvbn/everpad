@@ -189,7 +189,7 @@ class ContentEdit(QObject):
     @Slot()
     def selection_changed(self):
         self.copy_available.emit(
-            len(self.page.selectedText()) > 0 and self.page.current == 'body'
+            self.page.current == 'body'
         )
    
     @Slot(QUrl)
@@ -234,14 +234,16 @@ class ContentEdit(QObject):
 
     def get_format_actions(self):
         return map(lambda action: self._action_with_icon(*action), (
-            (QWebPage.ToggleBold, 'format-text-bold'),
-            (QWebPage.ToggleItalic, 'format-text-italic'),
-            (QWebPage.ToggleUnderline, 'format-text-underline'),
-            (QWebPage.ToggleStrikethrough, 'format-text-strikethrough'),
-            (QWebPage.AlignCenter, 'format-justify-center'),
-            (QWebPage.AlignJustified, 'format-justify-fill'),
-            (QWebPage.AlignLeft, 'format-justify-left'),
-            (QWebPage.AlignRight, 'format-justify-right'),
+            (QWebPage.ToggleBold, 'everpad-text-bold'),
+            (QWebPage.ToggleItalic, 'everpad-text-italic'),
+            (QWebPage.ToggleUnderline, 'everpad-text-underline'),
+            (QWebPage.ToggleStrikethrough, 'everpad-text-strikethrough'),
+            (QWebPage.AlignCenter, 'everpad-justify-center'),
+            (QWebPage.AlignJustified, 'everpad-justify-fill'),
+            (QWebPage.AlignLeft, 'everpad-justify-left'),
+            (QWebPage.AlignRight, 'everpad-justify-right'),
+            (QWebPage.InsertUnorderedList, 'everpad-list-unordered'),
+            (QWebPage.InsertOrderedList, 'everpad-list-ordered'),
         ))
 
     def paste_res(self, res):

@@ -35,6 +35,18 @@ setup(name='everpad',
     install_requires=[],
     entry_points={},
     data_files=[
+        ('/usr/share/icons/hicolor/24x24/actions', [
+            'data/editor-icons/everpad-text-bold.png',
+            'data/editor-icons/everpad-list-unordered.png',
+            'data/editor-icons/everpad-text-strikethrough.png',
+            'data/editor-icons/everpad-text-italic.png',
+            'data/editor-icons/everpad-list-ordered.png',
+            'data/editor-icons/everpad-justify-center.png',
+            'data/editor-icons/everpad-justify-left.png',
+            'data/editor-icons/everpad-justify-fill.png',
+            'data/editor-icons/everpad-text-underline.png',
+            'data/editor-icons/everpad-justify-right.png',
+        ]),
         ('/usr/share/icons/hicolor/64x64/apps', [
             'data/everpad-mono.png', 'data/everpad-lens.png',
             'data/everpad-note.png',

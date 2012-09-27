@@ -187,6 +187,19 @@ class SyncThread(QThread):
             tag.action = ACTION_NONE
         self.session.commit()
 
+    def _resources_for_note(self, note):
+        return map(lambda res: Resource(
+            noteGuid=note.guid,
+            data=Data(body=open(res.file_path).read()),
+            mime=res.mime,
+            attributes=ResourceAttributes(
+                fileName=res.file_name.encode('utf8'),
+            ),
+        ), self.sq(models.Resource).filter(and_(
+            models.Resource.note_id == note.id, 
+            models.Resource.action != models.ACTION_DELETE,
+        )))
+
     def notes_local(self):
         """Send loacl notes changes to server"""
         for note in self.sq(models.Note).filter(and_(
@@ -210,19 +223,10 @@ class SyncThread(QThread):
                 kwargs['guid'] = note.guid
             nt = Note(**kwargs)
             if note.action == ACTION_CHANGE:
-                nt.resources = map(lambda res: Resource(
-                    noteGuid=note.guid,
-                    data=Data(body=open(res.file_path).read()),
-                    mime=res.mime,
-                    attributes=ResourceAttributes(
-                        fileName=res.file_name.encode('utf8'),
-                    ),
-                ), self.sq(models.Resource).filter(and_(
-                    models.Resource.note_id == note.id, 
-                    models.Resource.action != models.ACTION_DELETE,
-                )))
+                nt.resources = self._resources_for_note(note)
                 nt = self.note_store.updateNote(self.auth_token, nt)
             elif note.action == ACTION_CREATE:
+                nt.resources = self._resources_for_note(note)
                 nt = self.note_store.createNote(self.auth_token, nt)
                 note.guid = nt.guid
             elif note.action == ACTION_DELETE:

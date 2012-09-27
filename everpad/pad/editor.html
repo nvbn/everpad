@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<style type='text/css'>
+    .tab {
+        margin-left: 12px;
+        width: 0px;
+        height: 0px;
+        display: inline-block
+    }
+</style>
+<body>
+<form>
+<h2 
+    onfocus='console.log("head")'
+    contenteditable="true"
+    id='title'>%(title)s</h2>
+<div 
+    onfocus='console.log("body")'
+    contenteditable="true"
+    onkeydown='(function(event, _this){
+        if (event.keyCode == 9){
+            event.preventDefault();
+            var selection = window.getSelection();
+            var range = selection.getRangeAt(0);
+            range.collapse(false);
+            range.deleteContents();
+            var el = document.createElement("img");
+            el.className = "tab";
+            range.insertNode(el);
+            range = range.cloneRange();
+            range.setStart(el, 0);
+            range.setEndAfter(el);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            return false;
+        }
+    })(event, this)'
+    id='content'>%(content)s</div>
+</form>
+</body>
+</html>

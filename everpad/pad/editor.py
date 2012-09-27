@@ -32,6 +32,7 @@ class Page(QWebPage):
         self.edit = edit
 
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
+        print message
         if message in ('head', 'body'):
             self.current = message
         if message == 'change':
@@ -57,17 +58,9 @@ class ContentEdit(QObject):
     _protocols = (
         'http', 'https', 'file',
     )
-    _html = """
-        <!DOCTYPE html>
-        <html>
-        <body>
-        <form>
-        <h2 onfocus='console.log("head")' contenteditable="true" id='title'>%(title)s</h2>
-        <div onfocus='console.log("body")' contenteditable="true" id='content'>%(content)s</div>
-        </form>
-        </body>
-        </html>
-    """
+    _html = open(os.path.join(
+        os.path.dirname(__file__), 'editor.html',
+    )).read()
 
     copy_available = Signal(bool)
     def __init__(self, parent, app, widget, on_change):
@@ -118,13 +111,15 @@ class ContentEdit(QObject):
             del todo['type']
             del todo['onchange']
         for media in soup.findAll('img'):
+            if media['class'] == 'tab':
+                media.replaceWith('\t')
             if media.get('hash'):
                 media.name = 'en-media'
                 del media['src']
         self._content = reduce(
              lambda txt, cur: txt + unicode(cur),
              self._sanitize(soup.find(id='content')).contents, 
-        u'')
+        u'').replace('\n', '')
         return self._content
 
     @content.setter
@@ -150,7 +145,7 @@ class ContentEdit(QObject):
                     media['src'] = ''
             else:
                 media.hidden = True
-        self._content = unicode(soup)
+        self._content = unicode(soup).replace('\t', '<img class="tab" />')  # shit!
         self.apply()
 
     def _sanitize(self, soup):  # TODO: optimize it

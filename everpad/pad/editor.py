@@ -6,10 +6,12 @@ from PySide.QtGui import (
     QMessageBox, QAction, QFileDialog,
     QMenu, QCompleter, QStringListModel,
     QTextCharFormat, QShortcut, QKeySequence,
+    QDialog,
 )
 from PySide.QtCore import Slot, Qt, QPoint, QObject, Signal, QUrl
 from PySide.QtWebKit import QWebPage
 from everpad.interface.editor import Ui_Editor
+from everpad.interface.image import Ui_ImageDialog
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider
 from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
@@ -25,11 +27,50 @@ import hashlib
 import urllib
 
 
+class ImagePrefs(QDialog):
+    def __init__(self, app, res, *args, **kwargs):
+        QDialog.__init__(self, *args, **kwargs)
+        self.app = app
+        self.res = res
+        self.ui = Ui_ImageDialog()
+        self.ui.setupUi(self)
+        self.setWindowIcon(get_icon())
+        self.ui.widthBox.setValue(self.res.w)
+        self.ui.heightBox.setValue(self.res.h)
+        self.ui.widthBox.valueChanged.connect(self.width_changed)
+        self.ui.heightBox.valueChanged.connect(self.height_changed)
+        self._auto_change = False
+
+    def get_size(self):
+        return self.ui.widthBox.value(), self.ui.heightBox.value()
+
+    @Slot()
+    def width_changed(self):
+        if self.ui.checkBox.isChecked() and not self._auto_change:
+            self._auto_change = True
+            self.ui.heightBox.setValue(
+                self.ui.widthBox.value() * self.res.h / self.res.w,
+            )
+        else:
+            self._auto_change = False
+
+    @Slot()
+    def height_changed(self):
+        if self.ui.checkBox.isChecked() and not self._auto_change:
+            self._auto_change = True
+            self.ui.widthBox.setValue(
+                self.ui.heightBox.value() * self.res.w / self.res.h,
+            )
+        else:
+            self._auto_change = False
+
+
 class Page(QWebPage):
     def __init__(self, edit):
         QWebPage.__init__(self)
         self.current = None
         self.edit = edit
+        self.active_image = None
 
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
         print message
@@ -37,6 +78,8 @@ class Page(QWebPage):
             self.current = message
         if message == 'change':
             self.edit.page_changed()  # shit!
+        if message.find('context:') == 0:
+            self.active_image, self.active_width, self.active_height = message.split(':')[1:]
 
 
 class ContentEdit(QObject):
@@ -111,7 +154,7 @@ class ContentEdit(QObject):
             del todo['type']
             del todo['onchange']
         for media in soup.findAll('img'):
-            if media['class'] == 'tab':
+            if media.get('class') == 'tab':
                 media.replaceWith('\t')
             if media.get('hash'):
                 media.name = 'en-media'
@@ -192,7 +235,7 @@ class ContentEdit(QObject):
         webbrowser.open(url.toString())
 
     @Slot(QPoint)
-    def context_menu(self, pos):
+    def context_menu(self, pos, image_hash=None):
         """Show custom context menu"""
         menu = self.page.createStandardContextMenu()
         menu.clear()
@@ -204,6 +247,13 @@ class ContentEdit(QObject):
         menu.addAction(paste_wo)
         if self._hovered_url:
             menu.addAction(self.page.action(QWebPage.CopyLinkToClipboard))
+        if self.page.active_image:
+            res = self.parent.resource_edit.get_by_hash(self.page.active_image)
+            self.page.active_image = None
+            menu.addAction(
+                self.app.tr('Image Preferences'),
+                Slot()(partial(self._show_image_dialog, res)),
+            )
         menu.addSeparator()
         menu.addAction(self.page.action(QWebPage.RemoveFormat))
         menu.addAction(self.page.action(QWebPage.SelectAll))
@@ -242,13 +292,25 @@ class ContentEdit(QObject):
         ))
 
     def paste_res(self, res):
-        self.page.mainFrame().findFirstElement('#content').appendInside(
-            '<img src="%s" hash="%s" type="%s" />' % (
-                'file://' + res.file_path,
+        self.page.mainFrame().evaluateJavaScript(
+            'insertRes("%s", "%s", "%s");' % (
+                res.file_path,
                 res.hash, res.mime,
             ),
         )
         self.page_changed()
+
+    def _show_image_dialog(self, res):
+        res.w = int(self.page.active_width)
+        res.h = int(self.page.active_height)
+        dialog = ImagePrefs(self.app, res)
+        if dialog.exec_():
+            w, h = dialog.get_size()
+            self.page.mainFrame().evaluateJavaScript(
+                'changeRes("%s", %d, %d);' % (
+                    res.hash, w, h,
+                ),
+            )
 
 
 class TagEdit(object):

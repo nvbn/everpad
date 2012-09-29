@@ -18,23 +18,45 @@
     id='content'>%(content)s</div>
 </form>
 <script type="text/javascript">
+    var isContent = false;
     function insertEl(el) {
         var _this = document.getElementById('content');
-        var selection = window.getSelection();
-        var range = selection.getRangeAt(0);
-        range.collapse(false);
-        range.deleteContents();
-        range.insertNode(el);
-        range = range.cloneRange();
-        range.setStart(el, 0);
-        range.setEndAfter(el);
-        range.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(range);
+        try {
+            if (!isContent) throw 1;
+            var selection = window.getSelection();
+            var range = selection.getRangeAt(0);
+            range.collapse(false);
+            range.deleteContents();
+            range.insertNode(el);
+            range = range.cloneRange();
+            range.setStart(el, 0);
+            range.setEndAfter(el);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } catch (Exception) {
+            _this.appendChild(el);
+        }
+    }
+    function insertRes(filePath, hash, mime) {
+        var el = document.createElement("img");
+        el.setAttribute('src', 'file://' + filePath);
+        el.setAttribute('hash', hash);
+        el.setAttribute('type', mime)
+        el.oncontextmenu = function(event){
+            console.log('context:' + hash + ':' + el.width + ':' + el.height);
+        };
+        insertEl(el);
+    }
+    function changeRes(hash, width, height) {
+        var el = document.querySelector('[hash="' + hash + '"]');
+        el.setAttribute('width', width);
+        el.setAttribute('height', height);
     }
     var content = document.getElementById('content');
     content.onfocus = function() {
         console.log("body");
+        isContent = true;
     };
     content.onkeydown = function(event) {
         if (event.keyCode == 9){
@@ -48,6 +70,7 @@
     var title = document.getElementById('title');
     title.onfocus = function() {
         console.log("head");
+        isContent = false;
     };
 </script>
 </body>

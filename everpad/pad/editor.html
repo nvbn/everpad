@@ -38,6 +38,14 @@
             _this.appendChild(el);
         }
     }
+    function insertCheck() {
+        var el = document.createElement('input');
+        el.setAttribute('type', 'checkbox');
+        el.onchange = function() {
+            this.setAttribute("checked", this.checked);
+        };
+        insertEl(el);
+    }
     function insertRes(filePath, hash, mime) {
         var el = document.createElement("img");
         el.setAttribute('src', 'file://' + filePath);

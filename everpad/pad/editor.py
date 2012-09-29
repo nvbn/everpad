@@ -267,8 +267,11 @@ class ContentEdit(QObject):
     def page_changed(self):
         self._on_change()
 
-    def _action_with_icon(self, action_type, icon_name):
-        action = self.page.action(action_type)
+    def _action_with_icon(self, action_type, icon_name, is_action=False):
+        if is_action:
+            action = action_type
+        else:
+            action = self.page.action(action_type)
         action.setIcon(QIcon.fromTheme(icon_name))
         self.copy_available.connect(action.setEnabled)
         return action
@@ -278,6 +281,12 @@ class ContentEdit(QObject):
             self.page.action(action).trigger()
 
     def get_format_actions(self):
+        check_action = QAction(
+            self.app.tr('Insert Checkbox'), self,
+        )
+        check_action.triggered.connect(Slot()(lambda: self.page.mainFrame().evaluateJavaScript(
+            'insertCheck();',
+        )))
         return map(lambda action: self._action_with_icon(*action), (
             (QWebPage.ToggleBold, 'everpad-text-bold'),
             (QWebPage.ToggleItalic, 'everpad-text-italic'),
@@ -289,6 +298,7 @@ class ContentEdit(QObject):
             (QWebPage.AlignRight, 'everpad-justify-right'),
             (QWebPage.InsertUnorderedList, 'everpad-list-unordered'),
             (QWebPage.InsertOrderedList, 'everpad-list-ordered'),
+            (check_action, 'everpad-checkbox', True),
         ))
 
     def paste_res(self, res):

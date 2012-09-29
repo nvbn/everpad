@@ -152,7 +152,6 @@ class ContentEdit(QObject):
             if todo.get('checked') == 'false':
                 del todo['checked']
             del todo['type']
-            del todo['onchange']
         for media in soup.findAll('img'):
             if media.get('class') == 'tab':
                 media.replaceWith('\t')
@@ -172,10 +171,6 @@ class ContentEdit(QObject):
         for todo in soup.findAll('en-todo'):
             todo.name = 'input'
             todo['type'] = 'checkbox'
-            todo['onchange'] = """(function(_this){
-                console.log("change");
-                _this.setAttribute("checked", _this.checked);
-            })(this)"""  # shit but works =)
             self.changed_by_default = True
         for media in soup.findAll('en-media'):
             if media.get('hash'):  # evernote android app error
@@ -321,6 +316,7 @@ class ContentEdit(QObject):
                     res.hash, w, h,
                 ),
             )
+            self.page_changed()
 
 
 class TagEdit(object):

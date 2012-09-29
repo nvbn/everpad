@@ -41,9 +41,10 @@
     function insertCheck() {
         var el = document.createElement('input');
         el.setAttribute('type', 'checkbox');
-        el.onchange = function() {
+        el.addEventListener('change', function() {
+            console.log("change");
             this.setAttribute("checked", this.checked);
-        };
+        }, false);
         insertEl(el);
     }
     function insertRes(filePath, hash, mime) {
@@ -51,9 +52,9 @@
         el.setAttribute('src', 'file://' + filePath);
         el.setAttribute('hash', hash);
         el.setAttribute('type', mime)
-        el.oncontextmenu = function(event){
+        el.addEventListener('contextmenu', function(event){
             console.log('context:' + hash + ':' + el.width + ':' + el.height);
-        };
+        }, false);
         insertEl(el);
     }
     function changeRes(hash, width, height) {
@@ -62,11 +63,11 @@
         el.setAttribute('height', height);
     }
     var content = document.getElementById('content');
-    content.onfocus = function() {
+    content.addEventListener('focus', function() {
         console.log("body");
         isContent = true;
-    };
-    content.onkeydown = function(event) {
+    }, false);
+    content.addEventListener('keydown', function(event) {
         if (event.keyCode == 9){
             event.preventDefault();
             var el = document.createElement("img");
@@ -74,12 +75,23 @@
             insertEl(el);
             return false;
         }
-    };
+    }, false);
     var title = document.getElementById('title');
-    title.onfocus = function() {
+    title.addEventListener('focus', function() {
         console.log("head");
         isContent = false;
-    };
+    }, false);
+    var checkboxes = document.querySelectorAll('input[type=checkbox]');
+    [].forEach.call(checkboxes, function(el){
+        el.addEventListener('change', function() {
+        console.log("change");
+        this.setAttribute("checked", this.checked);
+    }, false);});
+    var resources = document.querySelectorAll('img[hash]');
+    [].forEach.call(resources, function(el){
+        el.addEventListener('contextmenu', function() {
+            console.log('context:' + el.getAttribute('hash') + ':' + el.width + ':' + el.height);
+    }, false);});
 </script>
 </body>
 </html>

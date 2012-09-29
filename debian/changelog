@@ -1,3 +1,11 @@
+everpad (1.10-0~oneiric) oneiric; urgency=low
+
+  * Insert images, checkboxes and lists in editor
+  * Self stored icons
+  * Bug fix
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 29 Sep 2012 18:34:01 +0400
+
 everpad (1.9.1-0~oneiric) oneiric; urgency=low
 
   * Fix resource uploading

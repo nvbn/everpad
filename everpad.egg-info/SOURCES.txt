@@ -38,6 +38,7 @@ everpad/interface/__init__.py
 everpad/interface/editor.py
 everpad/pad/__init__.py
 everpad/pad/editor.py
+everpad/pad/editor.html
 everpad/pad/indicator.py
 everpad/pad/tools.py
 everpad/provider/__init__.py

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys
 import os
 
-version = '1.9.1'
+version = '1.10'
 
 def get_files():
     packages = find_packages(exclude=['tests'])
@@ -46,6 +46,7 @@ setup(name='everpad',
             'data/editor-icons/everpad-justify-fill.png',
             'data/editor-icons/everpad-text-underline.png',
             'data/editor-icons/everpad-justify-right.png',
+            'data/editor-icons/everpad-checkbox.png',
         ]),
         ('/usr/share/icons/hicolor/64x64/apps', [
             'data/everpad-mono.png', 'data/everpad-lens.png',

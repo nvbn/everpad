@@ -180,6 +180,7 @@ def main():
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
         app = PadApp(sys.argv)
+        app.setApplicationName('everpad')
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         session_bus = dbus.SessionBus()
         app.provider = get_provider(session_bus) 

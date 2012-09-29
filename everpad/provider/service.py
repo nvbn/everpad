@@ -66,6 +66,8 @@ class ProviderService(dbus.service.Object):
             filters.append(or_(  # TODO: use xapian
                 Note.title.like(words),
                 Note.content.like(words),
+                Note.tags.any(Tag.name.like(words)),
+                Note.notebook.has(Notebook.name.like(words)),
             ))
         if notebooks:
             filters.append(

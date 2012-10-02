@@ -645,7 +645,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
     def delete(self):
         msgBox = QMessageBox(
             QMessageBox.Critical,
-            self.tr("You try to delete a note"),
+            self.tr("You are trying to delete a note"),
             self.tr("Are you sure want to delete this note?"),
             QMessageBox.Yes | QMessageBox.No
         )

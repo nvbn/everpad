@@ -128,7 +128,7 @@
     <message>
         <location filename="everpad/interface/editor.py" line="91"/>
         <source>toolBar</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="everpad/interface/editor.py" line="95"/>
@@ -197,9 +197,29 @@
 <context>
     <name>List</name>
     <message>
-        <location filename="everpad/interface/list.py" line="38"/>
+        <location filename="everpad/interface/list.py" line="52"/>
         <source>Everpad / All Notes</source>
         <translation>Everpad / Все заметки</translation>
+    </message>
+    <message>
+        <location filename="everpad/interface/list.py" line="53"/>
+        <source>Create Notebook</source>
+        <translation>Создать Блокнот</translation>
+    </message>
+    <message>
+        <location filename="everpad/interface/list.py" line="54"/>
+        <source>Notebook</source>
+        <translation>Блокнот</translation>
+    </message>
+    <message>
+        <location filename="everpad/interface/list.py" line="55"/>
+        <source>Create Note</source>
+        <translation>Создать заметку</translation>
+    </message>
+    <message>
+        <location filename="everpad/interface/list.py" line="56"/>
+        <source>Note</source>
+        <translation>Заметка</translation>
     </message>
 </context>
 <context>

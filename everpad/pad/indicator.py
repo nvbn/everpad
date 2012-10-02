@@ -68,13 +68,13 @@ class Indicator(QSystemTrayIcon):
         return editor
 
     @Slot()
-    def create(self, attach=None):
+    def create(self, attach=None, notebook_id=NONE_ID):
         note_struct = Note(  # maybe replace NONE's to somthing better
             id=NONE_ID,
             title=self.tr('New note'),
             content=self.tr("New note content"),
             tags=dbus.Array([], signature='i'),
-            notebook=NONE_ID,
+            notebook=notebook_id,
             created=NONE_VAL,
             updated=NONE_VAL,
             place='',

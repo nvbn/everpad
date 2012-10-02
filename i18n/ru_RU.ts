@@ -3,44 +3,34 @@
 <context>
     <name>Dialog</name>
     <message>
-        <location filename="everpad/interface/management.py" line="77"/>
+        <location filename="everpad/interface/management.py" line="59"/>
         <source>Everpad / Settings and Management</source>
         <translation>Everpad / Настройки и Управление</translation>
     </message>
     <message>
-        <location filename="everpad/interface/management.py" line="78"/>
+        <location filename="everpad/interface/management.py" line="60"/>
         <source>Authorisation</source>
         <translation>Авторизация</translation>
     </message>
     <message>
-        <location filename="everpad/interface/management.py" line="79"/>
+        <location filename="everpad/interface/management.py" line="61"/>
         <source>Authorise</source>
         <translation>Авторизовать</translation>
     </message>
     <message>
-        <location filename="everpad/interface/management.py" line="80"/>
+        <location filename="everpad/interface/management.py" line="62"/>
         <source>Sync delay</source>
         <translation>Частота Синхронизации</translation>
     </message>
     <message>
-        <location filename="everpad/interface/management.py" line="81"/>
+        <location filename="everpad/interface/management.py" line="63"/>
         <source>Start with system</source>
         <translation>Запускать при загрузке</translation>
     </message>
     <message>
-        <location filename="everpad/interface/management.py" line="82"/>
+        <location filename="everpad/interface/management.py" line="64"/>
         <source>Settings</source>
         <translation>Параметры</translation>
-    </message>
-    <message>
-        <location filename="everpad/interface/management.py" line="83"/>
-        <source>Create Notebook</source>
-        <translation>Создать Блокнот</translation>
-    </message>
-    <message>
-        <location filename="everpad/interface/management.py" line="84"/>
-        <source>Manage Notebooks</source>
-        <translation>Управление Блокнтоами</translation>
     </message>
 </context>
 <context>
@@ -295,72 +285,27 @@
 <context>
     <name>Management</name>
     <message>
-        <location filename="everpad/pad/management.py" line="126"/>
-        <source>Change Name</source>
-        <translation>Переименовать</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="129"/>
-        <source>Remove Notebook</source>
-        <translation>Удалить блокнот</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="136"/>
-        <source>Containts %d notes</source>
-        <translation>Содержит %d заметок</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="154"/>
-        <source>You try to delete a notebook</source>
-        <translation>Вы пытаетесь удалить блокнот</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="155"/>
-        <source>Are you sure want to delete this notebook and notes in it?</source>
-        <translation>Вы уверены что хотите удалить блокнот и все заметки в нём?</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="166"/>
-        <source>Change notebook name</source>
-        <translation>Изменить имя блокнота</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="177"/>
-        <source>Create new notebook</source>
-        <translation>Создать новый блокнот</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="193"/>
-        <source>Enter notebook name:</source>
-        <translation>Введите название блокнота:</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="197"/>
-        <source>Notebook with this name already exist. Enter notebook name</source>
-        <translation>Блокнот с таким именем уже существует. Введите новое название</translation>
-    </message>
-    <message>
-        <location filename="everpad/pad/management.py" line="40"/>
+        <location filename="everpad/pad/management.py" line="37"/>
         <source>%d minutes</source>
         <translation>%d минут</translation>
     </message>
     <message>
-        <location filename="everpad/pad/management.py" line="43"/>
+        <location filename="everpad/pad/management.py" line="40"/>
         <source>One hour</source>
         <translation>Час</translation>
     </message>
     <message>
-        <location filename="everpad/pad/management.py" line="44"/>
+        <location filename="everpad/pad/management.py" line="41"/>
         <source>Manual</source>
         <translation>Вручную</translation>
     </message>
     <message>
-        <location filename="everpad/pad/management.py" line="59"/>
+        <location filename="everpad/pad/management.py" line="55"/>
         <source>Remove Authorisation</source>
         <translation>Выйти</translation>
     </message>
     <message>
-        <location filename="everpad/pad/management.py" line="63"/>
+        <location filename="everpad/pad/management.py" line="57"/>
         <source>Authorise</source>
         <translation>Авторизовать</translation>
     </message>

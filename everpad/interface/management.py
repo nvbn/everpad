@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Sun Sep  9 19:04:03 2012
+# Created: Wed Oct  3 01:18:42 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,24 +42,6 @@ class Ui_Dialog(object):
         self.autoStart.setObjectName("autoStart")
         self.gridLayout.addWidget(self.autoStart, 3, 1, 1, 1)
         self.tabWidget.addTab(self.tab, "")
-        self.notebookTab = QtGui.QWidget()
-        self.notebookTab.setEnabled(False)
-        self.notebookTab.setObjectName("notebookTab")
-        self.verticalLayout_2 = QtGui.QVBoxLayout(self.notebookTab)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.scrollArea = QtGui.QScrollArea(self.notebookTab)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 333, 191))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.verticalLayout_2.addWidget(self.scrollArea)
-        self.createNotebook = QtGui.QPushButton(self.notebookTab)
-        self.createNotebook.setObjectName("createNotebook")
-        self.verticalLayout_2.addWidget(self.createNotebook)
-        self.tabWidget.addTab(self.notebookTab, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -80,6 +62,4 @@ class Ui_Dialog(object):
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Sync delay", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Dialog", "Start with system", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.createNotebook.setText(QtGui.QApplication.translate("Dialog", "Create Notebook", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.notebookTab), QtGui.QApplication.translate("Dialog", "Manage Notebooks", None, QtGui.QApplication.UnicodeUTF8))
 

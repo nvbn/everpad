@@ -90,7 +90,7 @@ class ProviderService(dbus.service.Object):
             btype.Note.ORDER_TITLE_DESC: Note.title.desc(),
             btype.Note.ORDER_UPDATED_DESC: Note.updated.desc(),
         }[order]).limit(limit)
-        return map(lambda note: btype.Note.from_obj(note).struct, qs.all())   
+        return map(lambda note: btype.Note.from_obj(note).struct, qs.all())
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
@@ -99,7 +99,23 @@ class ProviderService(dbus.service.Object):
     def list_notebooks(self):
         return map(lambda notebook:
             btype.Notebook.from_obj(notebook).struct,
-        self.sq(Notebook).filter(Notebook.action != ACTION_DELETE))
+        self.sq(Notebook).filter(Notebook.action != ACTION_DELETE).order_by(Notebook.name))
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='iii',
+        out_signature='a%s' % btype.Note.signature,
+    )
+    def list_notebook_notes(self, notebook_id, limit=100, order=btype.Note.ORDER_UPDATED):
+        filters = [Note.action != ACTION_DELETE, Note.action != ACTION_NOEXSIST]
+        if notebook_id:
+            filters.append(Note.notebook_id == notebook_id)
+        qs = self.sq(Note).filter(and_(*filters)).order_by({
+            btype.Note.ORDER_TITLE: Note.title,
+            btype.Note.ORDER_UPDATED: Note.updated,
+            btype.Note.ORDER_TITLE_DESC: Note.title.desc(),
+            btype.Note.ORDER_UPDATED_DESC: Note.updated.desc(),
+        }[order]).limit(limit)
+        return map(lambda note: btype.Note.from_obj(note).struct, qs.all())
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
@@ -141,7 +157,7 @@ class ProviderService(dbus.service.Object):
                 )
             nb.action = ACTION_CHANGE
             self.session.commit()
-            notebook.give_to_obj(nb)    
+            notebook.give_to_obj(nb)
             return btype.Notebook.from_obj(nb).struct
         except NoResultFound:
             raise DBusException('Notebook does not exist')
@@ -170,7 +186,7 @@ class ProviderService(dbus.service.Object):
         self.sq(Tag).all())
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature=btype.Note.signature,
         out_signature=btype.Note.signature,
     )
@@ -187,7 +203,7 @@ class ProviderService(dbus.service.Object):
         return btype.Note.from_obj(note).struct
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature=btype.Note.signature,
         out_signature=btype.Note.signature,
     )
@@ -209,7 +225,7 @@ class ProviderService(dbus.service.Object):
         return btype.Note.from_obj(note).struct
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='%sa%s' % (
             btype.Note.signature,
             btype.Resource.signature,
@@ -240,7 +256,7 @@ class ProviderService(dbus.service.Object):
         return btype.Note.from_obj(note).struct
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='i', out_signature='b',
     )
     def delete_note(self, id):
@@ -252,7 +268,7 @@ class ProviderService(dbus.service.Object):
             raise DBusException('Note not found')
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='s',
         out_signature=btype.Notebook.signature,
     )
@@ -272,7 +288,7 @@ class ProviderService(dbus.service.Object):
         return btype.Notebook.from_obj(notebook).struct
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='s', out_signature='',
     )
     def authenticate(self, token):
@@ -280,14 +296,14 @@ class ProviderService(dbus.service.Object):
         self.qobject.authenticate_signal.emit(token)
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='', out_signature='',
     )
     def remove_authentication(self):
         self.qobject.remove_authenticate_signal.emit()
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='i', out_signature='a' + btype.Resource.signature,
     )
     def get_note_resources(self, note_id):
@@ -300,7 +316,7 @@ class ProviderService(dbus.service.Object):
         )
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='', out_signature='a%s' % btype.Place.signature,
     )
     def list_places(self):
@@ -310,21 +326,21 @@ class ProviderService(dbus.service.Object):
         return place
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='', out_signature='i',
     )
     def get_status(self):
         return self.app.sync_thread.status
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='', out_signature='s',
     )
     def get_last_sync(self):
         return self.app.sync_thread.last_sync.strftime('%H:%M')
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='', out_signature='',
     )
     def sync(self):
@@ -333,7 +349,7 @@ class ProviderService(dbus.service.Object):
         return
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='i', out_signature='',
     )
     def set_sync_delay(self, delay):
@@ -341,7 +357,7 @@ class ProviderService(dbus.service.Object):
         self.app.sync_thread.update_timer()
 
     @dbus.service.method(
-        "com.everpad.Provider", 
+        "com.everpad.Provider",
         in_signature='', out_signature='i',
     )
     def get_sync_delay(self):

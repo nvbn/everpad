@@ -6,6 +6,7 @@ from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad, get_auth_token
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
+from everpad.pad.list import List
 from everpad.const import STATUS_SYNC, SYNC_STATES, SYNC_STATE_START, SYNC_STATE_FINISH
 from functools import partial
 import signal
@@ -26,11 +27,12 @@ class Indicator(QSystemTrayIcon):
         self.setContextMenu(self.menu)
         self.menu.aboutToShow.connect(self.update)
         self.opened_notes = {}
-        self.management = None
 
     @Slot()
     def update(self):
         self.menu.clear()
+        self.menu.addAction(self.tr('All Notes'), self.show_all_notes)
+        self.menu.addSeparator()
         if get_auth_token():
             for note_struct in self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
@@ -47,7 +49,7 @@ class Indicator(QSystemTrayIcon):
                 action = self.menu.addAction(self.tr('Sync in progress'))
                 action.setEnabled(False)
             else:
-                self.menu.addAction(self.tr('Last sync: %s') % 
+                self.menu.addAction(self.tr('Last sync: %s') %
                     self.app.provider.get_last_sync(),
                 Slot()(self.app.provider.sync))
         self.menu.addAction(self.tr('Settings and Management'), self.show_management)
@@ -66,13 +68,13 @@ class Indicator(QSystemTrayIcon):
         return editor
 
     @Slot()
-    def create(self, attach=None):
+    def create(self, attach=None, notebook_id=NONE_ID):
         note_struct = Note(  # maybe replace NONE's to somthing better
             id=NONE_ID,
             title=self.tr('New note'),
             content=self.tr("New note content"),
             tags=dbus.Array([], signature='i'),
-            notebook=NONE_ID,
+            notebook=notebook_id,
             created=NONE_VAL,
             updated=NONE_VAL,
             place='',
@@ -85,8 +87,16 @@ class Indicator(QSystemTrayIcon):
             editor.resource_edit.add_attach(attach)
 
     @Slot()
+    def show_all_notes(self):
+        if not hasattr(self, 'list') or getattr(self.list, 'closed', True):
+            self.list = List(self.app)
+            self.list.show()
+        else:
+            self.list.activateWindow()
+
+    @Slot()
     def show_management(self):
-        if not self.management or getattr(self.management, 'closed', True):
+        if not hasattr(self, 'management') or getattr(self.management, 'closed', True):
             self.management = Management(self.app)
             self.management.show()
         else:
@@ -183,11 +193,11 @@ def main():
         app.setApplicationName('everpad')
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         session_bus = dbus.SessionBus()
-        app.provider = get_provider(session_bus) 
+        app.provider = get_provider(session_bus)
         app.launcher = UnityLauncher('application://everpad.desktop', session_bus, '/')
         app.provider.connect_to_signal(
             'sync_state_changed',
-            app.on_sync_state_changed, 
+            app.on_sync_state_changed,
             dbus_interface="com.everpad.provider",
         )
         bus = dbus.service.BusName("com.everpad.App", session_bus)

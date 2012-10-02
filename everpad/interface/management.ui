@@ -67,43 +67,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="notebookTab">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <attribute name="title">
-       <string>Manage Notebooks</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QScrollArea" name="scrollArea">
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>333</width>
-            <height>191</height>
-           </rect>
-          </property>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="createNotebook">
-         <property name="text">
-          <string>Create Notebook</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
    <item>

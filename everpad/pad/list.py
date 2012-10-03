@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import sys
-
 sys.path.append('../..')
 from PySide.QtGui import (
     QDialog, QIcon, QPixmap,
@@ -13,6 +12,8 @@ from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.list import Ui_List
 from everpad.pad.tools import get_icon
 from everpad.basetypes import Notebook, Note, NONE_ID
+import dbus
+
 
 class List(QDialog):
     """All Notes dialog"""
@@ -58,7 +59,11 @@ class List(QDialog):
 
         item = self.notebooksModel.itemFromIndex(index)
         notebook_id = item.notebook.id if index.row() else 0
-        notes = self.app.provider.list_notebook_notes(notebook_id, sys.maxint, Note.ORDER_TITLE)
+        notebook_filter = [notebook_id] if notebook_id > 0 else dbus.Array([], signature='i')
+        notes = self.app.provider.find_notes(
+            '', notebook_filter, dbus.Array([], signature='i'), 
+            0, 2 ** 31 - 1, Note.ORDER_TITLE,
+        )  # fails with sys.maxint in 64
         for note_struct in notes:
             note = Note.from_tuple(note_struct)
             self.notesModel.appendRow(QNoteItem(note))

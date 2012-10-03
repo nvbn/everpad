@@ -102,22 +102,6 @@ class ProviderService(dbus.service.Object):
         self.sq(Notebook).filter(Notebook.action != ACTION_DELETE).order_by(Notebook.name))
 
     @dbus.service.method(
-        "com.everpad.Provider", in_signature='iii',
-        out_signature='a%s' % btype.Note.signature,
-    )
-    def list_notebook_notes(self, notebook_id, limit=100, order=btype.Note.ORDER_UPDATED):
-        filters = [Note.action != ACTION_DELETE, Note.action != ACTION_NOEXSIST]
-        if notebook_id:
-            filters.append(Note.notebook_id == notebook_id)
-        qs = self.sq(Note).filter(and_(*filters)).order_by({
-            btype.Note.ORDER_TITLE: Note.title,
-            btype.Note.ORDER_UPDATED: Note.updated,
-            btype.Note.ORDER_TITLE_DESC: Note.title.desc(),
-            btype.Note.ORDER_UPDATED_DESC: Note.updated.desc(),
-        }[order]).limit(limit)
-        return map(lambda note: btype.Note.from_obj(note).struct, qs.all())
-
-    @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature=btype.Notebook.signature,
     )

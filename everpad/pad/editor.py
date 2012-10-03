@@ -6,7 +6,7 @@ from PySide.QtGui import (
     QMessageBox, QAction, QFileDialog,
     QMenu, QCompleter, QStringListModel,
     QTextCharFormat, QShortcut, QKeySequence,
-    QDialog,
+    QDialog, QInputDialog,
 )
 from PySide.QtCore import Slot, Qt, QPoint, QObject, Signal, QUrl
 from PySide.QtWebKit import QWebPage
@@ -25,6 +25,7 @@ import os
 import shutil
 import hashlib
 import urllib
+import json
 
 
 class ImagePrefs(QDialog):
@@ -275,6 +276,17 @@ class ContentEdit(QObject):
         if self.page.current == 'body':
             self.page.action(action).trigger()
 
+    @Slot()
+    def _insert_link(self):
+        url, ok = QInputDialog.getText(self.parent, 
+            self.app.tr('Everpad / Insert link'),
+            self.app.tr('Press link address'),
+        )
+        if ok and url:
+            self.page.mainFrame().evaluateJavaScript(
+                'insertLink(%s);' % json.dumps(url),
+            )
+
     def get_format_actions(self):
         check_action = QAction(
             self.app.tr('Insert Checkbox'), self,
@@ -282,6 +294,10 @@ class ContentEdit(QObject):
         check_action.triggered.connect(Slot()(lambda: self.page.mainFrame().evaluateJavaScript(
             'insertCheck();',
         )))
+        link_action = QAction(
+            self.app.tr('Insert Link'), self,
+        )
+        link_action.triggered.connect(self._insert_link)
         return map(lambda action: self._action_with_icon(*action), (
             (QWebPage.ToggleBold, 'everpad-text-bold'),
             (QWebPage.ToggleItalic, 'everpad-text-italic'),
@@ -294,6 +310,7 @@ class ContentEdit(QObject):
             (QWebPage.InsertUnorderedList, 'everpad-list-unordered'),
             (QWebPage.InsertOrderedList, 'everpad-list-ordered'),
             (check_action, 'everpad-checkbox', True),
+            (link_action, 'everpad-link', True),
         ))
 
     def paste_res(self, res):

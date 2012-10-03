@@ -57,6 +57,17 @@
         }, false);
         insertEl(el);
     }
+    function insertLink(url) {
+        var range = window.getSelection().getRangeAt(0),
+            content = range.extractContents(),
+            link = document.createElement('a');
+        console.log(content);
+        if (!content.textContent)
+            content = document.createTextNode(url);
+        link.appendChild(content);
+        link.setAttribute('href', url);
+        insertEl(link);
+    }
     function changeRes(hash, width, height) {
         var el = document.querySelector('[hash="' + hash + '"]');
         el.setAttribute('width', width);

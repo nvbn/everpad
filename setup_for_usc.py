@@ -47,6 +47,7 @@ setup(name='everpad',
             'data/editor-icons/everpad-text-underline.png',
             'data/editor-icons/everpad-justify-right.png',
             'data/editor-icons/everpad-checkbox.png',
+            'data/editor-icons/everpad-link.png',
         ]),
         ('/usr/share/icons/hicolor/64x64/apps', [
             'data/everpad-mono.png', 'data/everpad-lens.png',

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="1.1" language="ru_RU">
+<!DOCTYPE TS>
+<TS version="2.0" language="ru_RU">
 <context>
     <name>Dialog</name>
     <message>
@@ -41,12 +42,12 @@
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="580"/>
+        <location filename="everpad/pad/editor.py" line="636"/>
         <source>Close without saving</source>
         <translation>Закрыть без сохранения</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="585"/>
+        <location filename="everpad/pad/editor.py" line="641"/>
         <source>Remove note</source>
         <translation>Удалить заметку</translation>
     </message>
@@ -66,12 +67,12 @@
         <translation>Вставить</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="593"/>
+        <location filename="everpad/pad/editor.py" line="649"/>
         <source>Attache file</source>
         <translation>Прикрепить файл</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="649"/>
+        <location filename="everpad/pad/editor.py" line="705"/>
         <source>Are you sure want to delete this note?</source>
         <translation>Вы уверены что хотите удалить заметку?</translation>
     </message>
@@ -108,7 +109,7 @@
     <message>
         <location filename="everpad/interface/editor.py" line="91"/>
         <source>toolBar</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="everpad/interface/editor.py" line="95"/>
@@ -126,7 +127,7 @@
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="648"/>
+        <location filename="everpad/pad/editor.py" line="704"/>
         <source>You are trying to delete a note</source>
         <translation>Вы пытаетесь удалить заметку</translation>
     </message>
@@ -176,7 +177,7 @@
     <message>
         <location filename="everpad/pad/indicator.py" line="75"/>
         <source>New note content</source>
-        <translation type="unfinished"></translation>
+        <translation>Текст новой заметки</translation>
     </message>
 </context>
 <context>
@@ -207,79 +208,84 @@
         <translation>Заметка</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="73"/>
+        <location filename="everpad/pad/list.py" line="78"/>
         <source>Create new notebook</source>
         <translation>Создать новый блокнот</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="78"/>
+        <location filename="everpad/pad/list.py" line="83"/>
         <source>Notebook &quot;%s&quot; created!</source>
         <translation>Блокнот &quot;%s&quot; создан!</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="92"/>
+        <location filename="everpad/pad/list.py" line="97"/>
         <source>Notebook &quot;%s&quot; renamed!</source>
         <translation>Блокнот &quot;%s&quot; переименован!</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="99"/>
+        <location filename="everpad/pad/list.py" line="104"/>
         <source>You are trying to delete a notebook</source>
         <translation>Вы пытаетесь удалить блокнот</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="100"/>
+        <location filename="everpad/pad/list.py" line="105"/>
         <source>Are you sure want to delete this notebook and its notes?</source>
         <translation>Вы уверены что хотите удалить блокнот и все заметки в нём?</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="107"/>
+        <location filename="everpad/pad/list.py" line="112"/>
         <source>Notebook &quot;%s&quot; deleted!</source>
         <translation>Блокнот &quot;%s&quot; удален!</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="132"/>
+        <location filename="everpad/pad/list.py" line="137"/>
         <source>You are trying to delete a note</source>
         <translation>Вы пытаетесь удалить заметку</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="133"/>
+        <location filename="everpad/pad/list.py" line="138"/>
         <source>Are you sure want to delete note &quot;%s&quot;?</source>
         <translation>Вы уверены что хотите удалить заметку &quot;%s&quot;?</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="138"/>
+        <location filename="everpad/pad/list.py" line="143"/>
         <source>Note &quot;%s&quot; deleted!</source>
         <translation>Заметка &quot;%s&quot; удалена!</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="145"/>
+        <location filename="everpad/pad/list.py" line="150"/>
         <source>Rename</source>
         <translation>Переименовать</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="153"/>
+        <location filename="everpad/pad/list.py" line="158"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="152"/>
+        <location filename="everpad/pad/list.py" line="157"/>
         <source>Edit</source>
         <translation>Редактировать</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="179"/>
+        <location filename="everpad/pad/list.py" line="184"/>
         <source>Enter notebook name:</source>
-        <translation type="unfinished">Введите название блокнота:</translation>
+        <translation>Введите название блокнота:</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="182"/>
+        <location filename="everpad/pad/list.py" line="187"/>
         <source>Notebook with this name already exist. Enter notebook name</source>
         <translation>Блокнот с таким именем уже существует. Введите новое название</translation>
     </message>
     <message>
-        <location filename="everpad/pad/list.py" line="87"/>
+        <location filename="everpad/pad/list.py" line="92"/>
         <source>Rename notebook</source>
         <translation>Переименовать блокнот</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/list.py" line="163"/>
+        <source>All Notes</source>
+        <translation>Все заметки</translation>
     </message>
 </context>
 <context>
@@ -313,19 +319,44 @@
 <context>
     <name>self.app</name>
     <message>
-        <location filename="everpad/pad/editor.py" line="241"/>
+        <location filename="everpad/pad/editor.py" line="245"/>
         <source>Paste as Plain Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Вставиь без форматирования</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="249"/>
+        <location filename="everpad/pad/editor.py" line="264"/>
         <source>Image Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки изображения</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="280"/>
+        <location filename="everpad/pad/editor.py" line="333"/>
         <source>Insert Checkbox</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить флажок</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/editor.py" line="296"/>
+        <source>Everpad / Insert link</source>
+        <translation>Everpad / Добавление ссылки</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/editor.py" line="297"/>
+        <source>Press link address</source>
+        <translation>Введите адрес ссылки</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/editor.py" line="307"/>
+        <source>Everpad / Change link</source>
+        <translation>Everpad / Изменение ссылки</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/editor.py" line="308"/>
+        <source>Press new link address</source>
+        <translation>Введите новый адрес ссылки</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/editor.py" line="337"/>
+        <source>Insert Link</source>
+        <translation>Добавить ссылку</translation>
     </message>
 </context>
 <context>
@@ -341,29 +372,29 @@
         <translation type="obsolete">Скопировать ссылку</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="465"/>
+        <location filename="everpad/pad/editor.py" line="521"/>
         <source>Remove Resource</source>
         <translation>Удалить ресурс</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="470"/>
+        <location filename="everpad/pad/editor.py" line="526"/>
         <source>Save As</source>
         <translation>Сохранить как</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="484"/>
+        <location filename="everpad/pad/editor.py" line="540"/>
         <source>You try to delete resource</source>
         <translation>Вы пытаетесь удалить ресурс</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="485"/>
+        <location filename="everpad/pad/editor.py" line="541"/>
         <source>Are you sure want to delete this resource?</source>
         <translation>Вы уверены что хотите удалить ресурс?</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="459"/>
+        <location filename="everpad/pad/editor.py" line="515"/>
         <source>Put to Content</source>
-        <translation type="unfinished"></translation>
+        <translation>Вставить в заметку</translation>
     </message>
 </context>
 </TS>

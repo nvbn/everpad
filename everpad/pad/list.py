@@ -160,7 +160,7 @@ class List(QDialog):
 
     def _reload_notebooks_list(self, select_notebook_id=None):
         self.notebooksModel.clear()
-        self.notebooksModel.appendRow(QStandardItem(QIcon.fromTheme('user-home'), 'All Notes'))
+        self.notebooksModel.appendRow(QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes')))
 
         index_row = row = 0
         for notebook_struct in self.app.provider.list_notebooks():

@@ -1,3 +1,11 @@
+everpad (1.11-0~oneiric) oneiric; urgency=low
+
+  * "All notes" by vgarvardt
+  * Create / change / remove links
+  * Bug fix
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Wed, 03 Oct 2012 20:42:12 +0400
+
 everpad (1.10-0~oneiric) oneiric; urgency=low
 
   * Insert images, checkboxes and lists in editor

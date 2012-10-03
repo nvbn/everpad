@@ -72,6 +72,7 @@ class Page(QWebPage):
         self.current = None
         self.edit = edit
         self.active_image = None
+        self.active_link = None
 
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
         print message
@@ -81,6 +82,8 @@ class Page(QWebPage):
             self.edit.page_changed()  # shit!
         if message.find('context:') == 0:
             self.active_image, self.active_width, self.active_height = message.split(':')[1:]
+        if message.find('href:') == 0:
+            self.active_link = message[5:]
 
 
 class ContentEdit(QObject):
@@ -243,6 +246,17 @@ class ContentEdit(QObject):
         menu.addAction(paste_wo)
         if self._hovered_url:
             menu.addAction(self.page.action(QWebPage.CopyLinkToClipboard))
+            change_link = QAction('Change link', self)
+            change_link.triggered.connect(
+                Slot()(partial(self._change_link, self.page.active_link)),
+            )
+            menu.addAction(change_link)
+            remove_link = QAction('Remove link', self)
+            remove_link.triggered.connect(
+                self._remove_link,
+            )
+            menu.addAction(remove_link)
+            self.page.active_link = None
         if self.page.active_image:
             res = self.parent.resource_edit.get_by_hash(self.page.active_image)
             self.page.active_image = None
@@ -286,14 +300,39 @@ class ContentEdit(QObject):
             self.page.mainFrame().evaluateJavaScript(
                 'insertLink(%s);' % json.dumps(url),
             )
+            self.page_changed()
+
+    def _change_link(self, url):
+        url, ok = QInputDialog.getText(self.parent, 
+            self.app.tr('Everpad / Change link'),
+            self.app.tr('Press new link address'),
+            text=url,
+        )
+        if ok and url:
+            self.page.mainFrame().evaluateJavaScript(
+                'changeLink(%s);' % json.dumps(url),
+            )
+            self.page_changed()
+
+    @Slot()
+    def _remove_link(self):
+        self.page.mainFrame().evaluateJavaScript(
+            'removeLink();',
+        )
+        self.page_changed()
+
+    @Slot()
+    def _insert_check(self):
+        self.page.mainFrame().evaluateJavaScript(
+            'insertCheck();',
+        )
+        self.page_changed()
 
     def get_format_actions(self):
         check_action = QAction(
             self.app.tr('Insert Checkbox'), self,
         )
-        check_action.triggered.connect(Slot()(lambda: self.page.mainFrame().evaluateJavaScript(
-            'insertCheck();',
-        )))
+        check_action.triggered.connect(self._insert_check)
         link_action = QAction(
             self.app.tr('Insert Link'), self,
         )

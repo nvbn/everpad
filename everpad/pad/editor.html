@@ -19,6 +19,7 @@
 </form>
 <script type="text/javascript">
     var isContent = false;
+    var currentLink = undefined;
     function insertEl(el) {
         var _this = document.getElementById('content');
         try {
@@ -61,12 +62,25 @@
         var range = window.getSelection().getRangeAt(0),
             content = range.extractContents(),
             link = document.createElement('a');
-        console.log(content);
         if (!content.textContent)
             content = document.createTextNode(url);
         link.appendChild(content);
         link.setAttribute('href', url);
         insertEl(link);
+        link.addEventListener('contextmenu', function() {
+                console.log('href:' + url);
+                currentLink = link;
+        }, false);
+    }
+    function changeLink(url) {
+        currentLink.setAttribute('href', url);
+    }
+    function removeLink() {
+        while (currentLink.firstChild)
+            currentLink.parentNode.insertBefore(currentLink.firstChild,
+                currentLink
+            );
+        currentLink.parentNode.removeChild(currentLink);
     }
     function changeRes(hash, width, height) {
         var el = document.querySelector('[hash="' + hash + '"]');
@@ -103,6 +117,12 @@
     [].forEach.call(resources, function(el){
         el.addEventListener('contextmenu', function() {
             console.log('context:' + el.getAttribute('hash') + ':' + el.width + ':' + el.height);
+    }, false);});
+    var links = document.querySelectorAll('a');
+    [].forEach.call(links, function(el){
+        el.addEventListener('contextmenu', function() {
+            console.log('href:' + el.getAttribute('href'));
+            currentLink = el;
     }, false);});
 </script>
 </body>

@@ -68,7 +68,7 @@
     </message>
     <message>
         <location filename="everpad/pad/editor.py" line="649"/>
-        <source>Attache file</source>
+        <source>Attach file</source>
         <translation>Прикрепить файл</translation>
     </message>
     <message>

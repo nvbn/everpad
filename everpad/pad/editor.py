@@ -211,7 +211,7 @@ class ContentEdit(QObject):
 
     def apply(self):
         """Apply title and content when filled"""
-        if self._title and self._content:
+        if None not in (self._title, self._content):
             self.page.mainFrame().setHtml(self._html % {
                 'title': self._title, 
                 'content': self._content,

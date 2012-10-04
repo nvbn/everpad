@@ -646,7 +646,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.ui.toolBar.addAction(action)
         self.ui.toolBar.addSeparator()
         self.ui.toolBar.addAction(
-            QIcon.fromTheme('add'), self.tr('Attache file'),
+            QIcon.fromTheme('add'), self.tr('Attach file'),
             self.resource_edit.add,
         )
         self.ui.toolBar.addSeparator()

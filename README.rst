@@ -41,7 +41,7 @@ Some errors?
 ============
 For debug output you need:
 ``killall everpad everpad-provider everpad-lens``
-``everpad-provider -- verbose``
+``everpad-provider --verbose``
 And in second terminal:
 ``everpad``
 And in third:

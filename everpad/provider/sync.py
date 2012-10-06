@@ -46,6 +46,7 @@ class SyncThread(QThread):
         self.app = app
         self.status = STATUS_NONE
         self.last_sync = datetime.now()
+        self.update_count = 0
         self.timer = QTimer()
         self.timer.timeout.connect(self.sync)
         self.update_timer()
@@ -303,6 +304,10 @@ class SyncThread(QThread):
     def notes_remote(self):
         """Receive notes from server"""
         notes_ids = []
+        update_count = self.note_store.getSyncState(self.auth_token).updateCount
+        if update_count == self.update_count:
+            return
+        self.update_count = update_count
         for note in self._iter_all_notes():
             self.app.log('Note %s remote' % note.title)
             try:

@@ -43,7 +43,7 @@
         var el = document.createElement('input');
         el.setAttribute('type', 'checkbox');
         el.addEventListener('change', function() {
-            console.log("change");
+            window.qpage.page_changed();
             this.setAttribute("checked", this.checked);
         }, false);
         insertEl(el);
@@ -54,7 +54,7 @@
         el.setAttribute('hash', hash);
         el.setAttribute('type', mime)
         el.addEventListener('contextmenu', function(event){
-            console.log('context:' + hash + ':' + el.width + ':' + el.height);
+            window.qpage.set_active_image_info(hash, el.width, el.height);
         }, false);
         insertEl(el);
     }
@@ -67,9 +67,9 @@
         link.appendChild(content);
         link.setAttribute('href', url);
         insertEl(link);
-        link.addEventListener('contextmenu', function() {
-                console.log('href:' + url);
-                currentLink = link;
+        link.addEventListener('contextmenu', function(ev) {
+            window.qpage.set_active_link(ev.target.getAttribute('href'));
+            currentLink = link;
         }, false);
     }
     function changeLink(url) {
@@ -89,7 +89,7 @@
     }
     var content = document.getElementById('content');
     content.addEventListener('focus', function() {
-        console.log("body");
+        window.qpage.set_current_focus("body");
         isContent = true;
     }, false);
     content.addEventListener('keydown', function(event) {
@@ -98,30 +98,30 @@
             var el = document.createElement("img");
             el.className = "tab";
             insertEl(el);
-            console.log("change");
+            window.qpage.page_changed();
             return false;
         }
     }, false);
     var title = document.getElementById('title');
     title.addEventListener('focus', function() {
-        console.log("head");
+        window.qpage.set_current_focus("head");
         isContent = false;
     }, false);
     var checkboxes = document.querySelectorAll('input[type=checkbox]');
     [].forEach.call(checkboxes, function(el){
         el.addEventListener('change', function() {
-        console.log("change");
+        window.qpage.page_changed();
         this.setAttribute("checked", this.checked);
     }, false);});
     var resources = document.querySelectorAll('img[hash]');
     [].forEach.call(resources, function(el){
         el.addEventListener('contextmenu', function() {
-            console.log('context:' + el.getAttribute('hash') + ':' + el.width + ':' + el.height);
+            window.qpage.set_active_image_info(el.getAttribute('hash'), el.width, el.height);
     }, false);});
     var links = document.querySelectorAll('a');
     [].forEach.call(links, function(el){
         el.addEventListener('contextmenu', function() {
-            console.log('href:' + el.getAttribute('href'));
+            window.qpage.set_active_link(el.getAttribute('href'));
             currentLink = el;
     }, false);});
 </script>

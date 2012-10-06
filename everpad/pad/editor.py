@@ -74,16 +74,30 @@ class Page(QWebPage):
         self.active_image = None
         self.active_link = None
 
+        # This allows JavaScript to call back to Slots, connect to Signals
+        # and access/modify Qt props
+        self.mainFrame().addToJavaScriptWindowObject("qpage", self)
+
+    @Slot(str)
+    def set_current_focus(self, focused):
+        self.current = focused
+
+    @Slot()
+    def page_changed(self):
+        self.edit.page_changed()
+
+    @Slot(str, int, int)
+    def set_active_image_info(self, image, width, height):
+        self.active_image = image
+        self.active_width = width
+        self.active_height = height
+
+    @Slot(str)
+    def set_active_link(self, url):
+        self.active_link = url
+
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
         print message
-        if message in ('head', 'body'):
-            self.current = message
-        if message == 'change':
-            self.edit.page_changed()  # shit!
-        if message.find('context:') == 0:
-            self.active_image, self.active_width, self.active_height = message.split(':')[1:]
-        if message.find('href:') == 0:
-            self.active_link = message[5:]
 
 
 class ContentEdit(QObject):

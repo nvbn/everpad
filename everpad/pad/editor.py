@@ -364,7 +364,7 @@ class ContentEdit(QObject):
     def _show_image_dialog(self, res):
         res.w = int(self.page.active_width)
         res.h = int(self.page.active_height)
-        dialog = ImagePrefs(self.app, res)
+        dialog = ImagePrefs(self.app, res, self.parent)
         if dialog.exec_():
             w, h = dialog.get_size()
             self.page.mainFrame().evaluateJavaScript(

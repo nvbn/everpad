@@ -87,6 +87,13 @@
         el.setAttribute('width', width);
         el.setAttribute('height', height);
     }
+    function resExist(hash) {
+        var el = document.querySelector('[hash="' + hash + '"]');
+        if (el)
+            return true;
+        else
+            return false;
+    }
     var content = document.getElementById('content');
     content.addEventListener('focus', function() {
         window.qpage.set_current_focus("body");

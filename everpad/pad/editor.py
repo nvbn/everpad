@@ -388,6 +388,13 @@ class ContentEdit(QObject):
             )
             self.page_changed()
 
+    def in_content(self, res):
+        return self.page.mainFrame().evaluateJavaScript(
+            'resExist("%s");' % (
+                res.hash,
+            ),
+        )
+
 
 class TagEdit(object):
     """Abstraction for tag edit"""
@@ -530,7 +537,7 @@ class ResourceEdit(object):
                         self.to_content, res=res,
                     )),
                 )
-            if not res.in_content:
+            if not self.parent.note_edit.in_content(res):
                 menu.addAction(
                     self.parent.tr('Remove Resource'), Slot()(partial(
                         self.remove, res=res,

@@ -1,3 +1,10 @@
+everpad (1.11.1-0~oneiric) oneiric; urgency=low
+
+  * Apply evernote sync recommendation
+  * Bug fix
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 06 Oct 2012 16:12:17 +0400
+
 everpad (1.11-0~oneiric) oneiric; urgency=low
 
   * "All notes" by vgarvardt

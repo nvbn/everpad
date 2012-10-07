@@ -12,6 +12,7 @@ from PySide.QtCore import Slot, Qt, QPoint, QObject, Signal, QUrl
 from PySide.QtWebKit import QWebPage
 from everpad.interface.editor import Ui_Editor
 from everpad.interface.image import Ui_ImageDialog
+from everpad.interface.tableinsert import Ui_TableInsertDialog 
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider
 from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
@@ -64,6 +65,21 @@ class ImagePrefs(QDialog):
             )
         else:
             self._auto_change = False
+
+
+class TableInsert(QDialog):
+    def __init__(self, *args, **kwargs):
+        QDialog.__init__(self, *args, **kwargs)
+        self.ui = Ui_TableInsertDialog()
+        self.ui.setupUi(self)
+        self.setWindowIcon(get_icon())
+
+    def get_width(self):
+        result = self.ui.width.text()
+        # 0 is %, 1 is px.
+        if self.ui.widthType.currentIndex() == 0:
+            result += '%'
+        return result
 
 
 class Page(QWebPage):
@@ -336,6 +352,18 @@ class ContentEdit(QObject):
         self.page_changed()
 
     @Slot()
+    def _insert_table(self):
+        dialog = TableInsert(self.parent)
+        if dialog.exec_():
+            self.page.mainFrame().evaluateJavaScript(
+                'insertTable(%s, %s, "%s");' % (
+                    dialog.ui.rows.text(),
+                    dialog.ui.columns.text(),
+                    dialog.get_width(),
+                )
+            )
+
+    @Slot()
     def _insert_check(self):
         self.page.mainFrame().evaluateJavaScript(
             'insertCheck();',
@@ -351,6 +379,11 @@ class ContentEdit(QObject):
             self.app.tr('Insert Link'), self,
         )
         link_action.triggered.connect(self._insert_link)
+        table_action = QAction(
+            self.app.tr('Insert Table'), self,
+        )
+        table_action.triggered.connect(self._insert_table)
+
         return map(lambda action: self._action_with_icon(*action), (
             (QWebPage.ToggleBold, 'everpad-text-bold'),
             (QWebPage.ToggleItalic, 'everpad-text-italic'),
@@ -363,6 +396,7 @@ class ContentEdit(QObject):
             (QWebPage.InsertUnorderedList, 'everpad-list-unordered'),
             (QWebPage.InsertOrderedList, 'everpad-list-ordered'),
             (check_action, 'everpad-checkbox', True),
+            (table_action, 'everpad-insert-table', True),
             (link_action, 'everpad-link', True),
         ))
 

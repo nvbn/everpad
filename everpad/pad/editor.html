@@ -58,6 +58,27 @@
         }, false);
         insertEl(el);
     }
+    function insertTable(rows, cols, width) {
+        var table = document.createElement("table");
+        table.setAttribute('border', 1);
+        table.setAttribute('width', width);
+        table.setAttribute('cellspacing', 0);
+        table.setAttribute('cellpadding', 2);
+
+        var tbody = document.createElement('tbody');
+        table.appendChild(tbody);
+        for (var i = 0; i < rows; i++) {
+          var row = table.insertRow(-1);
+          for (var j = 0; j < cols; j++) {
+            var cell = row.insertCell(-1);
+            cell.setAttribute('valign', 'top');
+            var br = document.createElement('br');
+            cell.appendChild(br);
+          }
+        }
+
+        insertEl(table);
+    }
     function insertLink(url) {
         var range = window.getSelection().getRangeAt(0),
             content = range.extractContents(),

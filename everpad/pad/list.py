@@ -24,7 +24,7 @@ class List(QDialog):
         self.closed = False
         self.ui = Ui_List()
         self.ui.setupUi(self)
-        self.setWindowIcon(get_icon())
+        self.setWindowIcon(get_icon('everpad'))
 
         self.notebooksModel = QStandardItemModel()
         self.ui.notebooksList.setModel(self.notebooksModel)
@@ -38,10 +38,10 @@ class List(QDialog):
         self.ui.notesList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.notesList.customContextMenuRequested.connect(self.note_context_menu)
 
-        self.ui.newNotebookBtn.setIcon(QIcon.fromTheme('folder-new'))
+        self.ui.newNotebookBtn.setIcon(get_icon('folder-new'))
         self.ui.newNotebookBtn.clicked.connect(self.new_notebook)
 
-        self.ui.newNoteBtn.setIcon(QIcon.fromTheme('document-new'))
+        self.ui.newNoteBtn.setIcon(get_icon('document-new'))
         self.ui.newNoteBtn.clicked.connect(self.new_note)
 
     def showEvent(self, *args, **kwargs):
@@ -147,20 +147,20 @@ class List(QDialog):
     def notebook_context_menu(self, pos):
         if self.ui.notebooksList.currentIndex().row():
             menu = QMenu(self.ui.notebooksList)
-            menu.addAction(QIcon.fromTheme('gtk-edit'), self.tr('Rename'), self.rename_notebook)
-            menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_notebook)
+            menu.addAction(get_icon('gtk-edit'), self.tr('Rename'), self.rename_notebook)
+            menu.addAction(get_icon('gtk-delete'), self.tr('Remove'), self.remove_notebook)
             menu.exec_(self.ui.notebooksList.mapToGlobal(pos))
 
     @Slot(QPoint)
     def note_context_menu(self, pos):
         menu = QMenu(self.ui.notesList)
-        menu.addAction(QIcon.fromTheme('gtk-edit'), self.tr('Edit'), self.edit_note)
-        menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_note)
+        menu.addAction(get_icon('gtk-edit'), self.tr('Edit'), self.edit_note)
+        menu.addAction(get_icon('gtk-delete'), self.tr('Remove'), self.remove_note)
         menu.exec_(self.ui.notesList.mapToGlobal(pos))
 
     def _reload_notebooks_list(self, select_notebook_id=None):
         self.notebooksModel.clear()
-        self.notebooksModel.appendRow(QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes')))
+        self.notebooksModel.appendRow(QStandardItem(get_icon('user-home'), self.tr('All Notes')))
 
         index_row = row = 0
         for notebook_struct in self.app.provider.list_notebooks():
@@ -190,11 +190,11 @@ class List(QDialog):
 
 class QNotebookItem(QStandardItem):
     def __init__(self, notebook, count):
-        super(QNotebookItem, self).__init__(QIcon.fromTheme('folder'), '%s (%d)' % (notebook.name, count))
+        super(QNotebookItem, self).__init__(get_icon('folder'), '%s (%d)' % (notebook.name, count))
         self.notebook = notebook
 
 
 class QNoteItem(QStandardItem):
     def __init__(self, note):
-        super(QNoteItem, self).__init__(QIcon.fromTheme('x-office-document'), note.title)
+        super(QNoteItem, self).__init__(get_icon('x-office-document'), note.title)
         self.note = note

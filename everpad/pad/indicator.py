@@ -7,6 +7,7 @@ from everpad.tools import get_provider, get_pad, get_auth_token
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
 from everpad.pad.list import List
+from everpad.pad.tools import get_icon
 from everpad.const import STATUS_SYNC, SYNC_STATES, SYNC_STATE_START, SYNC_STATE_FINISH
 from functools import partial
 import signal
@@ -113,9 +114,10 @@ class PadApp(QApplication):
         self.settings = QSettings('everpad', 'everpad-pad')
         self.translator = QTranslator()
         if not self.translator.load('../../i18n/%s' % QLocale.system().name()):
-            self.translator.load('/usr/share/everpad/i18n/%s' % QLocale.system().name())
+            if not self.translator.load('/usr/share/everpad/i18n/%s' % QLocale.system().name()):
+                self.translator.load('/opt/extras.ubuntu.com/everpad/i18n/%s' % QLocale.system().name())
         self.installTranslator(self.translator)
-        self.icon = QIcon.fromTheme('everpad-mono', QIcon('../../everpad-mono.png'))
+        self.icon =get_icon('everpad-mono')
         self.indicator = Indicator(self, self.icon)
         self.indicator.show()
 

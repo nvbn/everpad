@@ -1,3 +1,11 @@
+everpad (2.0-0~oneiric) oneiric; urgency=low
+
+  * First stable release =)
+  * Tables
+  * Bug fix
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Mon, 09 Oct 2012 03:03:17 +0400
+
 everpad (1.11.1-0~oneiric) oneiric; urgency=low
 
   * Apply evernote sync recommendation

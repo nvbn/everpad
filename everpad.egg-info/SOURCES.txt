@@ -29,11 +29,6 @@ everpad/const.py
 everpad/lens.py
 everpad/monkey.py
 everpad/tools.py
-everpad.egg-info/PKG-INFO
-everpad.egg-info/SOURCES.txt
-everpad.egg-info/dependency_links.txt
-everpad.egg-info/top_level.txt
-everpad.egg-info/zip-safe
 everpad/interface/__init__.py
 everpad/interface/editor.py
 everpad/pad/__init__.py

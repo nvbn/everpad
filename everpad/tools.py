@@ -1,5 +1,6 @@
 from functools import wraps, partial
 import dbus
+import os
 
 
 class InterfaceWrapper(object):

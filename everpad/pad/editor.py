@@ -36,7 +36,7 @@ class ImagePrefs(QDialog):
         self.res = res
         self.ui = Ui_ImageDialog()
         self.ui.setupUi(self)
-        self.setWindowIcon(get_icon())
+        self.setWindowIcon(get_icon('everpad'))
         self.ui.widthBox.setValue(self.res.w)
         self.ui.heightBox.setValue(self.res.h)
         self.ui.widthBox.valueChanged.connect(self.width_changed)
@@ -72,7 +72,7 @@ class TableInsert(QDialog):
         QDialog.__init__(self, *args, **kwargs)
         self.ui = Ui_TableInsertDialog()
         self.ui.setupUi(self)
-        self.setWindowIcon(get_icon())
+        self.setWindowIcon(get_icon('everpad'))
 
     def get_width(self):
         result = self.ui.width.text()
@@ -312,7 +312,7 @@ class ContentEdit(QObject):
             action = action_type
         else:
             action = self.page.action(action_type)
-        action.setIcon(QIcon.fromTheme(icon_name))
+        action.setIcon(get_icon(icon_name))
         self.copy_available.connect(action.setEnabled)
         return action
 
@@ -650,7 +650,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.closed = False
         self.ui = Ui_Editor()
         self.ui.setupUi(self)
-        self.setWindowIcon(get_icon())
+        self.setWindowIcon(get_icon('everpad'))
         self.init_controls()
         self.load_note(note)
         self.update_title()
@@ -683,16 +683,16 @@ class Editor(QMainWindow):  # TODO: kill this god shit
 
     def init_toolbar(self):
         self.save_btn = self.ui.toolBar.addAction(
-            QIcon.fromTheme('document-save'), 
+            get_icon('document-save'), 
             self.tr('Save'), self.save,
         )
         self.ui.toolBar.addAction(
-            QIcon.fromTheme('cancel'), 
+            get_icon('cancel'), 
             self.tr('Close without saving'), 
             self.close,
         )
         self.ui.toolBar.addAction(
-            QIcon.fromTheme('edit-delete'),
+            get_icon('edit-delete'),
             self.tr('Remove note'), 
             self.delete,
         )
@@ -701,7 +701,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.ui.toolBar.addAction(action)
         self.ui.toolBar.addSeparator()
         self.ui.toolBar.addAction(
-            QIcon.fromTheme('add'), self.tr('Attach file'),
+            get_icon('add'), self.tr('Attach file'),
             self.resource_edit.add,
         )
         self.ui.toolBar.addSeparator()

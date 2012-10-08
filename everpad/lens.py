@@ -14,6 +14,8 @@ import gettext
 
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'i18n')
 if not os.path.isdir(path):
+    path = '/opt/extras.ubuntu.com/everpad/i18n/'
+if not os.path.isdir(path):
     path = '/usr/share/locale/'
 gettext.bindtextdomain('everpad', path)
 gettext.textdomain('everpad')
@@ -29,7 +31,7 @@ class EverpadLens(SingleScopeLens):
         name = 'everpad'
         description = _('Everpad Lens')
         search_hint = _('Search Everpad')
-        icon = 'everpad-lens'
+        icon = '/opt/extras.ubuntu.com/everpad/data/everpad-lens.png'
         search_on_blank = True
         search_in_global = True
         bus_name = 'net.launchpad.Unity.Lens.EverpadLens'

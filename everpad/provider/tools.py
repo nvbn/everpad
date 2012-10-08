@@ -5,7 +5,7 @@ from thrift.protocol import TBinaryProtocol
 from thrift.transport import THttpClient
 from evernote.edam.userstore import UserStore
 from evernote.edam.notestore import NoteStore
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from everpad.provider.models import Base
 from everpad.const import HOST
@@ -17,6 +17,9 @@ ACTION_CREATE = 1
 ACTION_DELETE = 2
 ACTION_CHANGE = 3
 ACTION_NOEXSIST = 4
+
+def _nocase_lower(item):
+    return unicode(item).lower()
 
 
 def set_auth_token(token):
@@ -30,7 +33,10 @@ def get_db_session(db_path=None):
     engine = create_engine('sqlite:///%s' % db_path)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
-    return Session()
+    session = Session()
+    conn = session.connection()
+    conn.connection.create_function('ilower', 1, _nocase_lower)
+    return session
 
 
 def get_note_store(auth_token=None):

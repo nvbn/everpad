@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from everpad.provider.models import Base
 from everpad.const import HOST
+from urlparse import urlparse
 import os
 
 
@@ -39,14 +40,25 @@ def get_db_session(db_path=None):
     return session
 
 
+def get_proxy_config(scheme):
+    for fmt in ('%s_proxy', '%s_PROXY'):
+        proxy = os.environ.get(fmt % scheme)
+        if proxy is not None:
+            return proxy
+    return None
+
+
 def get_note_store(auth_token=None):
     if not auth_token:
         auth_token = get_auth_token()
     user_store_uri = "https://" + HOST + "/edam/user"
-    user_store_http_client = THttpClient.THttpClient(user_store_uri)
+
+    user_store_http_client = THttpClient.THttpClient(user_store_uri,
+            http_proxy=get_proxy_config(urlparse(user_store_uri).scheme))
     user_store_protocol = TBinaryProtocol.TBinaryProtocol(user_store_http_client)
     user_store = UserStore.Client(user_store_protocol)
     note_store_url = user_store.getNoteStoreUrl(auth_token)
-    note_store_http_client = THttpClient.THttpClient(note_store_url)
+    note_store_http_client = THttpClient.THttpClient(note_store_url,
+            http_proxy=get_proxy_config(urlparse(note_store_url).scheme))
     note_store_protocol = TBinaryProtocol.TBinaryProtocol(note_store_http_client)
     return NoteStore.Client(note_store_protocol)

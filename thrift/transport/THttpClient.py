@@ -17,29 +17,36 @@
 # under the License.
 #
 
-from TTransport import *
-from thrift.transport import httpslib
+import httplib
+import httpslib
+import os
+import socket
+import sys
+import urllib
+import urlparse
+import warnings
+
 from cStringIO import StringIO
 
-import urlparse
-import httplib
-import warnings
-import socket
+from TTransport import *
+
 
 class THttpClient(TTransportBase):
-
   """Http implementation of TTransport base."""
 
-  def __init__(self, uri_or_host, port=None, path=None):
+  def __init__(self, uri_or_host, port=None, path=None, http_proxy=None):
     """THttpClient supports two different types constructor parameters.
 
     THttpClient(host, port, path) - deprecated
     THttpClient(uri)
 
-    Only the second supports https."""
-
+    Only the second supports https.
+    """
     if port is not None:
-      warnings.warn("Please use the THttpClient('http://host:port/path') syntax", DeprecationWarning, stacklevel=2)
+      warnings.warn(
+        "Please use the THttpClient('http://host:port/path') syntax",
+        DeprecationWarning,
+        stacklevel=2)
       self.host = uri_or_host
       self.port = port
       assert path
@@ -57,22 +64,40 @@ class THttpClient(TTransportBase):
       self.path = parsed.path
       if parsed.query:
         self.path += '?%s' % parsed.query
+    if http_proxy is not None:
+      http_proxy = urlparse.urlparse(http_proxy)
+      if http_proxy.scheme == 'http':
+        if http_proxy.port is None:
+          http_proxy.port = 8080
+      else:
+        raise ValueError("Unsupported Proxy Scheme, %s" % http_proxy.scheme)
+      self.http_proxy = http_proxy
     self.__wbuf = StringIO()
     self.__http = None
     self.__timeout = None
+    self.__custom_headers = None
 
   def open(self):
     if self.scheme == 'http':
-      self.__http = httplib.HTTP(self.host, self.port)
+      if self.http_proxy is not None:
+        self.__http = httplib.HTTP(self.http_proxy.hostname,
+                                   self.http_proxy.port)
+      else:
+        self.__http = httplib.HTTP(self.host, self.port)
     else:
-      self.__http = httpslib.HTTPS(self.host, self.port)
+      if self.http_proxy is not None:
+        self.__http = httpslib.HTTPS(self.http_proxy.hostname,
+                                     self.http_proxy.port)
+        self.__http._conn.set_tunnel(self.host, self.port)
+      else:
+        self.__http = httpslib.HTTPS(self.host, self.port)
 
   def close(self):
     self.__http.close()
     self.__http = None
 
   def isOpen(self):
-    return self.__http != None
+    return self.__http is not None
 
   def setTimeout(self, ms):
     if not hasattr(socket, 'getdefaulttimeout'):
@@ -81,7 +106,10 @@ class THttpClient(TTransportBase):
     if ms is None:
       self.__timeout = None
     else:
-      self.__timeout = ms/1000.0
+      self.__timeout = ms / 1000.0
+
+  def setCustomHeaders(self, headers):
+    self.__custom_headers = headers
 
   def read(self, sz):
     return self.__http.file.read(sz)
@@ -101,19 +129,37 @@ class THttpClient(TTransportBase):
   def flush(self):
     if self.isOpen():
       self.close()
-    self.open();
+    self.open()
 
     # Pull data out of buffer
     data = self.__wbuf.getvalue()
     self.__wbuf = StringIO()
 
     # HTTP request
-    self.__http.putrequest('POST', self.path)
+    if self.scheme == 'http' and self.http_proxy is not None:
+      # Instead of using CONNECT semantics for HTTP requests, use standard
+      # http proxy full url semantics.
+      self.__http.putrequest('POST', 'http://%s:%d%s' %
+                             (self.host, self.port, self.path))
+    else:
+      self.__http.putrequest('POST', self.path)
 
     # Write headers
     self.__http.putheader('Host', self.host)
     self.__http.putheader('Content-Type', 'application/x-thrift')
     self.__http.putheader('Content-Length', str(len(data)))
+
+    if not self.__custom_headers or 'User-Agent' not in self.__custom_headers:
+      user_agent = 'Python/THttpClient'
+      script = os.path.basename(sys.argv[0])
+      if script:
+        user_agent = '%s (%s)' % (user_agent, urllib.quote(script))
+      self.__http.putheader('User-Agent', user_agent)
+
+    if self.__custom_headers:
+        for key, val in self.__custom_headers.iteritems():
+            self.__http.putheader(key, val)
+
     self.__http.endheaders()
 
     # Write payload

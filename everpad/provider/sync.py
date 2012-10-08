@@ -223,20 +223,23 @@ class SyncThread(QThread):
             if note.guid:
                 kwargs['guid'] = note.guid
             nt = Note(**kwargs)
-            if note.action == ACTION_CHANGE:
-                nt.resources = self._resources_for_note(note)
-                nt = self.note_store.updateNote(self.auth_token, nt)
-            elif note.action == ACTION_CREATE:
-                nt.resources = self._resources_for_note(note)
-                nt = self.note_store.createNote(self.auth_token, nt)
-                note.guid = nt.guid
-            elif note.action == ACTION_DELETE:
-                try:
+            try:
+                next_action = ACTION_NONE
+                if note.action == ACTION_CHANGE:
+                    nt.resources = self._resources_for_note(note)
+                    nt = self.note_store.updateNote(self.auth_token, nt)
+                elif note.action == ACTION_CREATE:
+                    nt.resources = self._resources_for_note(note)
+                    nt = self.note_store.createNote(self.auth_token, nt)
+                    note.guid = nt.guid
+                elif note.action == ACTION_DELETE:
                     self.note_store.deleteNote(self.auth_token, nt.guid)
                     self.session.delete(note)
-                except EDAMUserException:
-                    pass
-            note.action = ACTION_NONE
+            except EDAMUserException as e:
+                next_action = note.action
+                self.app.log('Note %s failed' % note.title)
+                print e
+            note.action = next_action
         self.session.commit()
 
     def notebooks_remote(self):

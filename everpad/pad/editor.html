@@ -120,9 +120,49 @@
         window.qpage.set_current_focus("body");
         isContent = true;
     }, false);
+    function selectNextCell(el) {
+        while (el.parentNode) {
+            if (el.tagName == 'TD') {
+                if (el.nextSibling) {
+                    // There are more cells in this row
+                    document.getSelection().selectAllChildren(el.nextSibling);
+                } else if (el.parentNode.nextSibling) {
+                    // There are more rows in this table
+                    document.getSelection().selectAllChildren(el.parentNode.nextSibling.firstChild);
+                } else {
+                    // Insert a new row
+                    var num_cells = el.parentNode.childNodes.length;
+                    var row = document.createElement('tr');
+                    var first_cell;
+
+                    for (var i = 0; i < num_cells; i++) {
+                        var cell = document.createElement('td');
+                        if (i == 0) {
+                            first_cell = cell;
+                        }
+                        var br = document.createElement('br');
+                        cell.appendChild(br);
+                        row.appendChild(cell);
+                    }
+                    el.parentNode.parentNode.appendChild(row);
+                    document.getSelection().selectAllChildren(first_cell);
+                }
+
+                return true;
+            }
+            el = el.parentNode;
+        }
+        return false;
+    }
     content.addEventListener('keydown', function(event) {
         if (event.keyCode == 9){
             event.preventDefault();
+
+            // If we're in a table, select the next cell and return immediately
+            if (selectNextCell(document.getSelection().anchorNode)) {
+              return false;
+            }
+
             var el = document.createElement("img");
             el.className = "tab";
             insertEl(el);

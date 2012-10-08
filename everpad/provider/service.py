@@ -62,7 +62,7 @@ class ProviderService(dbus.service.Object):
     ):
         filters = []
         if words:
-            words = '%' + words.replace(' ', '%') + '%'
+            words = '%' + words.replace(' ', '%').lower() + '%'
             filters.append(or_(  # TODO: use xapian
                 func.ilower(Note.title).like(words),
                 func.ilower(Note.content).like(words),

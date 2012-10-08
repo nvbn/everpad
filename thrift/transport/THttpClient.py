@@ -18,14 +18,13 @@
 #
 
 import httplib
-import httpslib
 import os
 import socket
 import sys
 import urllib
 import urlparse
 import warnings
-
+from thrift.transport import httpslib  # fix ssl issue
 from cStringIO import StringIO
 
 from TTransport import *
@@ -78,14 +77,15 @@ class THttpClient(TTransportBase):
     self.__custom_headers = None
 
   def open(self):
+    http_proxy = getattr(self, 'http_proxy', None)
     if self.scheme == 'http':
-      if self.http_proxy is not None:
+      if http_proxy is not None:
         self.__http = httplib.HTTP(self.http_proxy.hostname,
                                    self.http_proxy.port)
       else:
         self.__http = httplib.HTTP(self.host, self.port)
     else:
-      if self.http_proxy is not None:
+      if http_proxy is not None:
         self.__http = httpslib.HTTPS(self.http_proxy.hostname,
                                      self.http_proxy.port)
         self.__http._conn.set_tunnel(self.host, self.port)

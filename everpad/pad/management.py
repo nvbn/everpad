@@ -32,7 +32,7 @@ class Management(QDialog):
         self.startup_file = os.path.join(self.startup_path, 'everpad.desktop')
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.setWindowIcon(get_icon())
+        self.setWindowIcon(get_icon('everpad'))
         for delay in (5, 10, 15, 30):
             self.ui.syncDelayBox.addItem(self.tr('%d minutes') % delay,
                 userData=str(delay * 60 * 1000),

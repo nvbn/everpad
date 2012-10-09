@@ -74,7 +74,7 @@ class EverpadLens(SingleScopeLens):
         ):
             note = Note.from_tuple(note_struct)
             results.append(str(note.id),
-                'everpad-note', self.category, "text/html", note.title,
+                '/opt/extras.ubuntu.com/everpad/data/everpad-note.png', self.category, "text/html", note.title,
                 ''.join(BeautifulSoup(note.content).findAll(text=True)),
             '')
 

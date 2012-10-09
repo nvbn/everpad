@@ -2,7 +2,7 @@
 DBusName=net.launchpad.Unity.Lens.EverpadLens
 DBusPath=/net/launchpad/unity/lens/everpad
 Name=Everpad
-Icon=everpad-lens
+Icon=/opt/extras.ubuntu.com/everpad/data/everpad-lens.png
 Description=Everpad notes lens
 SearchHint=Search everpad notes
 Shortcut=v

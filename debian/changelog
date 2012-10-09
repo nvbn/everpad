@@ -1,3 +1,9 @@
+everpad (2.0.2-0~oneiric) oneiric; urgency=low
+
+  * Fix paths
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Mon, 09 Oct 2012 04:29:07 +0400
+
 everpad (2.0-0~oneiric) oneiric; urgency=low
 
   * First stable release =)

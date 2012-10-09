@@ -1,3 +1,5 @@
+everpad package in ubuntu software center pending review - https://myapps.developer.ubuntu.com/dev/apps/1678/
+
 Please vote for these bugs, they greatly hinder development:
 ============================================================
 https://bugs.launchpad.net/ubuntu/+source/openssl/+bug/965371

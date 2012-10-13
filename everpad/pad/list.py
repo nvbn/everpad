@@ -13,6 +13,7 @@ from everpad.interface.list import Ui_List
 from everpad.pad.tools import get_icon
 from everpad.basetypes import Notebook, Note, NONE_ID
 import dbus
+import datetime
 
 
 class List(QDialog):
@@ -56,6 +57,8 @@ class List(QDialog):
     @Slot()
     def notebook_selected(self, index):
         self.notesModel.clear()
+        self.notesModel.setHorizontalHeaderLabels(
+            [self.tr('Title'), self.tr('Last Updated')])
 
         item = self.notebooksModel.itemFromIndex(index)
         notebook_id = item.notebook.id if index.row() else 0
@@ -66,7 +69,7 @@ class List(QDialog):
         )  # fails with sys.maxint in 64
         for note_struct in notes:
             note = Note.from_tuple(note_struct)
-            self.notesModel.appendRow(QNoteItem(note))
+            self.notesModel.appendRow(QNoteItemFactory(note).make_items())
 
     @Slot()
     def note_dblclicked(self, index):
@@ -194,7 +197,16 @@ class QNotebookItem(QStandardItem):
         self.notebook = notebook
 
 
-class QNoteItem(QStandardItem):
+class QNoteItemFactory(object):
     def __init__(self, note):
-        super(QNoteItem, self).__init__(QIcon.fromTheme('x-office-document'), note.title)
         self.note = note
+
+    def make_items(self):
+        items = [QStandardItem(str(self.note.title)),
+                 QStandardItem(str(datetime.datetime.fromtimestamp(
+                     self.note.updated / 1000.0)))]
+        for item in items:
+            item.note = self.note
+        items[0].setIcon(QIcon.fromTheme('x-office-document'))
+
+        return items

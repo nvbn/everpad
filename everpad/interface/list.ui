@@ -73,16 +73,16 @@
       </layout>
      </item>
      <item>
-      <widget class="QListView" name="notesList">
-       <property name="minimumSize">
-        <size>
-         <width>300</width>
-         <height>0</height>
-        </size>
+      <widget class="QTreeView" name="notesList">
+       <property name="sortingEnabled">
+        <bool>true</bool>
        </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
+       <attribute name="headerDefaultSectionSize">
+        <number>200</number>
+       </attribute>
+       <attribute name="headerShowSortIndicator" stdset="0">
+        <bool>true</bool>
+       </attribute>
       </widget>
      </item>
     </layout>

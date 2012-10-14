@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'list.ui'
 #
-# Created: Tue Oct  2 23:06:26 2012
+# Created: Sat Oct 13 16:54:46 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -38,10 +38,11 @@ class Ui_List(object):
         self.notebooksList.setObjectName("notebooksList")
         self.verticalLayout_2.addWidget(self.notebooksList)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
-        self.notesList = QtGui.QListView(List)
-        self.notesList.setMinimumSize(QtCore.QSize(300, 0))
-        self.notesList.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.notesList = QtGui.QTreeView(List)
+        self.notesList.setSortingEnabled(True)
         self.notesList.setObjectName("notesList")
+        self.notesList.header().setDefaultSectionSize(200)
+        self.notesList.header().setSortIndicatorShown(True)
         self.horizontalLayout.addWidget(self.notesList)
         self.verticalLayout.addLayout(self.horizontalLayout)
 

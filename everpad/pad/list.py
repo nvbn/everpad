@@ -202,8 +202,8 @@ class QNoteItemFactory(object):
         self.note = note
 
     def make_items(self):
-        items = [QStandardItem(str(self.note.title)),
-                 QStandardItem(str(datetime.datetime.fromtimestamp(
+        items = [QStandardItem(unicode(self.note.title)),
+                 QStandardItem(unicode(datetime.datetime.fromtimestamp(
                      self.note.updated / 1000.0)))]
         for item in items:
             item.note = self.note

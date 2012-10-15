@@ -261,9 +261,13 @@ class SyncThread(QThread):
                 self.session.commit()
                 notebooks_ids.append(nb.id)
         if len(notebooks_ids):
-            self.sq(models.Notebook).filter(
-                ~models.Notebook.id.in_(notebooks_ids),
-            ).delete(synchronize_session='fetch')
+            ids = filter(lambda id: id not in notebooks_ids, map(
+                lambda nb: nb.id, self.sq(models.Notebook).all(),
+            ))
+            if len(ids):
+                self.sq(models.Notebook).filter(
+                    models.Notebook.id.in_(ids),
+                ).delete(synchronize_session='fetch')
         self.session.commit()
 
     def tags_remote(self):
@@ -285,9 +289,13 @@ class SyncThread(QThread):
                 self.session.commit()
                 tags_ids.append(tg.id)
         if len(tags_ids):
-            self.sq(models.Tag).filter(
-                ~models.Tag.id.in_(tags_ids)
-            ).delete(synchronize_session='fetch')
+            ids = filter(lambda id: id not in tags_ids, map(
+                lambda tag: tag.id, self.sq(models.Tag).all(),
+            ))
+            if len(ids):
+                self.sq(models.Tag).filter(
+                    models.Tag.id.in_(ids)
+                ).delete(synchronize_session='fetch')
         self.session.commit()
 
     def _iter_all_notes(self):
@@ -337,10 +345,14 @@ class SyncThread(QThread):
                 notes_ids.append(nt.id)
                 self.note_resources_remote(note, nt)
         if len(notes_ids):
-            self.sq(models.Note).filter(and_(
-                ~models.Note.id.in_(notes_ids),
-                models.Note.action != ACTION_NOEXSIST,
-            )).delete(synchronize_session='fetch')        
+            ids = filter(lambda id: id not in notes_ids, map(
+                lambda note: note.id, self.sq(models.Note).all(),
+            ))
+            if len(ids):
+                self.sq(models.Note).filter(and_(
+                    models.Note.id.in_(ids),
+                    models.Note.action != ACTION_NOEXSIST,
+                )).delete(synchronize_session='fetch')        
         self.session.commit()
 
     def note_resources_remote(self, note_api, note_model):

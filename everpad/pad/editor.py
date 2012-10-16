@@ -6,9 +6,13 @@ from PySide.QtGui import (
     QMessageBox, QAction, QFileDialog,
     QMenu, QCompleter, QStringListModel,
     QTextCharFormat, QShortcut, QKeySequence,
-    QDialog, QInputDialog,
+    QDialog, QInputDialog, QFileIconProvider,
+    QWidget, QScrollArea,
 )
-from PySide.QtCore import Slot, Qt, QPoint, QObject, Signal, QUrl
+from PySide.QtCore import (
+    Slot, Qt, QPoint, QObject, Signal, QUrl,
+    QFileInfo, 
+)
 from PySide.QtWebKit import QWebPage
 from everpad.interface.editor import Ui_Editor
 from everpad.interface.image import Ui_ImageDialog
@@ -505,7 +509,31 @@ class NotebookEdit(object):
         self.widget.setCurrentIndex(notebook_index)
 
 
-class ResourceEdit(object):
+class ResourceItem(QWidget):
+    def __init__(self, res):
+        QWidget.__init__(self)
+        self.res = res
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+        preview = QLabel()
+        if 'image' in res.mime:
+            pixmap = QPixmap(res.file_path).scaledToWidth(96)
+            
+        else:
+            info = QFileInfo(res.file_path)
+            pixmap = QFileIconProvider().icon(info).pixmap(64, 64)
+        preview.setPixmap(pixmap)
+        preview.setMask(pixmap.mask())
+        preview.setMaximumHeight(96)
+        label = QLabel()
+        label.setText(res.file_name)
+        layout.addWidget(preview)
+        layout.addWidget(label)
+        self.setFixedWidth(96)
+        self.setFixedHeight(100)
+
+
+class ResourceEdit(object):  # TODO: move event to item
     """Abstraction for notebook edit"""
 
     def __init__(self, parent, app, widget, on_change):
@@ -518,9 +546,10 @@ class ResourceEdit(object):
         self._resource_labels = {}
         self._resources = []
         self._res_hash = {}
-        frame = QFrame()
+        frame = QScrollArea()
         frame.setLayout(QVBoxLayout())
         frame.setFixedWidth(100)
+        frame.setAlignment(Qt.AlignTop)
         self.widget.setFixedWidth(100)
         self.widget.setWidget(frame)
         self.widget.hide()
@@ -541,17 +570,11 @@ class ResourceEdit(object):
 
     def _put(self, res):
         """Put resource on widget"""
-        label = QLabel()
-        if 'image' in res.mime:
-            pixmap = QPixmap(res.file_path).scaledToWidth(100)
-            label.setPixmap(pixmap)
-            label.setMask(pixmap.mask())
-        else:
-            label.setText(res.file_name)
-        label.mouseReleaseEvent = partial(self.click, res)
-        self.widget.widget().layout().addWidget(label)
+        item = ResourceItem(res)
+        item.mouseReleaseEvent = partial(self.click, res)
+        self.widget.widget().layout().addWidget(item)
         self.widget.show()
-        self._resource_labels[res] = label
+        self._resource_labels[res] = item
         self._res_hash[res.hash] = res
         res.in_content = False
 

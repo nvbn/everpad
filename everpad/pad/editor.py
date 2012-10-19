@@ -18,7 +18,7 @@ from everpad.interface.editor import Ui_Editor
 from everpad.interface.image import Ui_ImageDialog
 from everpad.interface.tableinsert import Ui_TableInsertDialog 
 from everpad.pad.tools import get_icon
-from everpad.tools import get_provider
+from everpad.tools import get_provider, sanitize, clean
 from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
 from BeautifulSoup import BeautifulSoup
@@ -138,24 +138,6 @@ class Page(QWebPage):
 
 
 class ContentEdit(QObject):
-    _allowed_tags = (
-        'a', 'abbr', 'acronym', 'address', 'area', 'b', 'bdo',
-        'big', 'blockquote', 'br', 'caption', 'center', 'cite',
-        'code', 'col', 'colgroup', 'dd', 'del', 'dfn', 'div',
-        'dl', 'dt', 'em', 'font', 'h1', 'h2', 'h3', 'h4', 'h5',
-        'h6', 'hr', 'i', 'img', 'ins', 'kbd', 'li', 'map', 'ol',
-        'p', 'pre', 'q', 's', 'samp', 'small', 'span', 'strike',
-        'strong', 'sub', 'sup', 'table', 'tbody', 'td', 'tfoot',
-        'th', 'thead', 'title', 'tr', 'tt', 'u', 'ul', 'var', 'xmp',
-        'en-media', 'en-todo', 'en-crypt',
-    )
-    _disallowed_attrs = (
-        'id', 'class', 'onclick', 'ondblclick',
-        'accesskey', 'data', 'dynsrc', 'tabindex',
-    )
-    _protocols = (
-        'http', 'https', 'file',
-    )
     _html = open(os.path.join(
         os.path.dirname(__file__), 'editor.html',
     )).read()
@@ -190,7 +172,7 @@ class ContentEdit(QObject):
         """Cache title and return"""
         soup = BeautifulSoup(self.page.mainFrame().toHtml())
         self._title = soup.find(id='title').text
-        return self._title
+        return clean(self._title)
 
     @title.setter
     def title(self, val):
@@ -213,11 +195,7 @@ class ContentEdit(QObject):
             if media.get('hash'):
                 media.name = 'en-media'
                 del media['src']
-        self._content = reduce(
-             lambda txt, cur: txt + unicode(cur),
-             self._sanitize(soup.find(id='content')).contents, 
-        u'').replace('\n', '')
-        print self._content
+        self._content = sanitize(soup=soup.find(id='content'))
         return self._content
 
     @content.setter
@@ -240,27 +218,7 @@ class ContentEdit(QObject):
             else:
                 media.hidden = True
         self._content = unicode(soup).replace(' ' * 5, '<img class="tab" />')  # shit!
-        print self._content
         self.apply()
-
-    def _sanitize(self, soup):  # TODO: optimize it
-        for tag in soup.findAll(True):
-            if tag.name in self._allowed_tags:
-                for attr in self._disallowed_attrs:
-                    try:
-                        del tag[attr]
-                    except KeyError:
-                        pass
-                try:
-                    if not sum(map(
-                        lambda proto: tag['href'].find(proto + '://') == 0, 
-                    self._protocols)):
-                        del tag['href']
-                except KeyError:
-                    pass
-            else:
-                tag.hidden = True
-        return soup
 
     def apply(self):
         """Apply title and content when filled"""

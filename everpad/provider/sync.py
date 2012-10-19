@@ -20,7 +20,7 @@ from everpad.provider.tools import (
     get_db_session, get_note_store,
     ACTION_NOEXSIST,
 )
-from everpad.tools import get_auth_token
+from everpad.tools import get_auth_token, sanitize, clean
 from everpad.provider import models
 from everpad.const import (
     STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY,
@@ -215,7 +215,9 @@ class SyncThread(QThread):
                 content= (u"""
                     <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
                     <en-note>%s</en-note>
-                """ % note.content[:EDAM_NOTE_CONTENT_LEN_MAX]).strip().encode('utf8'),
+                """ % sanitize(
+                        html=note.content[:EDAM_NOTE_CONTENT_LEN_MAX]
+                    )).strip().encode('utf8'),
                 tagGuids=map(
                     lambda tag: tag.guid, note.tags,
                 ),

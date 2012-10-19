@@ -32,6 +32,7 @@ import shutil
 import hashlib
 import urllib
 import json
+import re
 
 
 class ImagePrefs(QDialog):
@@ -195,7 +196,7 @@ class ContentEdit(QObject):
             if media.get('hash'):
                 media.name = 'en-media'
                 del media['src']
-        self._content = sanitize(soup=soup.find(id='content'))
+        self._content = sanitize(soup=soup.find(id='content')).replace('  ', u'\xa0 ')
         return self._content
 
     @content.setter
@@ -217,7 +218,10 @@ class ContentEdit(QObject):
                     media['src'] = ''
             else:
                 media.hidden = True
-        self._content = unicode(soup).replace(' ' * 5, '<img class="tab" />')  # shit!
+        self._content = re.sub(
+            r'([(&nbsp) ]{5})', '<img class="tab" />', 
+            unicode(soup).replace(u'\xa0', ' '),
+        )  # shit!
         self.apply()
 
     def apply(self):

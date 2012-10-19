@@ -209,7 +209,7 @@ class ContentEdit(QObject):
             del todo['type']
         for media in soup.findAll('img'):
             if media.get('class') == 'tab':
-                media.replaceWith('\t')
+                media.replaceWith(' ' * 5)
             if media.get('hash'):
                 media.name = 'en-media'
                 del media['src']
@@ -217,6 +217,7 @@ class ContentEdit(QObject):
              lambda txt, cur: txt + unicode(cur),
              self._sanitize(soup.find(id='content')).contents, 
         u'').replace('\n', '')
+        print self._content
         return self._content
 
     @content.setter
@@ -238,7 +239,8 @@ class ContentEdit(QObject):
                     media['src'] = ''
             else:
                 media.hidden = True
-        self._content = unicode(soup).replace('\t', '<img class="tab" />')  # shit!
+        self._content = unicode(soup).replace(' ' * 5, '<img class="tab" />')  # shit!
+        print self._content
         self.apply()
 
     def _sanitize(self, soup):  # TODO: optimize it

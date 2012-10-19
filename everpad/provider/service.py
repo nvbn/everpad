@@ -142,6 +142,7 @@ class ProviderService(dbus.service.Object):
             nb.action = ACTION_CHANGE
             self.session.commit()
             notebook.give_to_obj(nb)
+            self.data_changed()
             return btype.Notebook.from_obj(nb).struct
         except NoResultFound:
             raise DBusException('Notebook does not exist')
@@ -156,6 +157,7 @@ class ProviderService(dbus.service.Object):
                 Notebook.id == id,
             ).one().action = ACTION_DELETE
             self.session.commit()
+            self.data_changed()
             return True
         except NoResultFound:
             raise DBusException('Notebook does not exist')
@@ -184,6 +186,7 @@ class ProviderService(dbus.service.Object):
         note.created = int(time.time() * 1000)
         self.session.add(note)
         self.session.commit()
+        self.data_changed()
         return btype.Note.from_obj(note).struct
 
     @dbus.service.method(
@@ -206,6 +209,7 @@ class ProviderService(dbus.service.Object):
             note.action = ACTION_CHANGE
         note.updated = int(time.time() * 1000)
         self.session.commit()
+        self.data_changed()
         return btype.Note.from_obj(note).struct
 
     @dbus.service.method(
@@ -237,6 +241,7 @@ class ProviderService(dbus.service.Object):
         if note.action != ACTION_CREATE:
             note.action = ACTION_CHANGE
         self.session.commit()
+        self.data_changed()
         return btype.Note.from_obj(note).struct
 
     @dbus.service.method(
@@ -247,6 +252,7 @@ class ProviderService(dbus.service.Object):
         try:
             self.sq(Note).filter(Note.id == id).one().action = ACTION_DELETE
             self.session.commit()
+            self.data_changed()
             return True
         except NoResultFound:
             raise DBusException('Note not found')
@@ -269,6 +275,7 @@ class ProviderService(dbus.service.Object):
         )
         self.session.add(notebook)
         self.session.commit()
+        self.data_changed()
         return btype.Notebook.from_obj(notebook).struct
 
     @dbus.service.method(
@@ -280,6 +287,7 @@ class ProviderService(dbus.service.Object):
         self.qobject.authenticate_signal.emit(token)
         if self.app.sync_thread.status != STATUS_SYNC:
             self.app.sync_thread.force_sync()
+        self.data_changed()
 
     @dbus.service.method(
         "com.everpad.Provider",
@@ -287,6 +295,7 @@ class ProviderService(dbus.service.Object):
     )
     def remove_authentication(self):
         self.qobject.remove_authenticate_signal.emit()
+        self.data_changed()
 
     @dbus.service.method(
         "com.everpad.Provider",
@@ -349,12 +358,6 @@ class ProviderService(dbus.service.Object):
     def get_sync_delay(self):
         return int(self.app.settings.value('sync_delay') or 0) or DEFAULT_SYNC_DELAY
 
-    @dbus.service.signal(
-        'com.everpad.provider', signature='i',
-    )
-    def sync_state_changed(self, state):
-        return
-
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
         out_signature='b',
@@ -365,3 +368,14 @@ class ProviderService(dbus.service.Object):
             Notebook.default == True,
         )).count())
 
+    @dbus.service.signal(
+        'com.everpad.provider', signature='i',
+    )
+    def sync_state_changed(self, state):
+        return
+
+    @dbus.service.signal(
+        'com.everpad.provider', signature='',
+    )
+    def data_changed(self):
+        return

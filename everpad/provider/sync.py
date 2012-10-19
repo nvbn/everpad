@@ -40,6 +40,7 @@ class SyncThread(QThread):
     """Sync notes with evernote thread"""
     force_sync_signal = Signal()
     sync_state_changed = Signal(int)
+    data_changed = Signal()
 
     def __init__(self, app, *args, **kwargs):
         QThread.__init__(self, *args, **kwargs)
@@ -106,6 +107,7 @@ class SyncThread(QThread):
         finally:
             self.sync_state_changed.emit(SYNC_STATE_FINISH)
             self.status = STATUS_NONE
+        self.data_changed.emit()
 
     def local_changes(self):
         """Send local changes to evernote server"""

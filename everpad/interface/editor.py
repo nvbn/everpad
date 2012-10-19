@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Tue Sep 25 21:52:27 2012
-#      by: pyside-uic 0.2.13 running on PySide 1.1.0
+# Created: Fri Oct 19 17:51:22 2012
+#      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -23,16 +23,6 @@ class Ui_Editor(object):
         self.contentView.setUrl(QtCore.QUrl("about:blank"))
         self.contentView.setObjectName("contentView")
         self.horizontalLayout.addWidget(self.contentView)
-        self.resourceArea = QtGui.QScrollArea(self.centralwidget)
-        self.resourceArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.resourceArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.resourceArea.setWidgetResizable(True)
-        self.resourceArea.setObjectName("resourceArea")
-        self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 76, 286))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.resourceArea.setWidget(self.scrollAreaWidgetContents)
-        self.horizontalLayout.addWidget(self.resourceArea)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.options = QtGui.QHBoxLayout()
         self.options.setObjectName("options")
@@ -43,6 +33,20 @@ class Ui_Editor(object):
         self.tags.setObjectName("tags")
         self.options.addWidget(self.tags)
         self.verticalLayout.addLayout(self.options)
+        self.resourceLabel = QtGui.QLabel(self.centralwidget)
+        self.resourceLabel.setTextFormat(QtCore.Qt.AutoText)
+        self.resourceLabel.setObjectName("resourceLabel")
+        self.verticalLayout.addWidget(self.resourceLabel)
+        self.resourceArea = QtGui.QScrollArea(self.centralwidget)
+        self.resourceArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.resourceArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.resourceArea.setWidgetResizable(True)
+        self.resourceArea.setObjectName("resourceArea")
+        self.scrollAreaWidgetContents = QtGui.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 545, 76))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.resourceArea.setWidget(self.scrollAreaWidgetContents)
+        self.verticalLayout.addWidget(self.resourceArea)
         Editor.setCentralWidget(self.centralwidget)
         self.toolBar = QtGui.QToolBar(Editor)
         self.toolBar.setMovable(False)
@@ -88,6 +92,7 @@ class Ui_Editor(object):
         self.notebook.setToolTip(QtGui.QApplication.translate("Editor", "Select notebook", None, QtGui.QApplication.UnicodeUTF8))
         self.tags.setToolTip(QtGui.QApplication.translate("Editor", "Note tags", None, QtGui.QApplication.UnicodeUTF8))
         self.tags.setPlaceholderText(QtGui.QApplication.translate("Editor", "Commas separated tags", None, QtGui.QApplication.UnicodeUTF8))
+        self.resourceLabel.setText(QtGui.QApplication.translate("Editor", "%d attached files, <a href=\'#\'>show</a> / <a href=\'#\'> add another</a>", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("Editor", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFIle.setTitle(QtGui.QApplication.translate("Editor", "Note", None, QtGui.QApplication.UnicodeUTF8))
         self.menuEdit.setTitle(QtGui.QApplication.translate("Editor", "Edit", None, QtGui.QApplication.UnicodeUTF8))

@@ -36,7 +36,7 @@ def get_db_session(db_path=None):
     Session = sessionmaker(bind=engine)
     session = Session()
     conn = session.connection()
-    conn.connection.create_function('ilower', 1, _nocase_lower)
+    conn.connection.create_function('lower', 1, _nocase_lower)
     return session
 
 

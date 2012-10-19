@@ -26,29 +26,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QScrollArea" name="resourceArea">
-        <property name="verticalScrollBarPolicy">
-         <enum>Qt::ScrollBarAsNeeded</enum>
-        </property>
-        <property name="horizontalScrollBarPolicy">
-         <enum>Qt::ScrollBarAlwaysOff</enum>
-        </property>
-        <property name="widgetResizable">
-         <bool>true</bool>
-        </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>76</width>
-           <height>286</height>
-          </rect>
-         </property>
-        </widget>
-       </widget>
-      </item>
      </layout>
     </item>
     <item>
@@ -71,6 +48,39 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="resourceLabel">
+      <property name="text">
+       <string>%d attached files, &lt;a href='#'&gt;show&lt;/a&gt; / &lt;a href='#'&gt; add another&lt;/a&gt;</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::AutoText</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QScrollArea" name="resourceArea">
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>545</width>
+         <height>76</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

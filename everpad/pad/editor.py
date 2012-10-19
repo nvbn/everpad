@@ -7,7 +7,7 @@ from PySide.QtGui import (
     QMenu, QCompleter, QStringListModel,
     QTextCharFormat, QShortcut, QKeySequence,
     QDialog, QInputDialog, QFileIconProvider,
-    QWidget, QScrollArea, QFont,
+    QWidget, QScrollArea, QFont, QHBoxLayout,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
@@ -498,27 +498,29 @@ class ResourceItem(QWidget):
         self.setLayout(layout)
         preview = QLabel()
         if 'image' in res.mime:
-            pixmap = QPixmap(res.file_path).scaledToWidth(96)
+            pixmap = QPixmap(res.file_path).scaledToWidth(32)
             
         else:
             info = QFileInfo(res.file_path)
-            pixmap = QFileIconProvider().icon(info).pixmap(64, 64)
+            pixmap = QFileIconProvider().icon(info).pixmap(32, 32)
         preview.setPixmap(pixmap)
         preview.setMask(pixmap.mask())
-        preview.setMaximumHeight(96)
+        preview.setMaximumHeight(32)
         label = QLabel()
         label.setText(res.file_name)
         layout.addWidget(preview)
         layout.addWidget(label)
-        self.setFixedWidth(96)
-        self.setFixedHeight(100)
+        layout.setAlignment(Qt.AlignHCenter)
+        self.setFixedWidth(64)
+        self.setFixedHeight(64)
 
 
 class ResourceEdit(object):  # TODO: move event to item
     """Abstraction for notebook edit"""
 
-    def __init__(self, parent, app, widget, on_change):
+    def __init__(self, parent, app, widget, label, on_change):
         """Init and connect signals"""
+        self.label = label
         self.parent = parent
         self.app = app
         self.widget = widget
@@ -527,15 +529,43 @@ class ResourceEdit(object):  # TODO: move event to item
         self._resource_labels = {}
         self._resources = []
         self._res_hash = {}
-        frame = QScrollArea()
-        frame.setLayout(QVBoxLayout())
-        frame.setFixedWidth(100)
-        frame.setAlignment(Qt.AlignTop)
-        self.widget.setFixedWidth(100)
-        self.widget.setWidget(frame)
-        self.widget.hide()
+        self.widget.setLayout(QHBoxLayout())
+        self.widget.layout().setAlignment(Qt.AlignLeft)
         self.mime = magic.open(magic.MIME_TYPE)
         self.mime.load()
+        if int(self.app.settings.value(
+            'note-resources-%d' % self.parent.note.id, 0,
+        )):
+            self.widget.show()
+        self.label.linkActivated.connect(self.label_uri)
+        self.label.setContextMenuPolicy(Qt.NoContextMenu)
+
+    def update_label(self):
+        self.label.setText(
+            self.app.tr(
+                '%d attached files: <a href="show">%s</a> / <a href="add">add another</a>',
+            ) % (
+                len(self._resources), self.app.tr('show') if self.widget.isHidden()
+                else self.app.tr('hide'),
+            ),
+        )
+
+    @Slot(QUrl)
+    def label_uri(self, uri):
+        uri = str(uri)
+        if  uri == 'add':
+            self.add()
+        elif uri == 'show':
+            if self.widget.isHidden():
+                self.widget.show()
+                visible = 1
+            else:
+                self.widget.hide()
+                visible = 0
+            self.app.settings.setValue(
+                'note-resources-%d' % self.parent.note.id, visible,
+            )
+            self.update_label()
 
     @property
     def resources(self):
@@ -553,11 +583,11 @@ class ResourceEdit(object):  # TODO: move event to item
         """Put resource on widget"""
         item = ResourceItem(res)
         item.mouseReleaseEvent = partial(self.click, res)
-        self.widget.widget().layout().addWidget(item)
-        self.widget.show()
+        self.widget.layout().addWidget(item)
         self._resource_labels[res] = item
         self._res_hash[res.hash] = res
         res.in_content = False
+        self.update_label()
 
     def get_by_hash(self, hash):
         return self._res_hash.get(hash)
@@ -651,6 +681,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
     def __init__(self, app, note, *args, **kwargs):
         QMainWindow.__init__(self, *args, **kwargs)
         self.app = app
+        self.note = note
         self.closed = False
         self.ui = Ui_Editor()
         self.ui.setupUi(self)
@@ -680,8 +711,8 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.ui.notebook, self.mark_touched,
         )
         self.resource_edit = ResourceEdit(
-            self, self.app, 
-            self.ui.resourceArea, self.mark_touched,
+            self, self.app, self.ui.resourceArea, 
+            self.ui.resourceLabel, self.mark_touched,
         )
         self.init_toolbar()
 
@@ -711,7 +742,6 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.toolBar.addSeparator()
 
     def load_note(self, note):
-        self.note = note
         self.resource_edit.resources = map(Resource.from_tuple,
             self.app.provider.get_note_resources(note.id),
         )

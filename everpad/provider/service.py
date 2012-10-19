@@ -64,10 +64,10 @@ class ProviderService(dbus.service.Object):
         if words:
             words = '%' + words.replace(' ', '%').lower() + '%'
             filters.append(or_(  # TODO: use xapian
-                func.ilower(Note.title).like(words),
-                func.ilower(Note.content).like(words),
-                Note.tags.any(func.ilower(Tag.name).like(words)),
-                Note.notebook.has(func.ilower(Notebook.name).like(words)),
+                func.lower(Note.title).like(words),
+                func.lower(Note.content).like(words),
+                Note.tags.any(func.lower(Tag.name).like(words)),
+                Note.notebook.has(func.lower(Notebook.name).like(words)),
             ))
         if notebooks:
             filters.append(

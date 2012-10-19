@@ -1,12 +1,13 @@
 import sys
 sys.path.insert(0, '..')
 from singlet.lens import SingleScopeLens, IconViewCategory, ListViewCategory
-from gi.repository import Gio, Unity
+from gi.repository import Gio, Unity, GObject
 from singlet.utils import run_lens
 from everpad.tools import get_provider, get_pad
 from everpad.basetypes import Note, Tag, Notebook, Place, Resource
 from html2text import html2text
 import dbus
+import dbus.mainloop.glib
 import sys
 import os
 import gettext
@@ -19,7 +20,7 @@ gettext.bindtextdomain('everpad', path)
 gettext.textdomain('everpad')
 _ = gettext.gettext
 
-
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 provider = get_provider()
 
 
@@ -37,6 +38,16 @@ class EverpadLens(SingleScopeLens):
 
     def __init__(self):
         SingleScopeLens.__init__(self)
+        provider.connect_to_signal(
+            'data_changed',
+            self.update_props,
+            dbus_interface="com.everpad.provider",
+        )
+        self.update_props()
+        self._lens.props.search_in_global = True
+        self._scope.connect('preview-uri', self.preview)
+
+    def update_props(self):
         icon = Gio.ThemedIcon.new("/usr/share/icons/unity-icon-theme/places/svg/group-recent.svg")
         tags = Unity.CheckOptionFilter.new('tags', _('Tags'), icon, True)
         for tag_struct in provider.list_tags():
@@ -51,8 +62,6 @@ class EverpadLens(SingleScopeLens):
             place = Place.from_tuple(place_struct)
             places.add_option(str(place.id), place.name, icon)
         self._lens.props.filters = [notebooks, tags, places]
-        self._lens.props.search_in_global = True
-        self._scope.connect('preview-uri', self.preview)
 
     category = ListViewCategory(_("Notes"), 'everpad-lens')
 

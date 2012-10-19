@@ -1,3 +1,18 @@
+everpad (2.0-0~oneiric) oneiric; urgency=low
+
+  * Fast image insert
+  * New less ugly resource widget
+  * Insert tables
+  * Authorisation in embed webkit
+  * Lens filters synced with provider
+  * Attachment icons
+  * Ability to change font
+  * Ability to use black icon
+  * Improve "All notes"
+  * Fix sync issues
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Fri, 19 Oct 2012 19:09:27 +0400
+
 everpad (1.11.1-0~oneiric) oneiric; urgency=low
 
   * Apply evernote sync recommendation

@@ -196,7 +196,9 @@ class ContentEdit(QObject):
             if media.get('hash'):
                 media.name = 'en-media'
                 del media['src']
-        self._content = sanitize(soup=soup.find(id='content')).replace('  ', u'\xa0 ')
+        self._content = sanitize(
+            soup=soup.find(id='content'),
+        ).replace('  ', u'\xa0 ')
         return self._content
 
     @content.setter
@@ -355,6 +357,14 @@ class ContentEdit(QObject):
         )
         self.page_changed()
 
+    @Slot()
+    def _insert_image(self):
+        name = QFileDialog.getOpenFileName(
+            filter=self.app.tr("Image Files (*.png *.jpg *.bmp *.gif)"),
+        )[0]
+        res = self.parent.resource_edit.add_attach(name)
+        self.paste_res(res)
+
     def get_format_actions(self):
         check_action = QAction(
             self.app.tr('Insert Checkbox'), self,
@@ -368,6 +378,10 @@ class ContentEdit(QObject):
             self.app.tr('Insert Table'), self,
         )
         table_action.triggered.connect(self._insert_table)
+        image_action = QAction(
+            self.app.tr('Insert Image'), self,
+        )
+        image_action.triggered.connect(self._insert_image)
 
         return map(lambda action: self._action_with_icon(*action), (
             (QWebPage.ToggleBold, 'everpad-text-bold'),
@@ -383,6 +397,7 @@ class ContentEdit(QObject):
             (check_action, 'everpad-checkbox', True),
             (table_action, 'everpad-insert-table', True),
             (link_action, 'everpad-link', True),
+            (image_action, 'everpad-insert-image', True),
         ))
 
     def paste_res(self, res):
@@ -578,6 +593,7 @@ class ResourceEdit(object):  # TODO: move event to item
         self._resources = val
         for res in val:
             self._put(res)
+        self.update_label()
 
     def _put(self, res):
         """Put resource on widget"""
@@ -673,6 +689,7 @@ class ResourceEdit(object):  # TODO: move event to item
         self._resources.append(res)
         self._put(res)
         self.on_change()
+        return res
 
 
 class Editor(QMainWindow):  # TODO: kill this god shit
@@ -734,12 +751,6 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.toolBar.addSeparator()
         for action in self.note_edit.get_format_actions():
             self.ui.toolBar.addAction(action)
-        self.ui.toolBar.addSeparator()
-        self.ui.toolBar.addAction(
-            QIcon.fromTheme('add'), self.tr('Attach file'),
-            self.resource_edit.add,
-        )
-        self.ui.toolBar.addSeparator()
 
     def load_note(self, note):
         self.resource_edit.resources = map(Resource.from_tuple,

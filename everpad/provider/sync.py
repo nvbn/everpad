@@ -29,6 +29,7 @@ from everpad.const import (
     SYNC_STATE_NOTEBOOKS_REMOTE, SYNC_STATE_TAGS_REMOTE, 
     SYNC_STATE_NOTES_REMOTE, SYNC_STATE_FINISH,
 )
+from BeautifulSoup import BeautifulStoneSoup
 from datetime import datetime
 import binascii
 import time
@@ -210,14 +211,18 @@ class SyncThread(QThread):
             models.Note.action != ACTION_NOEXSIST,
         )):
             self.app.log('Note %s local' % note.title)
-            kwargs = dict(
-                title=note.title[:EDAM_NOTE_TITLE_LEN_MAX].strip().encode('utf8'),
-                content= (u"""
+            content = (u"""
                     <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
                     <en-note>%s</en-note>
                 """ % sanitize(
                         html=note.content[:EDAM_NOTE_CONTENT_LEN_MAX]
-                    )).strip().encode('utf8'),
+                    )).strip().encode('utf8')
+            soup = BeautifulStoneSoup(content, selfClosingTags=[
+                'img', 'en-todo', 'en-media', 'br', 'hr',
+            ])
+            kwargs = dict(
+                title=note.title[:EDAM_NOTE_TITLE_LEN_MAX].strip().encode('utf8'),
+                content=soup.prettify(),
                 tagGuids=map(
                     lambda tag: tag.guid, note.tags,
                 ),
@@ -242,6 +247,7 @@ class SyncThread(QThread):
             except EDAMUserException as e:
                 next_action = note.action
                 self.app.log('Note %s failed' % note.title)
+                print soup.prettify()
                 print e
             note.action = next_action
         self.session.commit()

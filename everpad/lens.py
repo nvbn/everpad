@@ -5,7 +5,7 @@ from gi.repository import Gio, Unity
 from singlet.utils import run_lens
 from everpad.tools import get_provider, get_pad
 from everpad.basetypes import Note, Tag, Notebook, Place, Resource
-from BeautifulSoup import BeautifulSoup
+from html2text import html2text
 import dbus
 import sys
 import os
@@ -72,22 +72,15 @@ class EverpadLens(SingleScopeLens):
         ):
             note = Note.from_tuple(note_struct)
             results.append(str(note.id),
-                'everpad-note', self.category, "text/html", note.title,
-                ''.join(BeautifulSoup(note.content).findAll(text=True)),
+                'everpad-note', self.category, "text/html",
+                note.title, html2text(note.content),
             '')
 
     def preview(self, scope, id):
         note = Note.from_tuple(provider.get_note(int(id)))
-        soup = BeautifulSoup(note.content)
-        for tag in soup.findAll():
-            text = tag.text
-            if tag.name in (
-                'br', 'p', 'div', 'li', 
-                'ol', 'en-media', 'en-todo',
-            ):
-                text += '\n'
-            tag.replaceWith(text)
-        preview = Unity.GenericPreview.new(note.title, soup.prettify(), None)
+        preview = Unity.GenericPreview.new(
+            note.title, html2text(note.content), None,
+        )
         edit = Unity.PreviewAction.new("edit", "Edit", None)
         image = None
         for _res in provider.get_note_resources(note.id):

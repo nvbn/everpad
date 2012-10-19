@@ -1,3 +1,9 @@
+everpad (2.0.1-0~oneiric) oneiric; urgency=low
+
+  * Fix no image
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Fri, 19 Oct 2012 20:36:02 +0400
+
 everpad (2.0-0~oneiric) oneiric; urgency=low
 
   * Fast image insert

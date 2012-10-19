@@ -362,8 +362,9 @@ class ContentEdit(QObject):
         name = QFileDialog.getOpenFileName(
             filter=self.app.tr("Image Files (*.png *.jpg *.bmp *.gif)"),
         )[0]
-        res = self.parent.resource_edit.add_attach(name)
-        self.paste_res(res)
+        if name:
+            res = self.parent.resource_edit.add_attach(name)
+            self.paste_res(res)
 
     def get_format_actions(self):
         check_action = QAction(

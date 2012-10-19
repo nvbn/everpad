@@ -32,26 +32,36 @@ class Indicator(QSystemTrayIcon):
     def update(self):
         self.menu.clear()
         if get_auth_token():
-            self.menu.addAction(self.tr('All Notes'), self.show_all_notes)
-            self.menu.addSeparator()
-            for note_struct in self.app.provider.find_notes(
+            notes = self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,
                 20, Note.ORDER_UPDATED_DESC,
-            ):
-                note = Note.from_tuple(note_struct)
-                self.menu.addAction(note.title[:40], Slot()(
-                    partial(self.open, note=note)
-                ))
-            self.menu.addSeparator()
-            self.menu.addAction(self.tr('Create Note'), self.create)
+            )
+            if len(notes) or self.app.provider.is_first_synced():
+                self.menu.addAction(self.tr('All Notes'), self.show_all_notes)
+                self.menu.addSeparator()
+                for note_struct in notes:
+                    note = Note.from_tuple(note_struct)
+                    self.menu.addAction(note.title[:40], Slot()(
+                        partial(self.open, note=note)
+                    ))
+                self.menu.addSeparator()
+                self.menu.addAction(self.tr('Create Note'), self.create)
+                first_sync = False
+            else:
+                first_sync = True
             if self.app.provider.get_status() == STATUS_SYNC:
-                action = self.menu.addAction(self.tr('Sync in progress'))
+                action = self.menu.addAction(
+                    self.tr('Wait, first sync in progress') if first_sync
+                    else self.tr('Sync in progress')
+                )
                 action.setEnabled(False)
             else:
-                self.menu.addAction(self.tr('Last sync: %s') %
-                    self.app.provider.get_last_sync(),
-                Slot()(self.app.provider.sync))
+                if first_sync:
+                    label = self.tr('Please perform first sync')
+                else:
+                    label = self.tr('Last sync: %s') % self.app.provider.get_last_sync()
+                self.menu.addAction(label, Slot()(self.app.provider.sync))
         self.menu.addAction(self.tr('Settings and Management'), self.show_management)
         self.menu.addSeparator()
         self.menu.addAction(self.tr('Exit'), self.exit)

@@ -354,3 +354,14 @@ class ProviderService(dbus.service.Object):
     )
     def sync_state_changed(self, state):
         return
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='',
+        out_signature='b',
+    )
+    def is_first_synced(self):
+        return bool(self.sq(Notebook).filter(and_(
+            Notebook.action != ACTION_DELETE,
+            Notebook.default == True,
+        )).count())
+

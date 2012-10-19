@@ -26,7 +26,6 @@ setup(name='everpad',
         ], 'console_scripts': [
             'everpad-lens=everpad.lens:main',
             'everpad-provider=everpad.provider.daemon:main',
-            'everpad-web-auth=everpad.auth:main',
         ]
     },
     data_files=[

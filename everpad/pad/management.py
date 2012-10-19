@@ -51,7 +51,6 @@ class AuthPage(QWebPage):
             client = oauth.Client(consumer, token)
             resp, content = client.request('https://%s/oauth' % HOST, 'POST')
             access_token = dict(urlparse.parse_qsl(content))
-            print access_token['oauth_token']
             self.parent.auth_finished(access_token['oauth_token']) 
         return True
 

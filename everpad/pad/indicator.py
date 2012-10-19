@@ -31,9 +31,9 @@ class Indicator(QSystemTrayIcon):
     @Slot()
     def update(self):
         self.menu.clear()
-        self.menu.addAction(self.tr('All Notes'), self.show_all_notes)
-        self.menu.addSeparator()
         if get_auth_token():
+            self.menu.addAction(self.tr('All Notes'), self.show_all_notes)
+            self.menu.addSeparator()
             for note_struct in self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,

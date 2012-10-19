@@ -278,6 +278,8 @@ class ProviderService(dbus.service.Object):
     def authenticate(self, token):
         self.qobject.remove_authenticate_signal.emit()
         self.qobject.authenticate_signal.emit(token)
+        if self.app.sync_thread.status != STATUS_SYNC:
+            self.app.sync_thread.force_sync()
 
     @dbus.service.method(
         "com.everpad.Provider",

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Wed Oct  3 01:18:42 2012
-#      by: pyside-uic 0.2.13 running on PySide 1.1.0
+# Created: Fri Oct 19 05:43:51 2012
+#      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(375, 301)
+        Dialog.resize(396, 372)
         Dialog.setModal(False)
         self.verticalLayout = QtGui.QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -43,6 +43,10 @@ class Ui_Dialog(object):
         self.gridLayout.addWidget(self.autoStart, 3, 1, 1, 1)
         self.tabWidget.addTab(self.tab, "")
         self.verticalLayout.addWidget(self.tabWidget)
+        self.webView = QtWebKit.QWebView(Dialog)
+        self.webView.setUrl(QtCore.QUrl("about:blank"))
+        self.webView.setObjectName("webView")
+        self.verticalLayout.addWidget(self.webView)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.NoButton)
@@ -63,3 +67,4 @@ class Ui_Dialog(object):
         self.label_3.setText(QtGui.QApplication.translate("Dialog", "Start with system", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Settings", None, QtGui.QApplication.UnicodeUTF8))
 
+from PySide import QtWebKit

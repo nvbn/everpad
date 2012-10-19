@@ -6,7 +6,9 @@ from PySide.QtGui import (
     QMessageBox, QAction, QWidget,
     QListWidgetItem, QMenu, QInputDialog,
 )
-from PySide.QtCore import Slot, Qt, QPoint
+from PySide.QtWebKit import QWebView, QWebPage
+from PySide.QtCore import Slot, Qt, QPoint, QUrl
+from PySide.QtNetwork import QNetworkAccessManager, QSslConfiguration, QSsl
 from everpad.interface.management import Ui_Dialog
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider, get_auth_token
@@ -21,6 +23,42 @@ import os
 import shutil
 
 
+class TLSNetworkAccessManager(QNetworkAccessManager):
+    def createRequest(self, op, request, outgoingData=None):
+        conf = QSslConfiguration()
+        conf.setProtocol(QSsl.TlsV1)
+        request.setSslConfiguration(conf)
+        return QNetworkAccessManager.createRequest(self, op, request, outgoingData)
+
+
+class AuthPage(QWebPage):
+    def __init__(self, token, secret, parent, *args, **kwargs):
+        QWebPage.__init__(self, *args, **kwargs)
+        self.token = token
+        self.secret = secret
+        self.parent = parent
+        manager = TLSNetworkAccessManager(self)
+        manager.sslErrors.connect(self.ssl)
+        self.setNetworkAccessManager(manager)
+
+    def acceptNavigationRequest(self, frame, request, type):
+        url = request.url()
+        if 'everpad' in url.host():
+            verifier = url.queryItemValue('oauth_verifier')
+            token = oauth.Token(self.token, self.secret)
+            token.set_verifier(verifier)
+            consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
+            client = oauth.Client(consumer, token)
+            resp, content = client.request('https://%s/oauth' % HOST, 'POST')
+            access_token = dict(urlparse.parse_qsl(content))
+            print access_token['oauth_token']
+            self.parent.auth_finished(access_token['oauth_token']) 
+        return True
+
+    def ssl(self, reply, errors):
+        reply.ignoreSslErrors()
+
+
 class Management(QDialog):
     """Management dialog"""
 
@@ -32,6 +70,7 @@ class Management(QDialog):
         self.startup_file = os.path.join(self.startup_path, 'everpad.desktop')
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
+        self.ui.webView.hide()
         self.setWindowIcon(get_icon())
         for delay in (5, 10, 15, 30):
             self.ui.syncDelayBox.addItem(self.tr('%d minutes') % delay,
@@ -83,27 +122,27 @@ class Management(QDialog):
     def change_auth(self):
         if get_auth_token():
             self.app.provider.remove_authentication()
+            self.update_tabs()
         else:
+            self.ui.tabWidget.hide()
+            self.ui.webView.show()
             consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
             client = oauth.Client(consumer)
             resp, content = client.request(
-                'https://%s/oauth?oauth_callback=' % HOST + urllib.quote('http://localhost:15216/'), 
+                'https://%s/oauth?oauth_callback=' % HOST + urllib.quote('http://everpad/'), 
             'GET')
             data = dict(urlparse.parse_qsl(content))
-            url = 'https://%s/OAuth.action?oauth_token=' % HOST + urllib.quote(data['oauth_token'])
-            webbrowser.open(url)
-            os.system('killall everpad-web-auth')
-            try:
-                subprocess.Popen([
-                    'everpad-web-auth', '--token', data['oauth_token'],
-                    '--secret', data['oauth_token_secret'],
-                ])
-            except OSError:
-                subprocess.Popen([
-                    'python', '../auth.py', '--token',
-                    data['oauth_token'], '--secret',
-                    data['oauth_token_secret'],
-                ])
+            url = 'http://%s/OAuth.action?oauth_token=' % HOST + urllib.quote(data['oauth_token'])
+            page = AuthPage(
+                data['oauth_token'], data['oauth_token_secret'], self,
+            )
+            self.ui.webView.setPage(page)
+            page.mainFrame().load(url)
+
+    def auth_finished(self, token):
+        self.app.provider.authenticate(token)
+        self.ui.webView.hide()
+        self.ui.tabWidget.show()
         self.update_tabs()
 
     def closeEvent(self, event):

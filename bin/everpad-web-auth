@@ -1,8 +1,0 @@
-#!/usr/bin/python
-import sys
-sys.path.append('/opt/extras.ubuntu.com/everpad/')
-from everpad import auth
-
-
-if __name__ == '__main__':
-    auth.main()

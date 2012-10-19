@@ -2,7 +2,7 @@ import sys
 sys.path.append('../..')
 from PySide.QtGui import (
     QDialog, QIcon, QPixmap,
-    QLabel, QVBoxLayout, QFrame,
+    QLabel, QVBoxLayout, QFrame, QFont,
     QMessageBox, QAction, QWidget,
     QListWidgetItem, QMenu, QInputDialog,
 )
@@ -12,7 +12,10 @@ from PySide.QtNetwork import QNetworkAccessManager, QSslConfiguration, QSsl
 from everpad.interface.management import Ui_Dialog
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider, get_auth_token
-from everpad.const import CONSUMER_KEY, CONSUMER_SECRET, HOST
+from everpad.const import (
+    CONSUMER_KEY, CONSUMER_SECRET, HOST,
+    DEFAULT_FONT, DEFAULT_FONT_SIZE,
+)
 from everpad import monkey
 import urllib
 import urlparse
@@ -85,7 +88,17 @@ class Management(QDialog):
         self.ui.tabWidget.currentChanged.connect(self.update_tabs)
         self.ui.authBtn.clicked.connect(self.change_auth)
         self.ui.autoStart.stateChanged.connect(self.auto_start_state)
+        self.ui.noteFont.currentFontChanged.connect(self.font_changed)
+        self.ui.noteSize.valueChanged.connect(self.font_size_changed)
         self.update_tabs()
+
+    @Slot(str)
+    def font_size_changed(self, size):
+        self.app.settings.setValue('note-font-size', size)
+
+    @Slot(QFont)
+    def font_changed(self, font):
+        self.app.settings.setValue('note-font-family', font.family())
 
     @Slot()
     def update_tabs(self):
@@ -96,6 +109,12 @@ class Management(QDialog):
         self.ui.autoStart.setCheckState(Qt.Checked
             if os.path.isfile(self.startup_file)
         else Qt.Unchecked)
+        self.ui.noteFont.setCurrentFont(QFont(self.app.settings.value(
+            'note-font-family', DEFAULT_FONT,
+        )))
+        self.ui.noteSize.setValue(int(self.app.settings.value(
+            'note-font-size', DEFAULT_FONT_SIZE,
+        )))
 
     @Slot()
     def auto_start_state(self):
@@ -105,7 +124,6 @@ class Management(QDialog):
             except OSError:
                 pass
         else:
-            print self.startup_file
             shutil.copyfile(
                 '/usr/share/applications/everpad.desktop',
                 self.startup_file,

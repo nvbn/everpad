@@ -7,19 +7,20 @@ from PySide.QtGui import (
     QMenu, QCompleter, QStringListModel,
     QTextCharFormat, QShortcut, QKeySequence,
     QDialog, QInputDialog, QFileIconProvider,
-    QWidget, QScrollArea,
+    QWidget, QScrollArea, QFont,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
     QFileInfo, 
 )
-from PySide.QtWebKit import QWebPage
+from PySide.QtWebKit import QWebPage, QWebSettings
 from everpad.interface.editor import Ui_Editor
 from everpad.interface.image import Ui_ImageDialog
 from everpad.interface.tableinsert import Ui_TableInsertDialog 
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider
 from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
+from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
 from BeautifulSoup import BeautifulSoup
 from functools import partial
 import dbus
@@ -93,6 +94,22 @@ class Page(QWebPage):
         self.edit = edit
         self.active_image = None
         self.active_link = None
+        settings = self.settings()
+        family = self.edit.app.settings.value(
+            'note-font-family', DEFAULT_FONT,
+        )
+        size = int(self.edit.app.settings.value(
+            'note-font-size', DEFAULT_FONT_SIZE,
+        ))
+        settings.setFontFamily(
+            QWebSettings.StandardFont, family,
+        )
+        settings.setFontSize(
+            QWebSettings.DefaultFontSize, size,
+        )
+        settings.setFontSize(
+            QWebSettings.DefaultFixedFontSize, size,
+        )
 
         # This allows JavaScript to call back to Slots, connect to Signals
         # and access/modify Qt props

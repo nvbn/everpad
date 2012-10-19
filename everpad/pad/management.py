@@ -90,6 +90,7 @@ class Management(QDialog):
         self.ui.autoStart.stateChanged.connect(self.auto_start_state)
         self.ui.noteFont.currentFontChanged.connect(self.font_changed)
         self.ui.noteSize.valueChanged.connect(self.font_size_changed)
+        self.ui.blackTray.stateChanged.connect(self.tray_changed)
         self.update_tabs()
 
     @Slot(str)
@@ -99,6 +100,14 @@ class Management(QDialog):
     @Slot(QFont)
     def font_changed(self, font):
         self.app.settings.setValue('note-font-family', font.family())
+
+    @Slot()
+    def tray_changed(self):
+        if self.ui.blackTray.checkState() == Qt.Unchecked:
+            self.app.settings.setValue('black-icon', 0)
+        else:
+            self.app.settings.setValue('black-icon', 1)
+        self.app.update_icon()
 
     @Slot()
     def update_tabs(self):
@@ -115,6 +124,9 @@ class Management(QDialog):
         self.ui.noteSize.setValue(int(self.app.settings.value(
             'note-font-size', DEFAULT_FONT_SIZE,
         )))
+        self.ui.blackTray.setCheckState(Qt.Checked
+            if int(self.app.settings.value('black-icon', 0))
+        else Qt.Unchecked)
 
     @Slot()
     def auto_start_state(self):

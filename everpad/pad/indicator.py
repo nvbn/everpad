@@ -125,9 +125,16 @@ class PadApp(QApplication):
         if not self.translator.load('../../i18n/%s' % QLocale.system().name()):
             self.translator.load('/usr/share/everpad/i18n/%s' % QLocale.system().name())
         self.installTranslator(self.translator)
-        self.icon = QIcon.fromTheme('everpad-mono', QIcon('../../everpad-mono.png'))
-        self.indicator = Indicator(self, self.icon)
+        self.indicator = Indicator(self)
+        self.update_icon()
         self.indicator.show()
+
+    def update_icon(self):
+        if int(self.settings.value('black-icon', 0)):
+            self.icon = QIcon.fromTheme('everpad-black', QIcon('../../data/everpad-black.png'))
+        else:
+            self.icon = QIcon.fromTheme('everpad-mono', QIcon('../../data/everpad-mono.png'))
+        self.indicator.setIcon(self.icon)
 
     def send_notify(self, text):
         self.indicator.showMessage('Everpad', text,

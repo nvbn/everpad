@@ -53,7 +53,7 @@ setup(name='everpad',
         ]),
         ('/usr/share/icons/hicolor/64x64/apps', [
             'data/everpad-mono.png', 'data/everpad-lens.png',
-            'data/everpad-note.png',
+            'data/everpad-note.png', 'data/everpad-black.png',
         ]),
         ('/usr/share/icons/hicolor/128x128/apps', [
             'data/everpad.png', 
@@ -61,6 +61,7 @@ setup(name='everpad',
         ('/usr/share/pixmaps', [
             'data/everpad.png', 'data/everpad-mono.png',
             'data/everpad-lens.png', 'data/everpad-note.png',
+            'data/everpad-black.png',
         ]),
         ('/usr/share/applications', ['data/everpad.desktop']),
         ('/usr/share/unity/lenses/everpad', ['data/everpad.lens']),

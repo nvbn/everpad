@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Fri Oct 19 06:14:22 2012
+# Created: Fri Oct 19 18:56:35 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -58,6 +58,13 @@ class Ui_Dialog(object):
         self.noteSize = QtGui.QSpinBox(self.tab_2)
         self.noteSize.setObjectName("noteSize")
         self.gridLayout_2.addWidget(self.noteSize, 1, 1, 1, 1)
+        self.label_6 = QtGui.QLabel(self.tab_2)
+        self.label_6.setObjectName("label_6")
+        self.gridLayout_2.addWidget(self.label_6, 2, 0, 1, 1)
+        self.blackTray = QtGui.QCheckBox(self.tab_2)
+        self.blackTray.setText("")
+        self.blackTray.setObjectName("blackTray")
+        self.gridLayout_2.addWidget(self.blackTray, 2, 1, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.webView = QtWebKit.QWebView(Dialog)
@@ -71,7 +78,7 @@ class Ui_Dialog(object):
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(Dialog)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), Dialog.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -85,6 +92,7 @@ class Ui_Dialog(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Dialog", "Note font family", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("Dialog", "Note font size", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("Dialog", "Black tray icon", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Apperance", None, QtGui.QApplication.UnicodeUTF8))
 
 from PySide import QtWebKit

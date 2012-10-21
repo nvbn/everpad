@@ -847,6 +847,8 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.update_title()
         self.mark_untouched()
         geometry = self.app.settings.value("note-geometry-%d" % self.note.id)
+        if not geometry:
+            geometry = self.app.settings.value("note-geometry-default")
         if geometry:
             self.restoreGeometry(geometry)
         self.resource_edit.note = note
@@ -965,6 +967,9 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.app.settings.setValue(
             "note-geometry-%d" % self.note.id, 
             self.saveGeometry(),
+        )
+        self.app.settings.setValue(
+            "note-geometry-default", self.saveGeometry(),
         )
 
     @Slot()

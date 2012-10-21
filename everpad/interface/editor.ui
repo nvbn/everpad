@@ -162,6 +162,11 @@
     <string>Paste</string>
    </property>
   </action>
+  <action name="actionFind">
+   <property name="text">
+    <string>Find</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

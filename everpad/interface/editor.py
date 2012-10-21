@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'editor.ui'
+# Form implementation generated from reading ui file 'everpad/interface/editor.ui'
 #
-# Created: Fri Oct 19 17:51:22 2012
-#      by: pyside-uic 0.2.13 running on PySide 1.1.1
+# Created: Sun Oct 21 07:02:02 2012
+#      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -74,6 +74,8 @@ class Ui_Editor(object):
         self.actionCopy.setObjectName("actionCopy")
         self.actionPaste = QtGui.QAction(Editor)
         self.actionPaste.setObjectName("actionPaste")
+        self.actionFind = QtGui.QAction(Editor)
+        self.actionFind.setObjectName("actionFind")
         self.menuFIle.addAction(self.actionSave)
         self.menuFIle.addAction(self.actionSave_and_close)
         self.menuFIle.addAction(self.actionDelete)
@@ -103,5 +105,6 @@ class Ui_Editor(object):
         self.actionCut.setText(QtGui.QApplication.translate("Editor", "Cut", None, QtGui.QApplication.UnicodeUTF8))
         self.actionCopy.setText(QtGui.QApplication.translate("Editor", "Copy", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPaste.setText(QtGui.QApplication.translate("Editor", "Paste", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionFind.setText(QtGui.QApplication.translate("Editor", "Find", None, QtGui.QApplication.UnicodeUTF8))
 
 from PySide import QtWebKit

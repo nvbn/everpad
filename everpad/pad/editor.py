@@ -294,12 +294,16 @@ class ContentEdit(QObject):
     def page_changed(self):
         self._on_change()
 
-    def _action_with_icon(self, action_type, icon_name, is_action=False):
+    def _action_with_icon(self, action_type, icon_names, is_action=False):
         if is_action:
             action = action_type
         else:
             action = self.page.action(action_type)
-        action.setIcon(QIcon.fromTheme(icon_name))
+        for icon_name in icon_names:
+            if QIcon.hasThemeIcon(icon_name):
+                action.setIcon(QIcon.fromTheme(icon_name))
+                break
+
         self.copy_available.connect(action.setEnabled)
         return action
 
@@ -385,20 +389,32 @@ class ContentEdit(QObject):
         image_action.triggered.connect(self._insert_image)
 
         return map(lambda action: self._action_with_icon(*action), (
-            (QWebPage.ToggleBold, 'everpad-text-bold'),
-            (QWebPage.ToggleItalic, 'everpad-text-italic'),
-            (QWebPage.ToggleUnderline, 'everpad-text-underline'),
-            (QWebPage.ToggleStrikethrough, 'everpad-text-strikethrough'),
-            (QWebPage.AlignCenter, 'everpad-justify-center'),
-            (QWebPage.AlignJustified, 'everpad-justify-fill'),
-            (QWebPage.AlignLeft, 'everpad-justify-left'),
-            (QWebPage.AlignRight, 'everpad-justify-right'),
-            (QWebPage.InsertUnorderedList, 'everpad-list-unordered'),
-            (QWebPage.InsertOrderedList, 'everpad-list-ordered'),
-            (check_action, 'everpad-checkbox', True),
-            (table_action, 'everpad-insert-table', True),
-            (link_action, 'everpad-link', True),
-            (image_action, 'everpad-insert-image', True),
+            (QWebPage.ToggleBold,
+                ['format-text-bold', 'everpad-text-bold']),
+            (QWebPage.ToggleItalic,
+                ['format-text-italic', 'everpad-text-italic']),
+            (QWebPage.ToggleUnderline,
+                ['format-text-underline', 'everpad-text-underline']),
+            (QWebPage.ToggleStrikethrough,
+                ['format-text-strikethrough', 'everpad-text-strikethrough']),
+            (QWebPage.AlignCenter,
+                ['format-justify-center', 'everpad-justify-center']),
+            (QWebPage.AlignJustified,
+                ['format-justify-fill', 'everpad-justify-fill']),
+            (QWebPage.AlignLeft,
+                ['format-justify-left', 'everpad-justify-left']),
+            (QWebPage.AlignRight,
+                ['format-justify-right', 'everpad-justify-right']),
+            (QWebPage.InsertUnorderedList,
+                ['format-list-unordered', 'everpad-list-unordered']),
+            (QWebPage.InsertOrderedList,
+                ['format-list-ordered', 'everpad-list-ordered']),
+
+            # Don't include 'checkbox' since it looks bad in some default themes
+            (check_action, ['everpad-checkbox'], True),
+            (table_action, ['insert-table', 'everpad-insert-table'], True),
+            (link_action, ['insert-link'], True),
+            (image_action, ['insert-image'], True),
         ))
 
     def paste_res(self, res):

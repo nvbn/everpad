@@ -23,6 +23,7 @@ class List(QDialog):
         QDialog.__init__(self, *args, **kwargs)
         self.app = app
         self.closed = False
+        self.sort_order = None
         self.ui = Ui_List()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
@@ -38,6 +39,7 @@ class List(QDialog):
         self.ui.notesList.doubleClicked.connect(self.note_dblclicked)
         self.ui.notesList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.notesList.customContextMenuRequested.connect(self.note_context_menu)
+        self.ui.notesList.header().sortIndicatorChanged.connect(self.sort_order_updated)
 
         self.ui.newNotebookBtn.setIcon(QIcon.fromTheme('folder-new'))
         self.ui.newNotebookBtn.clicked.connect(self.new_notebook)
@@ -53,6 +55,10 @@ class List(QDialog):
         event.ignore()
         self.closed = True
         self.hide()
+
+    @Slot(int, Qt.SortOrder)
+    def sort_order_updated(self, logicalIndex, order):
+        self.sort_order = (logicalIndex, order.name)
 
     @Slot()
     def notebook_selected(self, index):
@@ -70,6 +76,11 @@ class List(QDialog):
         for note_struct in notes:
             note = Note.from_tuple(note_struct)
             self.notesModel.appendRow(QNoteItemFactory(note).make_items())
+
+        if self.sort_order is not None:
+            logicalIndex, order = self.sort_order
+            order = Qt.SortOrder.values[order]
+            self.ui.notesList.sortByColumn(logicalIndex, order)
 
     @Slot()
     def note_dblclicked(self, index):

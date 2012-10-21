@@ -17,6 +17,7 @@ from PySide.QtWebKit import QWebPage, QWebSettings
 from everpad.interface.editor import Ui_Editor
 from everpad.interface.image import Ui_ImageDialog
 from everpad.interface.tableinsert import Ui_TableInsertDialog 
+from everpad.interface.findbar import Ui_FindBar
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider, sanitize, clean
 from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
@@ -88,6 +89,115 @@ class TableInsert(QDialog):
         return result
 
 
+class FindBar(QWidget):
+    def __init__(self, editor, *args, **kwargs):
+        QWidget.__init__(self, *args, **kwargs)
+        self.editor = editor
+        self.ui = Ui_FindBar()
+        self.ui.setupUi(self)
+
+        # pyside-uic doesn't translate icons from themes correctly, so we have
+        # to re-set the icons manually here
+        self.ui.btnPrevious.setIcon(QIcon.fromTheme('go-previous'))
+        self.ui.btnNext.setIcon(QIcon.fromTheme('go-next'))
+        self.ui.btnClose.setIcon(QIcon.fromTheme('window-close'))
+        self.visible = False
+
+        self.ui.btnClose.clicked.connect(self.hide)
+        self.ui.edtFindText.returnPressed.connect(self.find_next)
+        self.ui.edtFindText.textChanged.connect(self.find_text_updated)
+
+        self.ui.btnNext.clicked.connect(self.find_next)
+        self.ui.btnPrevious.clicked.connect(self.find_previous)
+
+        self.ui.btnHighlight.clicked.connect(self.update_highlight)
+        self.ui.chkMatchCase.clicked.connect(self.match_case_updated)
+
+    def get_flags(self, default_flags=None):
+        flags = QWebPage.FindFlag.FindWrapsAroundDocument
+        if default_flags is not None:
+            flags |= default_flags
+        if self.ui.chkMatchCase.isChecked():
+            flags |= QWebPage.FindFlag.FindCaseSensitively
+        return flags
+
+    @Slot()
+    def match_case_updated(self):
+        flags = self.get_flags()
+
+        # We need the *old* flags value;  clear this flag if it's checked
+        if self.ui.chkMatchCase.isChecked():
+            flags &= ~QWebPage.FindFlag.FindCaseSensitively
+        else:
+            flags |= QWebPage.FindFlag.FindCaseSensitively
+        self.update_highlight(flags=flags, clear=True)
+        self.update_highlight()
+
+    @Slot(str)
+    def find_text_updated(self, text):
+        self.update_highlight(text=text, clear=True)
+        self.find()
+
+    @Slot()
+    def find_next(self, text=None):
+        self.find()
+
+    @Slot()
+    def find_previous(self):
+        self.find(QWebPage.FindFlag.FindBackward)
+
+    def find(self, flags=None):
+        if not self.visible:
+            self.show(focus=False)
+            return
+
+        flags = self.get_flags(flags)
+        self.editor.note_edit.page.findText(self.ui.edtFindText.text(), flags)
+        self.update_highlight()
+
+    @Slot()
+    def update_highlight(self, flags=None, text=None, clear=False):
+        flags = flags or self.get_flags()
+        flags |= QWebPage.FindFlag.HighlightAllOccurrences
+        text = text or self.ui.edtFindText.text()
+        if clear or not self.ui.btnHighlight.isChecked():
+            text = ''
+        self.editor.note_edit.page.findText(text, flags)
+
+    def show(self, flags=None, focus=True):
+        QWidget.show(self)
+        if self.visible:
+            self.find(flags)
+        else:
+            self.editor.ui.centralwidget.layout().addWidget(self)
+            self.visible = True
+
+            self.find(flags)
+            self.update_highlight()
+
+        if focus:
+            self.ui.edtFindText.setFocus()
+
+        self.editor.find_action.setChecked(True)
+
+    @Slot()
+    def hide(self):
+        QWidget.hide(self)
+        if not self.visible:
+            return
+        self.update_highlight(clear=True)
+        self.editor.ui.centralwidget.layout().removeWidget(self)
+        self.setParent(None)
+        self.visible = False
+        self.editor.find_action.setChecked(False)
+
+    @Slot()
+    def toggle_visible(self):
+        if self.visible:
+            self.hide()
+        else:
+            self.show()
+
 class Page(QWebPage):
     def __init__(self, edit):
         QWebPage.__init__(self)
@@ -115,6 +225,18 @@ class Page(QWebPage):
         # This allows JavaScript to call back to Slots, connect to Signals
         # and access/modify Qt props
         self.mainFrame().addToJavaScriptWindowObject("qpage", self)
+
+    @Slot()
+    def show_findbar(self):
+        self.edit.parent.findbar.show()
+
+    @Slot()
+    def find_next(self):
+        self.edit.parent.findbar.find_next()
+
+    @Slot()
+    def find_previous(self):
+        self.edit.parent.findbar.find_previous()
 
     @Slot(str)
     def set_current_focus(self, focused):
@@ -748,6 +870,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self, self.app, self.ui.resourceArea, 
             self.ui.resourceLabel, self.mark_touched,
         )
+        self.findbar = FindBar(self)
         self.init_toolbar()
 
     def init_toolbar(self):
@@ -768,6 +891,12 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.toolBar.addSeparator()
         for action in self.note_edit.get_format_actions():
             self.ui.toolBar.addAction(action)
+        self.ui.toolBar.addSeparator()
+        self.find_action = QAction(QIcon.fromTheme('edit-find'),
+                                   self.app.tr('Find'), self)
+        self.find_action.setCheckable(True)
+        self.find_action.triggered.connect(self.findbar.toggle_visible)
+        self.ui.toolBar.addAction(self.find_action)
 
     def load_note(self, note):
         self.resource_edit.resources = map(Resource.from_tuple,

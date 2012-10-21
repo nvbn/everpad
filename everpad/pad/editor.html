@@ -168,6 +168,14 @@
             insertEl(el);
             window.qpage.page_changed();
             return false;
+        } else if (event.keyCode == 70 && event.ctrlKey) {
+            window.qpage.show_findbar();
+        } else if (event.keyCode == 71 && event.ctrlKey) {
+            if (!event.shiftKey) {
+                window.qpage.find_next();
+            } else {
+                window.qpage.find_previous();
+            }
         }
     }, false);
     var title = document.getElementById('title');

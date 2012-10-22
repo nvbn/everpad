@@ -36,6 +36,9 @@ class List(QDialog):
         self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
 
         self.notesModel = QStandardItemModel()
+        self.notesModel.setHorizontalHeaderLabels(
+            [self.tr('Title'), self.tr('Last Updated')])
+
         self.ui.notesList.setModel(self.notesModel)
         self.ui.notesList.doubleClicked.connect(self.note_dblclicked)
         self.ui.notesList.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -68,9 +71,7 @@ class List(QDialog):
         self.app.settings.setValue('list-notes-sort-order', self.sort_order)
 
     def notebook_selected(self, index):
-        self.notesModel.clear()
-        self.notesModel.setHorizontalHeaderLabels(
-            [self.tr('Title'), self.tr('Last Updated')])
+        self.notesModel.setRowCount(0)
 
         item = self.notebooksModel.itemFromIndex(index)
         if hasattr(item, 'notebook'):

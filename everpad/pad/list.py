@@ -174,18 +174,20 @@ class List(QDialog):
 
     def _reload_notebooks_list(self, select_notebook_id=None):
         self.notebooksModel.clear()
-        self.notebooksModel.appendRow(QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes')))
+        root = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes'))
+        self.notebooksModel.appendRow(root)
 
         index_row = row = 0
         for notebook_struct in self.app.provider.list_notebooks():
             row += 1
             notebook = Notebook.from_tuple(notebook_struct)
             count = self.app.provider.get_notebook_notes_count(notebook.id)
-            self.notebooksModel.appendRow(QNotebookItem(notebook, count))
+            root.appendRow(QNotebookItem(notebook, count))
 
             if select_notebook_id and notebook.id == select_notebook_id:
                 index_row = row
 
+        self.ui.notebooksList.expandAll()
         self.ui.notebooksList.setCurrentIndex(self.notebooksModel.index(index_row, 0))
         self.notebook_selected(self.notebooksModel.index(index_row, 0))
 

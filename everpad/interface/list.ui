@@ -52,7 +52,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QListView" name="notebooksList">
+        <widget class="QTreeView" name="notebooksList">
          <property name="minimumSize">
           <size>
            <width>200</width>
@@ -67,6 +67,9 @@
          </property>
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="headerHidden">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

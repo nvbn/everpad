@@ -6,7 +6,8 @@ from PySide.QtGui import (
     QLabel, QVBoxLayout, QFrame,
     QMessageBox, QAction, QWidget,
     QListWidgetItem, QMenu, QInputDialog,
-    QStandardItemModel, QStandardItem
+    QStandardItemModel, QStandardItem,
+    QItemSelection
     )
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.list import Ui_List
@@ -30,7 +31,7 @@ class List(QDialog):
 
         self.notebooksModel = QStandardItemModel()
         self.ui.notebooksList.setModel(self.notebooksModel)
-        self.ui.notebooksList.clicked.connect(self.notebook_selected)
+        self.ui.notebooksList.selection.connect(self.selection_changed)
         self.ui.notebooksList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
 
@@ -47,6 +48,11 @@ class List(QDialog):
         self.ui.newNoteBtn.setIcon(QIcon.fromTheme('document-new'))
         self.ui.newNoteBtn.clicked.connect(self.new_note)
 
+    @Slot(QItemSelection, QItemSelection)
+    def selection_changed(self, selected, deselected):
+        if len(selected.indexes()):
+            self.notebook_selected(selected.indexes()[-1])
+
     def showEvent(self, *args, **kwargs):
         QDialog.showEvent(self, *args, **kwargs)
         self._reload_notebooks_list()
@@ -60,14 +66,16 @@ class List(QDialog):
     def sort_order_updated(self, logicalIndex, order):
         self.sort_order = (logicalIndex, order.name)
 
-    @Slot()
     def notebook_selected(self, index):
         self.notesModel.clear()
         self.notesModel.setHorizontalHeaderLabels(
             [self.tr('Title'), self.tr('Last Updated')])
 
         item = self.notebooksModel.itemFromIndex(index)
-        notebook_id = item.notebook.id if index.row() else 0
+        if hasattr(item, 'notebook'):
+            notebook_id = item.notebook.id
+        else:
+            notebook_id = 0
         notebook_filter = [notebook_id] if notebook_id > 0 else dbus.Array([], signature='i')
         notes = self.app.provider.find_notes(
             '', notebook_filter, dbus.Array([], signature='i'), 
@@ -159,7 +167,9 @@ class List(QDialog):
 
     @Slot(QPoint)
     def notebook_context_menu(self, pos):
-        if self.ui.notebooksList.currentIndex().row():
+        index = self.ui.notebooksList.currentIndex()
+        item = self.notebooksModel.itemFromIndex(index)
+        if hasattr(item, 'notebook'):
             menu = QMenu(self.ui.notebooksList)
             menu.addAction(QIcon.fromTheme('gtk-edit'), self.tr('Rename'), self.rename_notebook)
             menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_notebook)
@@ -174,20 +184,24 @@ class List(QDialog):
 
     def _reload_notebooks_list(self, select_notebook_id=None):
         self.notebooksModel.clear()
-        self.notebooksModel.appendRow(QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes')))
+        root = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes'))
+        self.notebooksModel.appendRow(root)
 
-        index_row = row = 0
+        selected_item = root
         for notebook_struct in self.app.provider.list_notebooks():
-            row += 1
             notebook = Notebook.from_tuple(notebook_struct)
             count = self.app.provider.get_notebook_notes_count(notebook.id)
-            self.notebooksModel.appendRow(QNotebookItem(notebook, count))
+            item = QNotebookItem(notebook, count)
+            root.appendRow(item)
 
             if select_notebook_id and notebook.id == select_notebook_id:
-                index_row = row
+                selected_item = item
 
-        self.ui.notebooksList.setCurrentIndex(self.notebooksModel.index(index_row, 0))
-        self.notebook_selected(self.notebooksModel.index(index_row, 0))
+        self.ui.notebooksList.expandAll()
+        if selected_item:
+            index = self.notebooksModel.indexFromItem(selected_item)
+            self.ui.notebooksList.setCurrentIndex(index)
+            self.notebook_selected(index)
 
     def _notebook_new_name(self, title, exclude=''):
         names = map(lambda nb: Notebook.from_tuple(nb).name, self.app.provider.list_notebooks())

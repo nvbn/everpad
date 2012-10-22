@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'list.ui'
+# Form implementation generated from reading ui file 'everpad/interface/list.ui'
 #
-# Created: Sat Oct 13 16:54:46 2012
+# Created: Mon Oct 22 01:57:28 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
@@ -31,14 +31,16 @@ class Ui_List(object):
         self.newNoteBtn.setObjectName("newNoteBtn")
         self.horizontalLayout_2.addWidget(self.newNoteBtn)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
-        self.notebooksList = QtGui.QListView(List)
+        self.notebooksList = EverpadTreeView(List)
         self.notebooksList.setMinimumSize(QtCore.QSize(200, 0))
         self.notebooksList.setMaximumSize(QtCore.QSize(220, 16777215))
         self.notebooksList.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.notebooksList.setHeaderHidden(True)
         self.notebooksList.setObjectName("notebooksList")
         self.verticalLayout_2.addWidget(self.notebooksList)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
         self.notesList = QtGui.QTreeView(List)
+        self.notesList.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.notesList.setSortingEnabled(True)
         self.notesList.setObjectName("notesList")
         self.notesList.header().setDefaultSectionSize(200)
@@ -56,3 +58,4 @@ class Ui_List(object):
         self.newNoteBtn.setToolTip(QtGui.QApplication.translate("List", "Create Note", None, QtGui.QApplication.UnicodeUTF8))
         self.newNoteBtn.setText(QtGui.QApplication.translate("List", "Note", None, QtGui.QApplication.UnicodeUTF8))
 
+from everpad.pad.treeview import EverpadTreeView

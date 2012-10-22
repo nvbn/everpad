@@ -52,7 +52,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QListView" name="notebooksList">
+        <widget class="EverpadTreeView" name="notebooksList">
          <property name="minimumSize">
           <size>
            <width>200</width>
@@ -68,12 +68,18 @@
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
          </property>
+         <property name="headerHidden">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
       </layout>
      </item>
      <item>
       <widget class="QTreeView" name="notesList">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
        <property name="sortingEnabled">
         <bool>true</bool>
        </property>
@@ -89,6 +95,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EverpadTreeView</class>
+   <extends>QTreeView</extends>
+   <header>everpad/pad/treeview</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

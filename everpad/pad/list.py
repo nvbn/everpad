@@ -65,6 +65,7 @@ class List(QDialog):
     @Slot(int, Qt.SortOrder)
     def sort_order_updated(self, logicalIndex, order):
         self.sort_order = (logicalIndex, order.name)
+        self.app.settings.setValue('list-notes-sort-order', self.sort_order)
 
     def notebook_selected(self, index):
         self.notesModel.clear()
@@ -85,10 +86,14 @@ class List(QDialog):
             note = Note.from_tuple(note_struct)
             self.notesModel.appendRow(QNoteItemFactory(note).make_items())
 
-        if self.sort_order is not None:
-            logicalIndex, order = self.sort_order
+        sort_order = self.sort_order
+        if sort_order is None:
+            sort_order = self.app.settings.value('list-notes-sort-order')
+
+        if sort_order:
+            logicalIndex, order = sort_order
             order = Qt.SortOrder.values[order]
-            self.ui.notesList.sortByColumn(logicalIndex, order)
+            self.ui.notesList.sortByColumn(int(logicalIndex), order)
 
     @Slot()
     def note_dblclicked(self, index):

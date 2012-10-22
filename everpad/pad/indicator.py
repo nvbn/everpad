@@ -42,7 +42,8 @@ class Indicator(QSystemTrayIcon):
                 self.menu.addSeparator()
                 for note_struct in notes:
                     note = Note.from_tuple(note_struct)
-                    self.menu.addAction(note.title[:40], Slot()(
+                    title = note.title[:40].replace('&', '&&')
+                    self.menu.addAction(title, Slot()(
                         partial(self.open, note=note)
                     ))
                 self.menu.addSeparator()

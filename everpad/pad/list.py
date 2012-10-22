@@ -59,8 +59,31 @@ class List(QDialog):
     def showEvent(self, *args, **kwargs):
         QDialog.showEvent(self, *args, **kwargs)
         self._reload_notebooks_list()
+        self.readSettings()
+
+    def writeSettings(self):
+        self.app.settings.setValue('list-geometry', self.saveGeometry())
+        for key, widget in self._getRestorableItems():
+            self.app.settings.setValue(key, widget.saveState())
+
+    def _getRestorableItems(self):
+        return (
+            ('list-splitter-state', self.ui.splitter),
+            ('list-header-state', self.ui.notesList.header()),
+        )
+
+    def readSettings(self):
+        geometry = self.app.settings.value('list-geometry')
+        if geometry:
+            self.restoreGeometry(geometry)
+
+        for key, widget in self._getRestorableItems():
+            state = self.app.settings.value(key)
+            if state:
+                widget.restoreState(state)
 
     def closeEvent(self, event):
+        self.writeSettings()
         event.ignore()
         self.closed = True
         self.hide()

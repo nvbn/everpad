@@ -36,6 +36,9 @@ class List(QDialog):
         self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
 
         self.notesModel = QStandardItemModel()
+        self.notesModel.setHorizontalHeaderLabels(
+            [self.tr('Title'), self.tr('Last Updated')])
+
         self.ui.notesList.setModel(self.notesModel)
         self.ui.notesList.doubleClicked.connect(self.note_dblclicked)
         self.ui.notesList.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -56,8 +59,31 @@ class List(QDialog):
     def showEvent(self, *args, **kwargs):
         QDialog.showEvent(self, *args, **kwargs)
         self._reload_notebooks_list()
+        self.readSettings()
+
+    def writeSettings(self):
+        self.app.settings.setValue('list-geometry', self.saveGeometry())
+        for key, widget in self._getRestorableItems():
+            self.app.settings.setValue(key, widget.saveState())
+
+    def _getRestorableItems(self):
+        return (
+            ('list-splitter-state', self.ui.splitter),
+            ('list-header-state', self.ui.notesList.header()),
+        )
+
+    def readSettings(self):
+        geometry = self.app.settings.value('list-geometry')
+        if geometry:
+            self.restoreGeometry(geometry)
+
+        for key, widget in self._getRestorableItems():
+            state = self.app.settings.value(key)
+            if state:
+                widget.restoreState(state)
 
     def closeEvent(self, event):
+        self.writeSettings()
         event.ignore()
         self.closed = True
         self.hide()
@@ -68,9 +94,7 @@ class List(QDialog):
         self.app.settings.setValue('list-notes-sort-order', self.sort_order)
 
     def notebook_selected(self, index):
-        self.notesModel.clear()
-        self.notesModel.setHorizontalHeaderLabels(
-            [self.tr('Title'), self.tr('Last Updated')])
+        self.notesModel.setRowCount(0)
 
         item = self.notebooksModel.itemFromIndex(index)
         if hasattr(item, 'notebook'):
@@ -238,5 +262,6 @@ class QNoteItemFactory(object):
         for item in items:
             item.note = self.note
         items[0].setIcon(QIcon.fromTheme('x-office-document'))
+        items[1].setEditable(False)
 
         return items

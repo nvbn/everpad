@@ -39,6 +39,7 @@ class Ui_List(object):
         self.verticalLayout_2.addWidget(self.notebooksList)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
         self.notesList = QtGui.QTreeView(List)
+        self.notesList.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.notesList.setSortingEnabled(True)
         self.notesList.setObjectName("notesList")
         self.notesList.header().setDefaultSectionSize(200)

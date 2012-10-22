@@ -6,7 +6,8 @@ from PySide.QtGui import (
     QLabel, QVBoxLayout, QFrame,
     QMessageBox, QAction, QWidget,
     QListWidgetItem, QMenu, QInputDialog,
-    QStandardItemModel, QStandardItem
+    QStandardItemModel, QStandardItem,
+    QItemSelection
     )
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.list import Ui_List
@@ -30,7 +31,7 @@ class List(QDialog):
 
         self.notebooksModel = QStandardItemModel()
         self.ui.notebooksList.setModel(self.notebooksModel)
-        self.ui.notebooksList.clicked.connect(self.notebook_selected)
+        self.ui.notebooksList.selection.connect(self.selection_changed)
         self.ui.notebooksList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
 
@@ -47,6 +48,11 @@ class List(QDialog):
         self.ui.newNoteBtn.setIcon(QIcon.fromTheme('document-new'))
         self.ui.newNoteBtn.clicked.connect(self.new_note)
 
+    @Slot(QItemSelection, QItemSelection)
+    def selection_changed(self, selected, deselected):
+        if len(selected.indexes()):
+            self.notebook_selected(selected.indexes()[-1])
+
     def showEvent(self, *args, **kwargs):
         QDialog.showEvent(self, *args, **kwargs)
         self._reload_notebooks_list()
@@ -60,7 +66,6 @@ class List(QDialog):
     def sort_order_updated(self, logicalIndex, order):
         self.sort_order = (logicalIndex, order.name)
 
-    @Slot()
     def notebook_selected(self, index):
         self.notesModel.clear()
         self.notesModel.setHorizontalHeaderLabels(

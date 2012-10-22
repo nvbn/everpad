@@ -238,5 +238,6 @@ class QNoteItemFactory(object):
         for item in items:
             item.note = self.note
         items[0].setIcon(QIcon.fromTheme('x-office-document'))
+        items[1].setEditable(False)
 
         return items

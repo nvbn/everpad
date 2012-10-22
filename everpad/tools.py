@@ -1,5 +1,6 @@
 from functools import wraps, partial
 from BeautifulSoup import BeautifulSoup
+from HTMLParser import HTMLParser
 import dbus
 import re
 import sys
@@ -115,3 +116,6 @@ def sanitize(soup=None, html=None):
     return clean(reduce(
          lambda txt, cur: txt + unicode(cur), soup.contents,
     u'').replace('\n', ''))
+
+def html_unescape(html):
+    return HTMLParser().unescape(html)

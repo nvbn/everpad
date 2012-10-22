@@ -19,7 +19,7 @@ from everpad.interface.image import Ui_ImageDialog
 from everpad.interface.tableinsert import Ui_TableInsertDialog 
 from everpad.interface.findbar import Ui_FindBar
 from everpad.pad.tools import get_icon
-from everpad.tools import get_provider, sanitize, clean
+from everpad.tools import get_provider, sanitize, clean, html_unescape
 from everpad.basetypes import Note, Notebook, Resource, NONE_ID, Tag
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
 from BeautifulSoup import BeautifulSoup
@@ -295,7 +295,7 @@ class ContentEdit(QObject):
         """Cache title and return"""
         soup = BeautifulSoup(self.page.mainFrame().toHtml())
         self._title = soup.find(id='title').text
-        return clean(self._title)
+        return clean(html_unescape(self._title))
 
     @title.setter
     def title(self, val):

@@ -120,7 +120,24 @@
         window.qpage.set_current_focus("body");
         isContent = true;
     }, false);
-    function selectNextCell(el) {
+    function adjustBulletedList(untab) {
+        var el = document.getSelection().anchorNode;
+        while (el.parentNode) {
+            if (el.tagName == 'LI') {
+                if (untab) {
+                  document.execCommand('outdent');
+                } else {
+                  document.execCommand('indent');
+                }
+                return true;
+            }
+            el = el.parentNode;
+        }
+        return false;
+    }
+
+    function selectNextCell() {
+        var el = document.getSelection().anchorNode;
         while (el.parentNode) {
             if (el.tagName == 'TD') {
                 if (el.nextSibling) {
@@ -155,12 +172,16 @@
         return false;
     }
     content.addEventListener('keydown', function(event) {
-        if (event.keyCode == 9){
+        if (event.keyCode == 9) {
             event.preventDefault();
 
             // If we're in a table, select the next cell and return immediately
-            if (selectNextCell(document.getSelection().anchorNode)) {
-              return false;
+            if (selectNextCell()) {
+                return false;
+            }
+
+            if (adjustBulletedList(event.shiftKey)) {
+                return false;
             }
 
             var el = document.createElement("img");

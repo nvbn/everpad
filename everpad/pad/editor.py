@@ -343,7 +343,7 @@ class ContentEdit(QObject):
             else:
                 media.hidden = True
         self._content = re.sub(
-            r'([(&nbsp) ]{5})', '<img class="tab" />', 
+            r'(&nbsp;| ){5}', '<img class="tab" />', 
             unicode(soup).replace(u'\xa0', ' '),
         )  # shit!
         self.apply()

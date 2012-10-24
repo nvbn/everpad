@@ -113,6 +113,9 @@ class FindBar(QWidget):
         self.ui.btnHighlight.clicked.connect(self.update_highlight)
         self.ui.chkMatchCase.clicked.connect(self.match_case_updated)
 
+    def set_search_term(self, search_term):
+        self.ui.edtFindText.setText(search_term)
+
     def get_flags(self, default_flags=None):
         flags = QWebPage.FindFlag.FindWrapsAroundDocument
         if default_flags is not None:

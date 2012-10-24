@@ -11,6 +11,7 @@ import dbus.mainloop.glib
 import sys
 import os
 import gettext
+import json
 
 
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'i18n')
@@ -80,13 +81,14 @@ class EverpadLens(SingleScopeLens):
             1000, Note.ORDER_TITLE,
         ):
             note = Note.from_tuple(note_struct)
-            results.append(str(note.id),
+            results.append(json.dumps({'id': note.id, 'search': search}),
                 'everpad-note', self.category, "text/html",
                 note.title, html2text(note.content),
             '')
 
-    def preview(self, scope, id):
-        note = Note.from_tuple(provider.get_note(int(id)))
+    def preview(self, scope, uri):
+        obj = json.loads(uri)
+        note = Note.from_tuple(provider.get_note(obj['id']))
         preview = Unity.GenericPreview.new(
             note.title, html2text(note.content), None,
         )
@@ -102,8 +104,9 @@ class EverpadLens(SingleScopeLens):
         preview.add_action(edit)
         return preview
 
-    def handle_uri(self, scope, id):
-        get_pad().open(int(id))
+    def handle_uri(self, scope, uri):
+        obj = json.loads(uri)
+        get_pad().open_with_search_term(int(obj['id']), obj.get('search', ''))
         return self.hide_dash_response()
 
     def on_filtering_changed(self, scope):

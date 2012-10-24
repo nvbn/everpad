@@ -67,7 +67,7 @@ class Indicator(QSystemTrayIcon):
         self.menu.addSeparator()
         self.menu.addAction(self.tr('Exit'), self.exit)
 
-    def open(self, note):
+    def open(self, note, search_term=''):
         old_note_window = self.opened_notes.get(note.id, None)
         if old_note_window and not getattr(old_note_window, 'closed', True):
             editor = self.opened_notes[note.id]
@@ -76,6 +76,9 @@ class Indicator(QSystemTrayIcon):
             editor = Editor(self.app, note)
             editor.show()
             self.opened_notes[note.id] = editor
+        if search_term:
+            editor.findbar.set_search_term(search_term)
+            editor.findbar.show()
         return editor
 
     @Slot()
@@ -155,8 +158,12 @@ class EverpadService(dbus.service.Object):
 
     @dbus.service.method("com.everpad.App", in_signature='i', out_signature='')
     def open(self, id):
+        self.open_with_search_term(id, '')
+
+    @dbus.service.method("com.everpad.App", in_signature='is', out_signature='')
+    def open_with_search_term(self, id, search_term):
         note = Note.from_tuple(self.app.provider.get_note(id))
-        self.app.indicator.open(note)
+        self.app.indicator.open(note, search_term)
 
     @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
     def create(self):

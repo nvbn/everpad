@@ -104,7 +104,7 @@ class List(QDialog):
         notebook_filter = [notebook_id] if notebook_id > 0 else dbus.Array([], signature='i')
         notes = self.app.provider.find_notes(
             '', notebook_filter, dbus.Array([], signature='i'), 
-            0, 2 ** 31 - 1, Note.ORDER_TITLE,
+            0, 2 ** 31 - 1, Note.ORDER_TITLE, -1,
         )  # fails with sys.maxint in 64
         for note_struct in notes:
             note = Note.from_tuple(note_struct)

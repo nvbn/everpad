@@ -35,7 +35,7 @@ class Indicator(QSystemTrayIcon):
             notes = self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,
-                20, Note.ORDER_UPDATED_DESC,
+                20, Note.ORDER_UPDATED_DESC, -1,
             )
             if len(notes) or self.app.provider.is_first_synced():
                 self.menu.addAction(self.tr('All Notes'), self.show_all_notes)

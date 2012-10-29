@@ -78,7 +78,7 @@ class EverpadLens(SingleScopeLens):
         tags = dbus.Array(self.tag_filter_ids, signature='i')
         for note_struct in provider.find_notes(
             search, notebooks, tags, place,
-            1000, Note.ORDER_TITLE,
+            1000, Note.ORDER_TITLE, -1,
         ):
             note = Note.from_tuple(note_struct)
             results.append(json.dumps({'id': note.id, 'search': search}),

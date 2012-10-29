@@ -54,11 +54,11 @@ class ProviderService(dbus.service.Object):
             raise DBusException('Note not found')
 
     @dbus.service.method(
-        "com.everpad.Provider", in_signature='saiaiiii',
+        "com.everpad.Provider", in_signature='saiaiiiii',
         out_signature='a%s' % btype.Note.signature,
     )
     def find_notes(self, words, notebooks, tags, place,
-        limit=100, order=btype.Note.ORDER_UPDATED,
+        limit=100, order=btype.Note.ORDER_UPDATED, pinned=-1,
     ):
         filters = []
         if words:
@@ -80,6 +80,10 @@ class ProviderService(dbus.service.Object):
         if place:
             filters.append(
                 Note.place_id == place,
+            )
+        if pinned != -1:
+            filters.append(
+                Note.pinned == pinned,
             )
         qs = self.sq(Note).filter(and_(
             Note.action != ACTION_DELETE,

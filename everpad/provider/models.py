@@ -38,6 +38,7 @@ class Note(Base):
         secondary=notetags_table,
         backref="notes",
     )
+    pinnded = Column(Boolean, default=False)
     resources = relationship("Resource")
     place_id = Column(Integer, ForeignKey('places.id'))
     place = relationship("Place", backref='note')

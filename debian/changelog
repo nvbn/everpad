@@ -1,4 +1,4 @@
-everpad (2.1-0~quantal) quantal; urgency=low
+everpad (2.1-0~oneiric) oneiric; urgency=low
 
   * In note search
   * Check api and schema version
@@ -7,7 +7,7 @@ everpad (2.1-0~quantal) quantal; urgency=low
 
  -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Fri, 2 Nove 2012 00:18:57 +0400
 
-everpad (2.0.2-0~quantal) quantal; urgency=low
+everpad (2.0.2-0~oneiric) oneiric; urgency=low
 
   * Fix tabs
 

@@ -65,7 +65,8 @@ class EverpadLens(SingleScopeLens):
             places.add_option(str(place.id), place.name, icon)
         self._lens.props.filters = [notebooks, tags, places]
 
-    category = ListViewCategory(_("Notes"), 'everpad-lens')
+    pin_notes = ListViewCategory(_("Pin Notes"), 'everpad-lens')
+    all_notes = ListViewCategory(_("All Notes"), 'everpad-lens')
 
     def search(self, search, results):
         if provider.get_api_version() != API_VERSION:
@@ -85,8 +86,8 @@ class EverpadLens(SingleScopeLens):
         ):
             note = Note.from_tuple(note_struct)
             results.append(json.dumps({'id': note.id, 'search': search}),
-                'everpad-note', self.category, "text/html",
-                note.title, html2text(note.content),
+                'everpad-note', self.pin_notes if note.pinnded else self.all_notes, 
+                "text/html", note.title, html2text(note.content),
             '')
 
     def preview(self, scope, uri):

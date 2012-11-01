@@ -58,7 +58,7 @@ class ProviderService(dbus.service.Object):
         out_signature='a%s' % btype.Note.signature,
     )
     def find_notes(self, words, notebooks, tags, place,
-        limit=100, order=btype.Note.ORDER_UPDATED, pinned=-1,
+        limit=100, order=btype.Note.ORDER_UPDATED, pinnded=-1,
     ):
         filters = []
         if words:
@@ -81,9 +81,9 @@ class ProviderService(dbus.service.Object):
             filters.append(
                 Note.place_id == place,
             )
-        if pinned != -1:
+        if pinnded != -1:
             filters.append(
-                Note.pinned == pinned,
+                Note.pinnded == pinnded,
             )
         qs = self.sq(Note).filter(and_(
             Note.action != ACTION_DELETE,

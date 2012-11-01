@@ -31,6 +31,13 @@ class Indicator(QSystemTrayIcon):
         self.menu.aboutToShow.connect(self.update)
         self.opened_notes = {}
 
+    def _add_note(self, struct):
+        note = Note.from_tuple(struct)
+        title = note.title[:40].replace('&', '&&')
+        self.menu.addAction(title, Slot()(
+            partial(self.open, note=note)
+        ))
+
     @Slot()
     def update(self):
         self.menu.clear()
@@ -44,20 +51,25 @@ class Indicator(QSystemTrayIcon):
             )
             action.setEnabled(False)
         elif get_auth_token():
+            pin_notes = self.app.provider.find_notes(
+                '', dbus.Array([], signature='i'),
+                dbus.Array([], signature='i'), 0,
+                20, Note.ORDER_UPDATED_DESC, 1,
+            )
             notes = self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,
-                20, Note.ORDER_UPDATED_DESC, -1,
+                20 - len(pin_notes), Note.ORDER_UPDATED_DESC, 0,
             )
-            if len(notes) or self.app.provider.is_first_synced():
+            if len(notes) + len(pin_notes) or self.app.provider.is_first_synced():
                 self.menu.addAction(self.tr('All Notes'), self.show_all_notes)
                 self.menu.addSeparator()
-                for note_struct in notes:
-                    note = Note.from_tuple(note_struct)
-                    title = note.title[:40].replace('&', '&&')
-                    self.menu.addAction(title, Slot()(
-                        partial(self.open, note=note)
-                    ))
+                if len(pin_notes):
+                    for struct in pin_notes:
+                        self._add_note(struct)
+                    self.menu.addSeparator()
+                for struct in notes:
+                    self._add_note(struct)
                 self.menu.addSeparator()
                 self.menu.addAction(self.tr('Create Note'), self.create)
                 first_sync = False

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'everpad/interface/editor.ui'
+# Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Sun Oct 21 07:02:02 2012
-#      by: pyside-uic 0.2.13 running on PySide 1.1.0
+# Created: Thu Nov  1 23:45:47 2012
+#      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -43,6 +43,11 @@ class Ui_Editor(object):
         self.resourceLabel.setObjectName("resourceLabel")
         self.verticalLayout.addWidget(self.resourceLabel)
         self.resourceArea = QtGui.QScrollArea(self.centralwidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.resourceArea.sizePolicy().hasHeightForWidth())
+        self.resourceArea.setSizePolicy(sizePolicy)
         self.resourceArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.resourceArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.resourceArea.setWidgetResizable(True)

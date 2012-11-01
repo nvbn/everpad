@@ -1,6 +1,7 @@
 from functools import wraps, partial
 from BeautifulSoup import BeautifulSoup
 from HTMLParser import HTMLParser
+from everpad.const import API_VERSION, SCHEMA_VERSION, VERSION
 import dbus
 import re
 import sys
@@ -119,3 +120,9 @@ def sanitize(soup=None, html=None):
 
 def html_unescape(html):
     return HTMLParser().unescape(html)
+
+def print_version():
+    print 'Everpad version: %s' % VERSION
+    print 'API version: %d' % API_VERSION
+    print 'Schema version: %d' % SCHEMA_VERSION
+    sys.exit(0)

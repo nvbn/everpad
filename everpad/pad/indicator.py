@@ -3,7 +3,7 @@ sys.path.insert(0, '../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
-from everpad.tools import get_provider, get_pad, get_auth_token
+from everpad.tools import get_provider, get_pad, get_auth_token, print_version
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
 from everpad.pad.list import List
@@ -234,7 +234,10 @@ def main():
     parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
     parser.add_argument('--settings', action='store_true', help='settings and management')
+    parser.add_argument('--version', '-v', action='store_true', help='show version')
     args = parser.parse_args(sys.argv[1:])
+    if args.version:
+        print_version()
     fp = open('/tmp/everpad-%s.lock' % getpass.getuser(), 'w')
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)

@@ -3,7 +3,7 @@ sys.path.insert(0, '../..')
 from everpad.provider.service import ProviderService
 from everpad.provider.sync import SyncThread
 from everpad.provider.tools import set_auth_token, get_db_session
-from everpad.tools import get_auth_token
+from everpad.tools import get_auth_token, print_version
 from everpad.provider import models
 from PySide.QtCore import QCoreApplication, Slot, QSettings
 import dbus
@@ -80,7 +80,10 @@ def main():
         pass
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', action='store_true', help='verbose output')
+    parser.add_argument('--version', '-v', action='store_true', help='show version')
     args = parser.parse_args(sys.argv[1:])
+    if args.version:
+        print_version()
     app = ProviderApp(args.verbose, sys.argv)
     app.exec_()
 

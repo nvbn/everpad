@@ -1,12 +1,13 @@
 import sys
 sys.path.insert(0, '..')
 from singlet.lens import SingleScopeLens, IconViewCategory, ListViewCategory
-from gi.repository import Gio, Unity, GObject
+from gi.repository import Gio, Unity, GObject, Notify
 from singlet.utils import run_lens
 from everpad.tools import get_provider, get_pad
 from everpad.basetypes import Note, Tag, Notebook, Place, Resource
 from everpad.const import API_VERSION
 from html2text import html2text
+from datetime import datetime
 import dbus
 import dbus.mainloop.glib
 import sys
@@ -69,7 +70,24 @@ class EverpadLens(SingleScopeLens):
     all_notes = ListViewCategory(_("All Notes"), 'everpad-lens')
 
     def search(self, search, results):
-        if provider.get_api_version() != API_VERSION:
+        try:
+            version = provider.get_api_version()
+        except (  # dbus raise some magic
+            dbus.exceptions.UnknownMethodException,
+            dbus.exceptions.DBusException,
+        ):
+            version = -1
+        if version < API_VERSION:
+            dim = datetime.now() - getattr(self, 'last_api_notify', datetime.now())
+            if dim.seconds > 60:
+                Notify.init("everpad")
+                Notify.Notification.new(
+                    'everpad',
+                     _('Please restart everpad via indicator'),
+                '').show()
+                self.last_api_notify = datetime.now()
+            return
+        elif version > API_VERSION:
             sys.exit(0)
         if self.notebook_filter_id:
             notebooks = [self.notebook_filter_id]

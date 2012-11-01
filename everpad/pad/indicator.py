@@ -52,7 +52,10 @@ class Indicator(QSystemTrayIcon):
         self.menu.clear()
         try:
             version = self.app.provider.get_api_version()
-        except dbus.exceptions.UnknownMethodException:
+        except (  # dbus raise some magic
+            dbus.exceptions.UnknownMethodException,
+            dbus.exceptions.DBusException,
+        ):
             version = -1
         if version != API_VERSION + 1:
             action = self.menu.addAction(

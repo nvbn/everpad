@@ -7,7 +7,10 @@ from everpad.tools import get_provider, get_pad, get_auth_token
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
 from everpad.pad.list import List
-from everpad.const import STATUS_SYNC, SYNC_STATES, SYNC_STATE_START, SYNC_STATE_FINISH
+from everpad.const import (
+    STATUS_SYNC, SYNC_STATES, SYNC_STATE_START,
+    SYNC_STATE_FINISH, API_VERSION,
+)
 from functools import partial
 import signal
 import dbus
@@ -31,7 +34,12 @@ class Indicator(QSystemTrayIcon):
     @Slot()
     def update(self):
         self.menu.clear()
-        if get_auth_token():
+        if self.app.provider.get_api_version() != API_VERSION:
+            action = self.menu.addAction(
+                self.tr('API version missmatch, please restart'),
+            )
+            action.setEnabled(False)
+        elif get_auth_token():
             notes = self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,

@@ -11,7 +11,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
 from PySide.QtCore import Signal, QObject, Qt
 import everpad.basetypes as btype
-from everpad.const import STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY
+from everpad.const import STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY, API_VERSION
 import dbus
 import dbus.service
 import time
@@ -371,6 +371,13 @@ class ProviderService(dbus.service.Object):
             Notebook.action != ACTION_DELETE,
             Notebook.default == True,
         )).count())
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='',
+        out_signature='i',
+    )
+    def get_api_version(self):
+        return API_VERSION
 
     @dbus.service.signal(
         'com.everpad.provider', signature='i',

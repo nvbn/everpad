@@ -5,6 +5,7 @@ from gi.repository import Gio, Unity, GObject
 from singlet.utils import run_lens
 from everpad.tools import get_provider, get_pad
 from everpad.basetypes import Note, Tag, Notebook, Place, Resource
+from everpad.const import API_VERSION
 from html2text import html2text
 import dbus
 import dbus.mainloop.glib
@@ -67,6 +68,8 @@ class EverpadLens(SingleScopeLens):
     category = ListViewCategory(_("Notes"), 'everpad-lens')
 
     def search(self, search, results):
+        if provider.get_api_version() != API_VERSION:
+            sys.exit(0)
         if self.notebook_filter_id:
             notebooks = [self.notebook_filter_id]
         else:

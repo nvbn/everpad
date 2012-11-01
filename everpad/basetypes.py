@@ -81,7 +81,7 @@ class Note(DbusSendable):
         ('notebook', 'i'),
         ('tags', 'as'),
         ('place', 's'),
-        ('pinned', 'b'),
+        ('pinnded', 'b'),
     )
 
 

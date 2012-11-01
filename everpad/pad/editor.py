@@ -902,6 +902,13 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.find_action.setCheckable(True)
         self.find_action.triggered.connect(self.findbar.toggle_visible)
         self.ui.toolBar.addAction(self.find_action)
+        self.ui.toolBar.addSeparator()
+        self.pin = self.ui.toolBar.addAction(
+            QIcon.fromTheme('edit-pin', QIcon.fromTheme('everpad-pin')),
+            self.tr('Pin note'), self.mark_touched,
+        )
+        self.pin.setCheckable(True)
+        self.pin.setChecked(self.note.pinnded)
 
     def load_note(self, note):
         self.resource_edit.resources = map(Resource.from_tuple,
@@ -917,6 +924,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.note.title = self.note_edit.title
         self.note.content = self.note_edit.content
         self.note.tags = dbus.Array(self.tag_edit.tags, signature='s')
+        self.note.pinnded = self.pin.isChecked()
 
     def closeEvent(self, event):
         event.ignore()

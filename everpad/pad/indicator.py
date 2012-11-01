@@ -35,7 +35,7 @@ class Indicator(QSystemTrayIcon):
     def update(self):
         self.menu.clear()
         try:
-            version = version
+            version = self.app.provider.get_api_version()
         except dbus.exceptions.UnknownMethodException:
             version = -1
         if version != API_VERSION:

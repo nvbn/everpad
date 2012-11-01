@@ -81,7 +81,7 @@ class SyncThread(QThread):
                 self.auth_token = get_auth_token()
                 self.note_store = get_note_store(self.auth_token)
                 break
-            except socket.gaierror:
+            except socket.error:
                 time.sleep(30)
 
     def force_sync(self):

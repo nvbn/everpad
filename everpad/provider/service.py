@@ -379,6 +379,15 @@ class ProviderService(dbus.service.Object):
     def get_api_version(self):
         return API_VERSION
 
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='',
+    )
+    def kill(self):
+        try:
+            return
+        finally:
+            sys.exit(0)
+
     @dbus.service.signal(
         'com.everpad.provider', signature='i',
     )

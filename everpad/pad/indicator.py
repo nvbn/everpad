@@ -20,6 +20,7 @@ import argparse
 import fcntl
 import os
 import getpass
+import time
 
 
 class Indicator(QSystemTrayIcon):
@@ -39,18 +40,30 @@ class Indicator(QSystemTrayIcon):
         ))
 
     @Slot()
+    def kill_all(self):
+        try:
+            self.app.provider.kill()
+        except dbus.exceptions.DBusException:
+            pass
+        os.system('everpad --replace')
+
+    @Slot()
     def update(self):
         self.menu.clear()
         try:
             version = self.app.provider.get_api_version()
         except dbus.exceptions.UnknownMethodException:
             version = -1
-        if version != API_VERSION:
+        if version != API_VERSION + 1:
             action = self.menu.addAction(
                 self.tr('API version missmatch, please restart'),
             )
             action.setEnabled(False)
-        elif get_auth_token():
+            self.menu.addAction(
+                self.tr('Restart everpad'), self.kill_all,
+            )
+            return
+        if get_auth_token():
             pin_notes = self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,
@@ -201,6 +214,13 @@ class EverpadService(dbus.service.Object):
     def settings(self):
         self.app.indicator.show_management()
 
+    @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
+    def kill(self):
+        try:
+            return
+        finally:
+            sys.exit(0)
+
 
 class UnityLauncher(dbus.service.Object):
     def __init__(self, app_uri, *args, **kwargs):
@@ -234,10 +254,17 @@ def main():
     parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
     parser.add_argument('--settings', action='store_true', help='settings and management')
+    parser.add_argument('--replace', action='store_true', help='replace already runned')
     parser.add_argument('--version', '-v', action='store_true', help='show version')
     args = parser.parse_args(sys.argv[1:])
     if args.version:
         print_version()
+    if args.replace:
+        try:
+            pad = get_pad()
+            pad.kill()
+        except dbus.exceptions.DBusException:
+            pass
     fp = open('/tmp/everpad-%s.lock' % getpass.getuser(), 'w')
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)

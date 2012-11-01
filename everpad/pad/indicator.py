@@ -34,7 +34,11 @@ class Indicator(QSystemTrayIcon):
     @Slot()
     def update(self):
         self.menu.clear()
-        if self.app.provider.get_api_version() != API_VERSION:
+        try:
+            version = version
+        except dbus.exceptions.UnknownMethodException:
+            version = -1
+        if version != API_VERSION:
             action = self.menu.addAction(
                 self.tr('API version missmatch, please restart'),
             )

@@ -57,7 +57,7 @@ class Indicator(QSystemTrayIcon):
             dbus.exceptions.DBusException,
         ):
             version = -1
-        if version != API_VERSION + 1:
+        if version != API_VERSION:
             action = self.menu.addAction(
                 self.tr('API version missmatch, please restart'),
             )

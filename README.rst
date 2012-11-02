@@ -51,7 +51,7 @@ And in third:
 
 Want to help?
 =============
-Write code here.
+`Write code here <https://github.com/nvbn/everpad/wiki/developing-for-everpad>`_
 
 Or create bug reports.
 

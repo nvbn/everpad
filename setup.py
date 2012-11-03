@@ -24,7 +24,7 @@ setup(name='everpad',
         'gui_scripts': [
             'everpad=everpad.pad.indicator:main'
         ], 'console_scripts': [
-            'everpad-lens=everpad.lens:main',
+            'everpad-lens=everpad.specific.unity:main',
             'everpad-provider=everpad.provider.daemon:main',
         ]
     },

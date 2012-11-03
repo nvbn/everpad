@@ -11,6 +11,7 @@ from everpad.const import (
     STATUS_SYNC, SYNC_STATES, SYNC_STATE_START,
     SYNC_STATE_FINISH, API_VERSION,
 )
+from everpad.specific import get_launcher
 from functools import partial
 import signal
 import dbus
@@ -225,31 +226,6 @@ class EverpadService(dbus.service.Object):
             sys.exit(0)
 
 
-class UnityLauncher(dbus.service.Object):
-    def __init__(self, app_uri, *args, **kwargs):
-        self.app_uri = app_uri
-        self.data = {}
-        dbus.service.Object.__init__(self, *args, **kwargs)
-
-    def update(self, data):
-        self.data = data
-        self.Update(self.app_uri, data)
-
-    @dbus.service.signal(
-        dbus_interface='com.canonical.Unity.LauncherEntry',
-        signature=("sa{sv}")
-    )
-    def Update(self, app_uri, properties):
-        return
-
-    @dbus.service.method(
-        dbus_interface='com.canonical.Unity.LauncherEntry',
-        in_signature="", out_signature="sa{sv}",
-    )
-    def Query(self):
-        return self.app_uri, self.data
-
-
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     parser = argparse.ArgumentParser()
@@ -276,7 +252,7 @@ def main():
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         session_bus = dbus.SessionBus()
         app.provider = get_provider(session_bus)
-        app.launcher = UnityLauncher('application://everpad.desktop', session_bus, '/')
+        app.launcher = get_launcher('application://everpad.desktop', session_bus, '/')
         app.provider.connect_to_signal(
             'sync_state_changed',
             app.on_sync_state_changed,

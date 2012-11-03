@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import sys
 sys.path.append('/opt/extras.ubuntu.com/everpad/')
-from everpad import lens
+from everpad.specific.unity import lens
 
 
 if __name__ == '__main__':

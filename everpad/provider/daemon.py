@@ -5,7 +5,8 @@ from everpad.provider.sync import SyncThread
 from everpad.provider.tools import set_auth_token, get_db_session
 from everpad.tools import get_auth_token, print_version
 from everpad.provider import models
-from PySide.QtCore import QCoreApplication, Slot, QSettings
+from PySide.QtCore import Slot, QSettings
+
 import dbus
 import dbus.mainloop.glib
 import signal
@@ -15,9 +16,17 @@ import getpass
 import argparse
 
 
-class ProviderApp(QCoreApplication):
+if 'kde' in os.environ.get('DESKTOP_SESSION'):  # kde init qwidget for wallet access
+    from PySide.QtGui import QApplication
+    App = QApplication
+else:
+    from PySide.QtCore import QCoreApplication
+    App = QCoreApplication
+
+
+class ProviderApp(App):
     def __init__(self, verbose, *args, **kwargs):
-        QCoreApplication.__init__(self, *args, **kwargs)
+        App.__init__(self, *args, **kwargs)
         self.settings = QSettings('everpad', 'everpad-provider')
         self.verbose = verbose
         session_bus = dbus.SessionBus()
@@ -72,7 +81,6 @@ def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     fp = open('/tmp/everpad-provider-%s.lock' % getpass.getuser(), 'w')
     fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     try:
         os.mkdir(os.path.expanduser('~/.everpad/'))
         os.mkdir(os.path.expanduser('~/.everpad/data/'))
@@ -84,6 +92,7 @@ def main():
     args = parser.parse_args(sys.argv[1:])
     if args.version:
         print_version()
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     app = ProviderApp(args.verbose, sys.argv)
     app.exec_()
 

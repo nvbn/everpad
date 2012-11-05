@@ -281,10 +281,16 @@ class ContentEdit(QObject):
         self._hovered_url = None
         self.widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.widget.customContextMenuRequested.connect(self.context_menu)
+        self._init_shortcuts()
+
+    def _init_shortcuts(self):
         for key, action in (
             ('Ctrl+b', QWebPage.ToggleBold),
             ('Ctrl+i', QWebPage.ToggleItalic), 
             ('Ctrl+u', QWebPage.ToggleUnderline),
+            ('Ctrl+Shift+b', QWebPage.InsertUnorderedList),
+            ('Ctrl+Shift+o', QWebPage.InsertOrderedList),
+            ('Ctrl+shift+v', QWebPage.PasteAndMatchStyle),
         ):
             QShortcut(
                 QKeySequence(self.app.tr(key)),
@@ -879,13 +885,18 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         )
         self.findbar = FindBar(self)
         self.init_toolbar()
+        self.init_shortcuts()
+
+    def init_shortcuts(self):
+        self.save_btn.setShortcut(QKeySequence('Ctrl+s'))
+        self.close_btn.setShortcut(QKeySequence('Ctrl+q'))
 
     def init_toolbar(self):
         self.save_btn = self.ui.toolBar.addAction(
             QIcon.fromTheme('document-save'), 
             self.tr('Save'), self.save,
         )
-        self.ui.toolBar.addAction(
+        self.close_btn = self.ui.toolBar.addAction(
             QIcon.fromTheme('cancel'), 
             self.tr('Close without saving'), 
             self.close,

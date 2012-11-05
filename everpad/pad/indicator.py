@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings
-from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon
+from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon, QCursor
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad, get_auth_token, print_version
 from everpad.pad.editor import Editor
@@ -32,6 +32,11 @@ class Indicator(QSystemTrayIcon):
         self.setContextMenu(self.menu)
         self.menu.aboutToShow.connect(self.update)
         self.opened_notes = {}
+        self.activated.connect(self._activated)
+
+    def _activated(self, reason):
+        if reason == QSystemTrayIcon.Trigger:
+            self.menu.popup(QCursor().pos())
 
     def _add_note(self, struct):
         note = Note.from_tuple(struct)

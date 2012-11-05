@@ -897,7 +897,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.tr('Save'), self.save,
         )
         self.close_btn = self.ui.toolBar.addAction(
-            QIcon.fromTheme('cancel'), 
+            QIcon.fromTheme('window-close'), 
             self.tr('Close without saving'), 
             self.close,
         )

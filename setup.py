@@ -70,10 +70,10 @@ setup(name='everpad',
         ('/usr/share/kde4/services/', [
             'data/plasma-runner-everpad.desktop',
         ]),
-        ('/usr/share/kde4/apps/everpad_runner/', [
+        ('/usr/share/kde4/apps/plasma/runners/everpad/', [
             'data/metadata.desktop',
         ]),
-        ('/usr/share/kde4/apps/everpad_runner/contents/code/', [
+        ('/usr/share/kde4/apps/plasma/runners/everpad/contents/code/', [
             'everpad/specific/kde/everpad_runner.py',
         ]),
     ]

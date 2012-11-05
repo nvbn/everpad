@@ -1,6 +1,7 @@
 from PyKDE4 import plasmascript
 from PyKDE4.plasma import Plasma
 from PyKDE4.kdeui import KIcon, KMessageBox
+from html2text import html2text
 from everpad.basetypes import Note
 from everpad.tools import get_provider, get_pad
 import dbus
@@ -42,6 +43,7 @@ class EverpadRunner(plasmascript.Runner):
             note = Note.from_tuple(note_struct)
             action = Plasma.QueryMatch(self.runner)
             action.setText(note.title)
+            action.setSubtext(html2text(note.content))
             action.setType(Plasma.QueryMatch.ExactMatch)
             action.setIcon(KIcon("everpad"))
             action.setData(str(note.id))

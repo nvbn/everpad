@@ -1,3 +1,11 @@
+everpad (2.2-0~oneiric) oneiric; urgency=low
+
+  * Kde and krunner integration
+  * Support of addition hotkeys
+  * Bug fix
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Fri, 5 Nov 2012 23:38:04 +0400
+
 everpad (2.1-0~oneiric) oneiric; urgency=low
 
   * In note search
@@ -5,7 +13,7 @@ everpad (2.1-0~oneiric) oneiric; urgency=low
   * Pin notes
   * Several bug fix
 
- -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Fri, 2 Nove 2012 00:18:57 +0400
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Fri, 2 Nov 2 00:18:57 +0400
 
 everpad (2.0.2-0~oneiric) oneiric; urgency=low
 

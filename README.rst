@@ -12,7 +12,7 @@ Everpad
 
 .. image:: http://ubuntuone.com/3WKTW42w6BZ928InVuthiP
 
-Evernote client with ubuntu and unity integration
+Evernote client well integrated with linux desktop.
 
 Client has:
  - unity lens

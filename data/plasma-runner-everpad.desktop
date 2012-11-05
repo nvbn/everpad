@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Everpad runner
+Comment=Find and create notes directly from krunner
+Type=Service
+Icon=dialog-information
+ServiceTypes=Plasma/Runner
+X-Plasma-API=python
+X-Plasma-MainScript=code/everpad-runner.py
+X-KDE-PluginInfo-Author=Vladimir Iakovlev
+X-KDE-PluginInfo-Email=nvbn.rm@gmail.com
+X-KDE-PluginInfo-Name=everpad
+X-KDE-PluginInfo-Version=1
+X-KDE-PluginInfo-Website=https://github.com/nvbn/everpad/
+X-KDE-PluginInfo-License=BSD
+X-KDE-PluginInfo-EnabledByDefault=true

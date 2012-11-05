@@ -333,6 +333,8 @@ class ContentEdit(QObject):
         for todo in soup.findAll('en-todo'):
             todo.name = 'input'
             todo['type'] = 'checkbox'
+            if todo.get('checked') == 'false':
+                del todo['checked']
             self.changed_by_default = True
         for media in soup.findAll('en-media'):
             if media.get('hash'):  # evernote android app error

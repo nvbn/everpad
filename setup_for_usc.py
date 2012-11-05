@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys
 import os
 
-version = '2.1'
+version = '2.2'
 
 def get_files():
     packages = find_packages(exclude=['tests'])
@@ -70,6 +70,15 @@ setup(name='everpad',
             'data/unity-lens-everpad.service',
             'data/everpad-provider.service',
             'data/everpad-app.service',
+        ]),
+        ('/usr/share/kde4/services/', [
+            'data/plasma-runner-everpad.desktop',
+        ]),
+        ('/usr/share/kde4/apps/plasma/runners/everpad/', [
+            'data/metadata.desktop',
+        ]),
+        ('/usr/share/kde4/apps/plasma/runners/everpad/contents/code/', [
+            'everpad/specific/kde/everpad_runner.py',
         ]),
         ('/usr/bin/', [
             'bin/everpad', 'bin/everpad-lens',

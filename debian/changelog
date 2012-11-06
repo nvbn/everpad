@@ -1,3 +1,10 @@
+everpad (2.2.1-0~oneiric) oneiric; urgency=low
+
+  * Fix lens
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Tue, 6 Nov 2012 16:05:04 +0400
+
+
 everpad (2.2-0~oneiric) oneiric; urgency=low
 
   * Kde and krunner integration

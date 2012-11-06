@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '2.2'
+version = '2.2.1'
 
 setup(name='everpad',
     version=version,
@@ -24,7 +24,7 @@ setup(name='everpad',
         'gui_scripts': [
             'everpad=everpad.pad.indicator:main'
         ], 'console_scripts': [
-            'everpad-lens=everpad.specific.unity:main',
+            'everpad-lens=everpad.specific.unity.lens:main',
             'everpad-provider=everpad.provider.daemon:main',
         ]
     },

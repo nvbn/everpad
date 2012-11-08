@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, '../..')
-from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings
+from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings, QT_TRANSLATE_NOOP
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon, QCursor
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad, get_auth_token, print_version
@@ -174,6 +174,9 @@ class PadApp(QApplication):
         self.translator = QTranslator()
         if not self.translator.load('../../i18n/%s' % QLocale.system().name()):
             self.translator.load('/usr/share/everpad/i18n/%s' % QLocale.system().name())
+        # This application string can be localized to 'RTL' to switch the application layout
+        # direction. See for example i18n/ar_EG.ts
+        QT_TRANSLATE_NOOP('QApplication', 'QT_LAYOUT_DIRECTION')
         self.installTranslator(self.translator)
         self.indicator = Indicator(self)
         self.update_icon()

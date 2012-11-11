@@ -4,3 +4,4 @@ syntax: glob
 *pip-delete-this-directory.txt
 build/*
 .idea/*
+*egg-info/

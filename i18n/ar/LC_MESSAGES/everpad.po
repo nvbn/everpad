@@ -19,32 +19,32 @@ msgstr ""
 
 #: everpad/specific/unity/lens.py:34
 msgid "Everpad Lens"
-msgstr ""
+msgstr "عدسة إفَرْباد"
 
 #: everpad/specific/unity/lens.py:35
 msgid "Search Everpad"
-msgstr ""
+msgstr "ابحث في إفَرْباد"
 
 #: everpad/specific/unity/lens.py:55
 msgid "Tags"
-msgstr ""
+msgstr "وسوم"
 
 #: everpad/specific/unity/lens.py:59
 msgid "Notebooks"
-msgstr ""
+msgstr "دفاتر"
 
 #: everpad/specific/unity/lens.py:63
 msgid "Places"
-msgstr ""
+msgstr "أماكن"
 
 #: everpad/specific/unity/lens.py:69
 msgid "Pin Notes"
-msgstr ""
+msgstr "مُذَكِّرَات مثبتة"
 
 #: everpad/specific/unity/lens.py:70
 msgid "All Notes"
-msgstr ""
+msgstr "كل المُذَكِّرَات"
 
 #: everpad/specific/unity/lens.py:86
 msgid "Please restart everpad via indicator"
-msgstr ""
+msgstr "رجاءً أعِدْ تشغيل إفَرْباد من منطقة التنبيهات"

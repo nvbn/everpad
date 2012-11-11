@@ -594,7 +594,12 @@ class ContentEdit(QObject):
 
     def _enable_text_direction_support(self):
         def is_rtl_language(language_code):
-            return language_code.startswith('ar') or language_code.startswith('he')
+            rtl_languages = ['ar', 'fa', 'he', 'ur']
+            for lang in rtl_languages:
+                if language_code.startswith(lang):
+                    return True
+            return False
+
         import locale
         default_language = locale.getdefaultlocale()[0]
         if is_rtl_language(default_language):

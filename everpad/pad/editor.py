@@ -521,7 +521,7 @@ class ContentEdit(QObject):
         )
         image_action.triggered.connect(self._insert_image)
 
-        return map(lambda action: self._action_with_icon(*action), (
+        actions = [
             (QWebPage.ToggleBold,
                 ['format-text-bold', 'everpad-text-bold']),
             (QWebPage.ToggleItalic,
@@ -538,6 +538,17 @@ class ContentEdit(QObject):
                 ['format-justify-left', 'everpad-justify-left']),
             (QWebPage.AlignRight,
                 ['format-justify-right', 'everpad-justify-right']),
+            ]
+
+        if self._enable_text_direction_support():
+            actions += [
+                (QWebPage.SetTextDirectionLeftToRight,
+                    ['format-text-direction-ltr', 'everpad-text-direction-ltr']),
+                (QWebPage.SetTextDirectionRightToLeft,
+                    ['format-text-direction-rtl', 'everpad-text-direction-rtl']),
+                ]
+
+        actions += [
             (QWebPage.InsertUnorderedList,
                 ['format-list-unordered', 'everpad-list-unordered']),
             (QWebPage.InsertOrderedList,
@@ -548,7 +559,9 @@ class ContentEdit(QObject):
             (table_action, ['insert-table', 'everpad-insert-table'], True),
             (link_action, ['insert-link'], True),
             (image_action, ['insert-image'], True),
-        ))
+            ]
+
+        return map(lambda action: self._action_with_icon(*action), actions)
 
     def paste_res(self, res):
         self.page.mainFrame().evaluateJavaScript(
@@ -579,6 +592,27 @@ class ContentEdit(QObject):
             ),
         )
 
+    def _enable_text_direction_support(self):
+        def is_rtl_language(language_code):
+            rtl_languages = ['ar', 'fa', 'he', 'ur']
+            for lang in rtl_languages:
+                if language_code.startswith(lang):
+                    return True
+            return False
+
+        import locale
+        default_language = locale.getdefaultlocale()[0]
+        if is_rtl_language(default_language):
+            return True
+        # If the default language is not a RTL language, go through the preferred list
+        # of languages to see if one of them is RTL. Unfortunately, this is platform-specific
+        # logic, and I couldn't find a portable way of doing it.
+        preferred_languages = os.getenv('LANGUAGE', '').split(':')
+        for language in preferred_languages:
+            if is_rtl_language(language):
+                return True
+
+        return False
 
 class TagEdit(object):
     """Abstraction for tag edit"""

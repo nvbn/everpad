@@ -190,6 +190,13 @@ class PadApp(QApplication):
         self.indicator.showMessage('Everpad', text,
             QSystemTrayIcon.Information)
 
+    def on_sync_state_changed(self, state):
+        if int(self.settings.value('launcher-progress', 1)):
+            self.launcher.update({
+                'progress': float(state + 1) / len(SYNC_STATES),
+                'progress-visible': state not in (SYNC_STATE_START, SYNC_STATE_FINISH),
+            })
+
 
 class EverpadService(dbus.service.Object):
     def __init__(self, app, *args, **kwargs):

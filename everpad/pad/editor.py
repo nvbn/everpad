@@ -996,7 +996,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
                 res.struct, self.resource_edit.resources,
             ), signature=Resource.signature),
         )
-        self.app.send_notify(self.tr(u'Note "%s" saved!') % self.note.title)
+        self.app.send_notify(self.tr('Note "%s" saved!') % self.note.title)
 
     @Slot()
     def save_and_close(self):
@@ -1015,7 +1015,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         if ret == QMessageBox.Yes:
             self.update_note()
             self.app.provider.delete_note(self.note.id)
-            self.app.send_notify(self.tr(u'Note "%s" deleted!') % self.note.title)
+            self.app.send_notify(self.tr('Note "%s" deleted!') % self.note.title)
             self.close()
 
     @Slot()

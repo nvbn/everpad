@@ -638,8 +638,10 @@ class TagEdit(object):
     @property
     def tags(self):
         """Get tags"""
+        # Split on comma and Arabic comma
+        # 0x060c is the Arabic comma
         return map(lambda tag: tag.strip(),
-            self.widget.text().split(','))
+            re.split(u',|\u060c', self.widget.text()))
 
     @tags.setter
     def tags(self, val):

@@ -317,7 +317,7 @@
     <message>
         <location filename="everpad/pad/list.py" line="134"/>
         <source>Notebook &quot;%s&quot; created!</source>
-        <translation>أٌنْشِئَ الدفتر!</translation>
+        <translation>أٌنْشِئَ الدفتر &quot;%s&quot;!</translation>
     </message>
     <message>
         <location filename="everpad/pad/list.py" line="142"/>

@@ -806,7 +806,7 @@ class ResourceEdit(object):  # TODO: move event to item
             menu = QMenu(self.parent)
             if res.mime.find('image') == 0:
                 menu.addAction(
-                    self.tr('Put to Content'), Slot()(partial(
+                    self.app.translate('ResourceEdit', 'Put to Content'), Slot()(partial(
                         self.to_content, res=res,
                     )),
                 )

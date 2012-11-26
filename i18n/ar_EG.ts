@@ -119,27 +119,27 @@
         <translation>احفظ</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="933"/>
+        <location filename="everpad/pad/editor.py" line="935"/>
         <source>Close without saving</source>
         <translation>أغلق دون حفظ</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="938"/>
+        <location filename="everpad/pad/editor.py" line="940"/>
         <source>Remove note</source>
         <translation>أزِل المُذَكِّرَة</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="953"/>
+        <location filename="everpad/pad/editor.py" line="955"/>
         <source>Pin note</source>
         <translation>ثبِّت المُذَكِّرَة</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="1008"/>
+        <location filename="everpad/pad/editor.py" line="1010"/>
         <source>You are trying to delete a note</source>
         <translation>أنت تحاول حذف مُذَكِّرَة</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="1008"/>
+        <location filename="everpad/pad/editor.py" line="1010"/>
         <source>Are you sure want to delete this note?</source>
         <translation>هل أنت متأكد من أنك تريد حذف هذه المُذَكِّرَة؟</translation>
     </message>
@@ -219,17 +219,17 @@
         <translation>ابحث</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="999"/>
+        <location filename="everpad/pad/editor.py" line="1001"/>
         <source>Note &quot;%s&quot; saved!</source>
         <translation>حُفِظَتْ المُذَكِّرَة &quot;%s&quot;!</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="1018"/>
+        <location filename="everpad/pad/editor.py" line="1020"/>
         <source>Note &quot;%s&quot; deleted!</source>
         <translation>حُذِفَتْ المُذَكِّرَة &quot;%s&quot;!</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="987"/>
+        <location filename="everpad/pad/editor.py" line="989"/>
         <source>Everpad / %s)</source>
         <translation>إِفَرْباد / %s</translation>
     </message>
@@ -454,47 +454,47 @@
 <context>
     <name>ResourceEdit</name>
     <message>
-        <location filename="everpad/pad/editor.py" line="827"/>
+        <location filename="everpad/pad/editor.py" line="829"/>
         <source>Are you sure want to delete this resource?</source>
         <translation>هل أنت متأكد من أنك تريد مسح هذا المورد؟</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="743"/>
+        <location filename="everpad/pad/editor.py" line="745"/>
         <source>show</source>
         <translation>أظْهِر</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="743"/>
+        <location filename="everpad/pad/editor.py" line="745"/>
         <source>hide</source>
         <translation>أخْف</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="803"/>
+        <location filename="everpad/pad/editor.py" line="805"/>
         <source>Put to Content</source>
         <translation>أضِفْ للمحتوى</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="809"/>
+        <location filename="everpad/pad/editor.py" line="811"/>
         <source>Remove Resource</source>
         <translation>أزِلْ المورد</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="814"/>
+        <location filename="everpad/pad/editor.py" line="816"/>
         <source>Save As</source>
         <translation>احفظ باسم</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="743"/>
+        <location filename="everpad/pad/editor.py" line="745"/>
         <source>add another</source>
         <translation>أضِفْ ملفا آخر</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="743"/>
+        <location filename="everpad/pad/editor.py" line="745"/>
         <source>%d attached files: &lt;a href=&quot;show&quot;&gt;%s&lt;/a&gt; / &lt;a href=&quot;add&quot;&gt;%s&lt;/a&gt;</source>
         <translation>%d ملفات ملحقة: &lt;a href=&quot;show&quot;&gt;%s&lt;/a&gt; / &lt;a href=&quot;add&quot;&gt;%s&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="everpad/pad/editor.py" line="827"/>
+        <location filename="everpad/pad/editor.py" line="829"/>
         <source>Delete Resource</source>
         <translation type="unfinished">امْسح مورداً</translation>
     </message>

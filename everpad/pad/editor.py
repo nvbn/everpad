@@ -392,7 +392,7 @@ class ContentEdit(QObject):
         menu.addAction(self.page.action(QWebPage.Copy))
         menu.addAction(self.page.action(QWebPage.Paste))
         paste_wo = self.page.action(QWebPage.PasteAndMatchStyle)
-        paste_wo.setText(self.app.tr('Paste as Plain Text'))
+        paste_wo.setText(self.tr('Paste as Plain Text'))
         menu.addAction(paste_wo)
         if self._hovered_url:
             menu.addAction(self.page.action(QWebPage.CopyLinkToClipboard))
@@ -411,7 +411,7 @@ class ContentEdit(QObject):
             res = self.parent.resource_edit.get_by_hash(self.page.active_image)
             self.page.active_image = None
             menu.addAction(
-                self.app.tr('Image Preferences'),
+                self.tr('Image Preferences'),
                 Slot()(partial(self._show_image_dialog, res)),
             )
         menu.addSeparator()
@@ -447,8 +447,8 @@ class ContentEdit(QObject):
     @Slot()
     def _insert_link(self):
         url, ok = QInputDialog.getText(self.parent, 
-            self.app.tr('Everpad / Insert link'),
-            self.app.tr('Press link address'),
+            self.tr('Everpad / Insert link'),
+            self.tr('Press link address'),
         )
         if ok and url:
             self.page.mainFrame().evaluateJavaScript(
@@ -458,8 +458,8 @@ class ContentEdit(QObject):
 
     def _change_link(self, url):
         url, ok = QInputDialog.getText(self.parent, 
-            self.app.tr('Everpad / Change link'),
-            self.app.tr('Press new link address'),
+            self.tr('Everpad / Change link'),
+            self.tr('Press new link address'),
             text=url,
         )
         if ok and url:
@@ -497,7 +497,7 @@ class ContentEdit(QObject):
     @Slot()
     def _insert_image(self):
         name = QFileDialog.getOpenFileName(
-            filter=self.app.tr("Image Files (*.png *.jpg *.bmp *.gif)"),
+            filter=self.tr("Image Files (*.png *.jpg *.bmp *.gif)"),
         )[0]
         if name:
             res = self.parent.resource_edit.add_attach(name)
@@ -505,19 +505,19 @@ class ContentEdit(QObject):
 
     def get_format_actions(self):
         check_action = QAction(
-            self.app.tr('Insert Checkbox'), self,
+            self.tr('Insert Checkbox'), self,
         )
         check_action.triggered.connect(self._insert_check)
         link_action = QAction(
-            self.app.tr('Insert Link'), self,
+            self.tr('Insert Link'), self,
         )
         link_action.triggered.connect(self._insert_link)
         table_action = QAction(
-            self.app.tr('Insert Table'), self,
+            self.tr('Insert Table'), self,
         )
         table_action.triggered.connect(self._insert_table)
         image_action = QAction(
-            self.app.tr('Insert Image'), self,
+            self.tr('Insert Image'), self,
         )
         image_action.triggered.connect(self._insert_image)
 
@@ -638,8 +638,10 @@ class TagEdit(object):
     @property
     def tags(self):
         """Get tags"""
+        # Split on comma and Arabic comma
+        # 0x060c is the Arabic comma
         return map(lambda tag: tag.strip(),
-            self.widget.text().split(','))
+            re.split(u',|\u060c', self.widget.text()))
 
     @tags.setter
     def tags(self, val):
@@ -741,11 +743,11 @@ class ResourceEdit(object):  # TODO: move event to item
 
     def update_label(self):
         self.label.setText(
-            self.app.tr(
-                '%d attached files: <a href="show">%s</a> / <a href="add">add another</a>',
+            self.app.translate('ResourceEdit', '%d attached files: <a href="show">%s</a> / <a href="add">%s</a>'
             ) % (
-                len(self._resources), self.app.tr('show') if self.widget.isHidden()
-                else self.app.tr('hide'),
+                len(self._resources), self.app.translate('ResourceEdit', 'show') if self.widget.isHidden()
+                else self.app.translate('ResourceEdit', 'hide'),
+                self.app.translate('ResourceEdit', 'add another'),
             ),
         )
 
@@ -801,18 +803,18 @@ class ResourceEdit(object):  # TODO: move event to item
             menu = QMenu(self.parent)
             if res.mime.find('image') == 0:
                 menu.addAction(
-                    self.parent.tr('Put to Content'), Slot()(partial(
+                    self.tr('Put to Content'), Slot()(partial(
                         self.to_content, res=res,
                     )),
                 )
             if not self.parent.note_edit.in_content(res):
                 menu.addAction(
-                    self.parent.tr('Remove Resource'), Slot()(partial(
+                    self.app.translate('ResourceEdit', 'Remove Resource'), Slot()(partial(
                         self.remove, res=res,
                     ))
                 )
             menu.addAction(
-                self.parent.tr('Save As'), Slot()(partial(
+                self.app.translate('ResourceEdit', 'Save As'), Slot()(partial(
                     self.save, res=res,
                 ))
             )
@@ -826,8 +828,8 @@ class ResourceEdit(object):  # TODO: move event to item
         """Remove resource"""
         msg_box = QMessageBox(
             QMessageBox.Critical,
-            self.parent.tr("You try to delete resource"),
-            self.parent.tr("Are you sure want to delete this resource?"),
+            self.app.translate("ResourceEdit", "Delete Resource"),
+            self.app.translate("ResourceEdit", "Are you sure want to delete this resource?"),
             QMessageBox.Yes | QMessageBox.No
         )
         ret = msg_box.exec_()
@@ -945,7 +947,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.ui.toolBar.addAction(action)
         self.ui.toolBar.addSeparator()
         self.find_action = QAction(QIcon.fromTheme('edit-find'),
-                                   self.app.tr('Find'), self)
+                                   self.tr('Find'), self)
         self.find_action.setCheckable(True)
         self.find_action.triggered.connect(self.findbar.toggle_visible)
         self.ui.toolBar.addAction(self.find_action)
@@ -984,7 +986,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.mark_touched()
 
     def update_title(self):
-        self.setWindowTitle(u'Everpad / %s' % self.note_edit.title)
+        self.setWindowTitle(self.tr('Everpad / %s)') % self.note_edit.title)
 
     @Slot()
     def save(self):
@@ -996,7 +998,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
                 res.struct, self.resource_edit.resources,
             ), signature=Resource.signature),
         )
-        self.app.send_notify(u'Note "%s" saved!' % self.note.title)
+        self.app.send_notify(self.tr('Note "%s" saved!') % self.note.title)
 
     @Slot()
     def save_and_close(self):
@@ -1015,7 +1017,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         if ret == QMessageBox.Yes:
             self.update_note()
             self.app.provider.delete_note(self.note.id)
-            self.app.send_notify(u'Note "%s" deleted!' % self.note.title)
+            self.app.send_notify(self.tr('Note "%s" deleted!') % self.note.title)
             self.close()
 
     @Slot()

@@ -262,6 +262,9 @@ class Page(QWebPage):
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
         print message
 
+    def acceptNavigationRequest(self, frame, request, type):
+        return False
+
 
 class ContentEdit(QObject):
     _html = open(os.path.join(

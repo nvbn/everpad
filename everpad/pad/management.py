@@ -54,7 +54,7 @@ class AuthPage(QWebPage):
             client = oauth.Client(consumer, token)
             resp, content = client.request('https://%s/oauth' % HOST, 'POST')
             access_token = dict(urlparse.parse_qsl(content))
-            self.parent.auth_finished(access_token['oauth_token']) 
+            self.parent.auth_finished(access_token['oauth_token'])
         return True
 
     def ssl(self, reply, errors):
@@ -91,6 +91,7 @@ class Management(QDialog):
         self.ui.noteFont.currentFontChanged.connect(self.font_changed)
         self.ui.noteSize.valueChanged.connect(self.font_size_changed)
         self.ui.blackTray.stateChanged.connect(self.tray_changed)
+        self.ui.progressCheckBox.stateChanged.connect(self.progress_changed)
         self.update_tabs()
 
     @Slot(str)
@@ -110,6 +111,13 @@ class Management(QDialog):
         self.app.update_icon()
 
     @Slot()
+    def progress_changed(self):
+        if self.ui.progressCheckBox.checkState() == Qt.Unchecked:
+            self.app.settings.setValue('launcher-progress', 0)
+        else:
+            self.app.settings.setValue('launcher-progress', 1)
+
+    @Slot()
     def update_tabs(self):
         if get_auth_token():
             self.ui.authBtn.setText(self.tr('Remove Authorisation'))
@@ -126,6 +134,9 @@ class Management(QDialog):
         )))
         self.ui.blackTray.setCheckState(Qt.Checked
             if int(self.app.settings.value('black-icon', 0))
+        else Qt.Unchecked)
+        self.ui.progressCheckBox.setCheckState(Qt.Checked
+            if int(self.app.settings.value('launcher-progress', 1))
         else Qt.Unchecked)
 
     @Slot()
@@ -158,7 +169,7 @@ class Management(QDialog):
             consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
             client = oauth.Client(consumer)
             resp, content = client.request(
-                'https://%s/oauth?oauth_callback=' % HOST + urllib.quote('http://everpad/'), 
+                'https://%s/oauth?oauth_callback=' % HOST + urllib.quote('http://everpad/'),
             'GET')
             data = dict(urlparse.parse_qsl(content))
             url = 'http://%s/OAuth.action?oauth_token=' % HOST + urllib.quote(data['oauth_token'])

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Thu Nov  1 23:55:57 2012
-#      by: pyside-uic 0.2.13 running on PySide 1.1.1
+# Created: Fri Nov 16 15:34:59 2012
+#      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -65,6 +65,13 @@ class Ui_Dialog(object):
         self.blackTray.setText("")
         self.blackTray.setObjectName("blackTray")
         self.gridLayout_2.addWidget(self.blackTray, 2, 1, 1, 1)
+        self.progressLabel = QtGui.QLabel(self.tab_2)
+        self.progressLabel.setObjectName("progressLabel")
+        self.gridLayout_2.addWidget(self.progressLabel, 3, 0, 1, 1)
+        self.progressCheckBox = QtGui.QCheckBox(self.tab_2)
+        self.progressCheckBox.setText("")
+        self.progressCheckBox.setObjectName("progressCheckBox")
+        self.gridLayout_2.addWidget(self.progressCheckBox, 3, 1, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.webView = QtWebKit.QWebView(Dialog)
@@ -93,6 +100,7 @@ class Ui_Dialog(object):
         self.label_4.setText(QtGui.QApplication.translate("Dialog", "Note font family", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("Dialog", "Note font size", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("Dialog", "Black tray icon", None, QtGui.QApplication.UnicodeUTF8))
+        self.progressLabel.setText(QtGui.QApplication.translate("Dialog", "Launcher progress bar", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Apperance", None, QtGui.QApplication.UnicodeUTF8))
 
 from PySide import QtWebKit

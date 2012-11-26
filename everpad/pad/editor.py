@@ -8,6 +8,7 @@ from PySide.QtGui import (
     QTextCharFormat, QShortcut, QKeySequence,
     QDialog, QInputDialog, QFileIconProvider,
     QWidget, QScrollArea, QFont, QHBoxLayout,
+    QDropEvent, QDragEnterEvent, QDragMoveEvent,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
@@ -262,6 +263,22 @@ class Page(QWebPage):
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
         print message
 
+    def event(self, e):
+        if isinstance(e, QDragEnterEvent):
+            data = e.mimeData()
+            if data.hasUrls():
+                e.accept()
+            else:
+                e.ignore()
+            return True
+        elif isinstance(e, QDragMoveEvent):
+            pass
+        elif isinstance(e, QDropEvent):
+            self.edit.insert_images(e.mimeData().urls(), e.pos())
+            return True
+
+        return super(Page, self).event(e)
+
 
 class ContentEdit(QObject):
     _html = open(os.path.join(
@@ -500,7 +517,10 @@ class ContentEdit(QObject):
             filter=self.tr("Image Files (*.png *.jpg *.bmp *.gif)"),
         )[0]
         if name:
-            res = self.parent.resource_edit.add_attach(name)
+            _insert_image_from_path(name)
+            
+    def _insert_image_from_path(self, path):
+            res = self.parent.resource_edit.add_attach(path)
             self.paste_res(res)
 
     def get_format_actions(self):
@@ -613,6 +633,16 @@ class ContentEdit(QObject):
                 return True
 
         return False
+
+    def insert_images(self, urls, pos):
+        image_extensions = ['.png', '.jpg', '.bmp', '.gif']
+        for url in urls:
+            if url.scheme() == 'file':
+                path = url.path()
+                ext = os.path.splitext(path)[1]
+                if os.path.exists(path) and ext in image_extensions:
+                    self._insert_image_from_path(path)
+            
 
 class TagEdit(object):
     """Abstraction for tag edit"""

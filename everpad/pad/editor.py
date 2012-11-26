@@ -8,6 +8,7 @@ from PySide.QtGui import (
     QTextCharFormat, QShortcut, QKeySequence,
     QDialog, QInputDialog, QFileIconProvider,
     QWidget, QScrollArea, QFont, QHBoxLayout,
+    QPrintPreviewDialog, QPrinter,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
@@ -617,6 +618,13 @@ class ContentEdit(QObject):
 
         return False
 
+    def print_(self):
+        """Print note with preview"""
+        printer = QPrinter()
+        dialog = QPrintPreviewDialog(printer)
+        dialog.paintRequested.connect(self.page.view().print_)
+        dialog.exec_()
+
 class TagEdit(object):
     """Abstraction for tag edit"""
 
@@ -944,6 +952,11 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             QIcon.fromTheme('edit-delete'),
             self.tr('Remove note'), 
             self.delete,
+        )
+        self.ui.toolBar.addAction(
+            QIcon.fromTheme('document-print'),
+            self.tr('Print note'), 
+            self.note_edit.print_,
         )
         self.ui.toolBar.addSeparator()
         for action in self.note_edit.get_format_actions():

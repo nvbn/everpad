@@ -29,7 +29,7 @@ Client support:
 
 Installation
 ============
-For ubuntu user `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
+Ubuntu users can use `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
 
 ``sudo add-apt-repository ppa:nvbn-rm/ppa``
 
@@ -37,9 +37,9 @@ For ubuntu user `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
 
 ``sudo apt-get install everpad`` 
 
-Developers can clone this repository and install via ``setup.py``
-
 If you use gnome shell please install `topicons extension <https://extensions.gnome.org/extension/495/topicons/>`_
+
+You can see more about everpad installation, including method for other linux, in `wiki <https://github.com/nvbn/everpad/wiki/how-to-install>`_
 
 Some errors?
 ============

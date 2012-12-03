@@ -7,7 +7,7 @@ from PySide.QtGui import (
     QMessageBox, QAction, QWidget,
     QListWidgetItem, QMenu, QInputDialog,
     QStandardItemModel, QStandardItem,
-    QItemSelection
+    QItemSelection, QKeySequence, QShortcut,
     )
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.list import Ui_List
@@ -50,6 +50,10 @@ class List(QDialog):
 
         self.ui.newNoteBtn.setIcon(QIcon.fromTheme('document-new'))
         self.ui.newNoteBtn.clicked.connect(self.new_note)
+
+        self.ui.newNoteBtn.setShortcut(QKeySequence(self.tr('Ctrl+n')))
+        self.ui.newNotebookBtn.setShortcut(QKeySequence(self.tr('Ctrl+Shift+n')))
+        QShortcut(QKeySequence(self.tr('Ctrl+q')), self, self.close)
 
     @Slot(QItemSelection, QItemSelection)
     def selection_changed(self, selected, deselected):
@@ -103,7 +107,7 @@ class List(QDialog):
             notebook_id = 0
         notebook_filter = [notebook_id] if notebook_id > 0 else dbus.Array([], signature='i')
         notes = self.app.provider.find_notes(
-            '', notebook_filter, dbus.Array([], signature='i'), 
+            '', notebook_filter, dbus.Array([], signature='i'),
             0, 2 ** 31 - 1, Note.ORDER_TITLE, -1,
         )  # fails with sys.maxint in 64
         for note_struct in notes:

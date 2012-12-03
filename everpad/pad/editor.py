@@ -8,7 +8,11 @@ from PySide.QtGui import (
     QTextCharFormat, QShortcut, QKeySequence,
     QDialog, QInputDialog, QFileIconProvider,
     QWidget, QScrollArea, QFont, QHBoxLayout,
+<<<<<<< HEAD
     QPrintPreviewDialog, QPrinter,
+=======
+    QDropEvent, QDragEnterEvent, QDragMoveEvent,
+>>>>>>> eb0e95f1edb55a20038ba1755acb79e86c751352
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
@@ -263,8 +267,26 @@ class Page(QWebPage):
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
         print message
 
+<<<<<<< HEAD
     def acceptNavigationRequest(self, frame, request, type):
         return False
+=======
+    def event(self, e):
+        if isinstance(e, QDragEnterEvent):
+            data = e.mimeData()
+            if data.hasUrls():
+                e.accept()
+            else:
+                e.ignore()
+            return True
+        elif isinstance(e, QDragMoveEvent):
+            pass
+        elif isinstance(e, QDropEvent):
+            self.edit.insert_images(e.mimeData().urls(), e.pos())
+            return True
+
+        return super(Page, self).event(e)
+>>>>>>> eb0e95f1edb55a20038ba1755acb79e86c751352
 
 
 class ContentEdit(QObject):
@@ -504,7 +526,10 @@ class ContentEdit(QObject):
             filter=self.tr("Image Files (*.png *.jpg *.bmp *.gif)"),
         )[0]
         if name:
-            res = self.parent.resource_edit.add_attach(name)
+            _insert_image_from_path(name)
+            
+    def _insert_image_from_path(self, path):
+            res = self.parent.resource_edit.add_attach(path)
             self.paste_res(res)
 
     def get_format_actions(self):
@@ -618,12 +643,24 @@ class ContentEdit(QObject):
 
         return False
 
+<<<<<<< HEAD
     def print_(self):
         """Print note with preview"""
         printer = QPrinter()
         dialog = QPrintPreviewDialog(printer)
         dialog.paintRequested.connect(self.page.view().print_)
         dialog.exec_()
+=======
+    def insert_images(self, urls, pos):
+        image_extensions = ['.png', '.jpg', '.bmp', '.gif']
+        for url in urls:
+            if url.scheme() == 'file':
+                path = url.path()
+                ext = os.path.splitext(path)[1]
+                if os.path.exists(path) and ext in image_extensions:
+                    self._insert_image_from_path(path)
+            
+>>>>>>> eb0e95f1edb55a20038ba1755acb79e86c751352
 
 class TagEdit(object):
     """Abstraction for tag edit"""

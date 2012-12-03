@@ -1,6 +1,7 @@
 everpad (2.3-0~oneiric) oneiric; urgency=low
 
   * Drag-n-drop for images and files
+  * Printing support
   * Gnome shell support with topicon extension
   * Add RTL support
   * Arabic localization

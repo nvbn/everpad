@@ -285,9 +285,12 @@ class Page(QWebPage):
 
 
 class ContentEdit(QObject):
-    _html = open(os.path.join(
+    _editor_path = os.path.join(
         os.path.dirname(__file__), 'editor.html',
-    )).read()
+    )
+    if not os.path.exists(_editor_path):
+        _editor_path = '/usr/share/everpad/editor.html'
+    _html = open(_editor_path).read()
 
     copy_available = Signal(bool)
     def __init__(self, parent, app, widget, on_change):

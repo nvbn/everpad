@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '2.2.1'
+version = '2.3'
 
 setup(name='everpad',
     version=version,
@@ -62,6 +62,9 @@ setup(name='everpad',
         ('/usr/share/everpad/i18n/', [
             'i18n/ru_RU.qm',
             'i18n/ar_EG.qm'
+        ]),
+        ('/usr/share/everpad/', [
+            'everpad/pad/editor.html',
         ]),
         ('share/locale/ru/LC_MESSAGES', ['i18n/ru/LC_MESSAGES/everpad.mo']),
         ('share/locale/ar/LC_MESSAGES', ['i18n/ar/LC_MESSAGES/everpad.mo']),

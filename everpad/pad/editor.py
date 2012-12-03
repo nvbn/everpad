@@ -1077,15 +1077,22 @@ class Editor(QMainWindow):  # TODO: kill this god shit
 
     @Slot()
     def close(self):
-        self.hide()
-        self.closed = True
-        self.app.settings.setValue(
-            "note-geometry-%d" % self.note.id,
-            self.saveGeometry(),
+        msg = QMessageBox(
+            QMessageBox.Critical,
+            self.tr("Close without Saving"),
+            self.tr("Are you sure want to close this note without saving?"),
+            QMessageBox.Yes | QMessageBox.No
         )
-        self.app.settings.setValue(
-            "note-geometry-default", self.saveGeometry(),
-        )
+        if not self.touched or msg.exec_() == QMessageBox.Yes:
+            self.hide()
+            self.closed = True
+            self.app.settings.setValue(
+                "note-geometry-%d" % self.note.id,
+                self.saveGeometry(),
+            )
+            self.app.settings.setValue(
+                "note-geometry-default", self.saveGeometry(),
+            )
 
     @Slot()
     def mark_touched(self):

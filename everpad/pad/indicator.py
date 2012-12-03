@@ -204,7 +204,7 @@ class PadApp(QApplication):
             QSystemTrayIcon.Information)
 
     def on_sync_state_changed(self, state):
-        if int(self.settings.value('launcher-progress', 1)):
+        if bool(self.settings.value('launcher-progress', 1)):
             self.launcher.update({
                 'progress': float(state + 1) / len(SYNC_STATES),
                 'progress-visible': state not in (SYNC_STATE_START, SYNC_STATE_FINISH),
@@ -260,7 +260,6 @@ def main():
     parser.add_argument('--replace', action='store_true', help='replace already runned')
     parser.add_argument('--version', '-v', action='store_true', help='show version')
     args = parser.parse_args(sys.argv[1:])
-    print args.all_notes
     if args.version:
         print_version()
     if args.replace:
@@ -277,6 +276,11 @@ def main():
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         session_bus = dbus.SessionBus()
         app.provider = get_provider(session_bus)
+        app.provider.connect_to_signal(
+            'sync_state_changed',
+            app.on_sync_state_changed,
+            dbus_interface="com.everpad.provider",
+        )
         app.launcher = get_launcher('application://everpad.desktop', session_bus, '/')
         bus = dbus.service.BusName("com.everpad.App", session_bus)
         service = EverpadService(app, session_bus, '/EverpadService')

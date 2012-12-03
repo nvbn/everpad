@@ -69,7 +69,7 @@ class Management(QDialog):
         self.app = app
         self.closed = False
         self.startup_path = os.path.expanduser('~/.config/autostart/')
-        if not os.path.exist(self.startup_path):
+        if not os.path.exists(self.startup_path):
             os.makedirs(self.startup_path)
         self.startup_file = os.path.join(self.startup_path, 'everpad.desktop')
         self.ui = Ui_Dialog()

@@ -583,7 +583,7 @@ class ContentEdit(QObject):
             (table_action, ['insert-table', 'everpad-insert-table'], True),
             (link_action, ['insert-link'], True),
             (image_action, ['insert-image'], True),
-            ]
+        ]
 
         return map(lambda action: self._action_with_icon(*action), actions)
 

@@ -309,7 +309,24 @@ class ContentEdit(QObject):
         self._hovered_url = None
         self.widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.widget.customContextMenuRequested.connect(self.context_menu)
+        self._init_actions()
         self._init_shortcuts()
+
+    def _init_actions(self):
+        self.check_action = QAction(self.tr('Insert Checkbox'), self)
+        self.check_action.triggered.connect(self._insert_check)
+        self.link_action = QAction(self.tr('Insert Link'), self)
+        self.link_action.triggered.connect(self._insert_link)
+        self.table_action = QAction(self.tr('Insert Table'), self)
+        self.table_action.triggered.connect(self._insert_table)
+        self.image_action = QAction(self.tr('Insert Image'), self)
+        self.image_action.triggered.connect(self._insert_image)
+        self.change_link = QAction(self.tr('Change link'), self)
+        self.change_link.triggered.connect(
+            Slot()(partial(self._change_link, self.page.active_link))
+        )
+        self.remove_link = QAction(self.tr('Remove link'), self)
+        self.remove_link.triggered.connect(self._remove_link)
 
     def _init_shortcuts(self):
         for key, action in (
@@ -318,7 +335,16 @@ class ContentEdit(QObject):
             ('Ctrl+u', QWebPage.ToggleUnderline),
             ('Ctrl+Shift+b', QWebPage.InsertUnorderedList),
             ('Ctrl+Shift+o', QWebPage.InsertOrderedList),
-            ('Ctrl+shift+v', QWebPage.PasteAndMatchStyle),
+            ('Ctrl+Shift+v', QWebPage.PasteAndMatchStyle),
+            ('Ctrl+k', self.link_action),
+            ('Ctrl+Shift+k',  self.change_link),
+            ('Ctrl+l',  QWebPage.AlignLeft),
+            ('Ctrl+r',  QWebPage.AlignRight),
+            ('Ctrl+e',  QWebPage.AlignCenter),
+            ('Ctrl+j',  QWebPage.AlignJustified),
+            ('Ctrl+t',  QWebPage.ToggleStrikethrough),
+            ('Ctrl+Space', QWebPage.RemoveFormat),
+            ('Ctrl+Shift+c', self.check_action),
         ):
             QShortcut(
                 QKeySequence(self.app.tr(key)),
@@ -424,16 +450,8 @@ class ContentEdit(QObject):
         menu.addAction(paste_wo)
         if self._hovered_url:
             menu.addAction(self.page.action(QWebPage.CopyLinkToClipboard))
-            change_link = QAction('Change link', self)
-            change_link.triggered.connect(
-                Slot()(partial(self._change_link, self.page.active_link)),
-            )
-            menu.addAction(change_link)
-            remove_link = QAction('Remove link', self)
-            remove_link.triggered.connect(
-                self._remove_link,
-            )
-            menu.addAction(remove_link)
+            menu.addAction(self.change_link)
+            menu.addAction(self.remove_link)
             self.page.active_link = None
         if self.page.active_image:
             res = self.parent.resource_edit.get_by_hash(self.page.active_image)
@@ -470,7 +488,9 @@ class ContentEdit(QObject):
 
     def _action_for_key(self, action):
         if self.page.current == 'body':
-            self.page.action(action).trigger()
+            if isinstance(action, QWebPage.WebAction):
+                action = self.page.action(action)
+            action.trigger()
 
     @Slot()
     def _insert_link(self):
@@ -535,23 +555,6 @@ class ContentEdit(QObject):
             self.paste_res(res)
 
     def get_format_actions(self):
-        check_action = QAction(
-            self.tr('Insert Checkbox'), self,
-        )
-        check_action.triggered.connect(self._insert_check)
-        link_action = QAction(
-            self.tr('Insert Link'), self,
-        )
-        link_action.triggered.connect(self._insert_link)
-        table_action = QAction(
-            self.tr('Insert Table'), self,
-        )
-        table_action.triggered.connect(self._insert_table)
-        image_action = QAction(
-            self.tr('Insert Image'), self,
-        )
-        image_action.triggered.connect(self._insert_image)
-
         actions = [
             (QWebPage.ToggleBold,
                 ['format-text-bold', 'everpad-text-bold']),
@@ -570,7 +573,6 @@ class ContentEdit(QObject):
             (QWebPage.AlignRight,
                 ['format-justify-right', 'everpad-justify-right']),
             ]
-
         if self._enable_text_direction_support():
             actions += [
                 (QWebPage.SetTextDirectionLeftToRight,
@@ -578,20 +580,17 @@ class ContentEdit(QObject):
                 (QWebPage.SetTextDirectionRightToLeft,
                     ['format-text-direction-rtl', 'everpad-text-direction-rtl']),
                 ]
-
         actions += [
             (QWebPage.InsertUnorderedList,
                 ['format-list-unordered', 'everpad-list-unordered']),
             (QWebPage.InsertOrderedList,
                 ['format-list-ordered', 'everpad-list-ordered']),
-
             # Don't include 'checkbox' since it looks bad in some default themes
-            (check_action, ['everpad-checkbox'], True),
-            (table_action, ['insert-table', 'everpad-insert-table'], True),
-            (link_action, ['insert-link'], True),
-            (image_action, ['insert-image'], True),
+            (self.check_action, ['everpad-checkbox'], True),
+            (self.table_action, ['insert-table', 'everpad-insert-table'], True),
+            (self.link_action, ['insert-link'], True),
+            (self.image_action, ['insert-image'], True),
         ]
-
         return map(lambda action: self._action_with_icon(*action), actions)
 
     def paste_res(self, res):
@@ -975,8 +974,9 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.init_shortcuts()
 
     def init_shortcuts(self):
-        self.save_btn.setShortcut(QKeySequence('Ctrl+s'))
-        self.close_btn.setShortcut(QKeySequence('Ctrl+q'))
+        self.save_btn.setShortcut(QKeySequence(self.tr('Ctrl+s')))
+        self.print_btn.setShortcut(QKeySequence(self.tr('Ctrl+p')))
+        QShortcut(QKeySequence(self.tr('Ctrl+w')), self, self.save_and_close)
 
     def init_toolbar(self):
         self.save_btn = self.ui.toolBar.addAction(
@@ -993,7 +993,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             self.tr('Remove note'),
             self.delete,
         )
-        self.ui.toolBar.addAction(
+        self.print_btn = self.ui.toolBar.addAction(
             QIcon.fromTheme('document-print'),
             self.tr('Print note'),
             self.note_edit.print_,
@@ -1033,9 +1033,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
 
     def closeEvent(self, event):
         event.ignore()
-        if self.touched:
-            self.save()
-        self.close()
+        self.save_and_close()
 
     def text_changed(self):
         self.update_title()
@@ -1058,7 +1056,8 @@ class Editor(QMainWindow):  # TODO: kill this god shit
 
     @Slot()
     def save_and_close(self):
-        self.save()
+        if self.touched:
+            self.save()
         self.close()
 
     @Slot()

@@ -278,7 +278,7 @@ class Page(QWebPage):
         elif isinstance(e, QDragMoveEvent):
             pass
         elif isinstance(e, QDropEvent):
-            self.edit.insert_images(e.mimeData().urls(), e.pos())
+            self.edit.insert_files(e.mimeData().urls(), e.pos())
             return True
 
         return super(Page, self).event(e)
@@ -645,7 +645,8 @@ class ContentEdit(QObject):
         dialog.paintRequested.connect(self.page.view().print_)
         dialog.exec_()
 
-    def insert_images(self, urls, pos):
+    def insert_files(self, urls, pos):
+        """Not only images"""
         image_extensions = ['.png', '.jpg', '.bmp', '.gif']
         for url in urls:
             if url.scheme() == 'file':
@@ -653,6 +654,8 @@ class ContentEdit(QObject):
                 ext = os.path.splitext(path)[1]
                 if os.path.exists(path) and ext in image_extensions:
                     self._insert_image_from_path(path)
+                else:
+                    self.parent.resource_edit.add_attach(path)
             
 
 class TagEdit(object):

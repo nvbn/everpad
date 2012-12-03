@@ -10,15 +10,16 @@ from PySide.QtGui import (
     QWidget, QScrollArea, QFont, QHBoxLayout,
     QPrintPreviewDialog, QPrinter,
     QDropEvent, QDragEnterEvent, QDragMoveEvent,
+    QApplication, QDesktopServices,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
-    QFileInfo, 
+    QFileInfo,
 )
 from PySide.QtWebKit import QWebPage, QWebSettings
 from everpad.interface.editor import Ui_Editor
 from everpad.interface.image import Ui_ImageDialog
-from everpad.interface.tableinsert import Ui_TableInsertDialog 
+from everpad.interface.tableinsert import Ui_TableInsertDialog
 from everpad.interface.findbar import Ui_FindBar
 from everpad.pad.tools import get_icon
 from everpad.tools import get_provider, sanitize, clean, html_unescape
@@ -265,6 +266,9 @@ class Page(QWebPage):
         print message
 
     def acceptNavigationRequest(self, frame, request, type):
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ControlModifier and type == QWebPage.NavigationTypeLinkClicked:
+            QDesktopServices.openUrl(request.url())
         return False
 
     def event(self, e):
@@ -310,7 +314,7 @@ class ContentEdit(QObject):
     def _init_shortcuts(self):
         for key, action in (
             ('Ctrl+b', QWebPage.ToggleBold),
-            ('Ctrl+i', QWebPage.ToggleItalic), 
+            ('Ctrl+i', QWebPage.ToggleItalic),
             ('Ctrl+u', QWebPage.ToggleUnderline),
             ('Ctrl+Shift+b', QWebPage.InsertUnorderedList),
             ('Ctrl+Shift+o', QWebPage.InsertOrderedList),
@@ -378,7 +382,7 @@ class ContentEdit(QObject):
             else:
                 media.hidden = True
         self._content = re.sub(
-            r'(&nbsp;| ){5}', '<img class="tab" />', 
+            r'(&nbsp;| ){5}', '<img class="tab" />',
             unicode(soup).replace(u'\xa0', ' '),
         )  # shit!
         self.apply()
@@ -387,7 +391,7 @@ class ContentEdit(QObject):
         """Apply title and content when filled"""
         if None not in (self._title, self._content):
             self.page.mainFrame().setHtml(self._html % {
-                'title': self._title, 
+                'title': self._title,
                 'content': self._content,
             })
             self.widget.setPage(self.page)
@@ -402,7 +406,7 @@ class ContentEdit(QObject):
         self.copy_available.emit(
             self.page.current == 'body'
         )
-   
+
     @Slot(QUrl)
     def link_clicked(self, url):
         webbrowser.open(url.toString())
@@ -470,7 +474,7 @@ class ContentEdit(QObject):
 
     @Slot()
     def _insert_link(self):
-        url, ok = QInputDialog.getText(self.parent, 
+        url, ok = QInputDialog.getText(self.parent,
             self.tr('Everpad / Insert link'),
             self.tr('Press link address'),
         )
@@ -481,7 +485,7 @@ class ContentEdit(QObject):
             self.page_changed()
 
     def _change_link(self, url):
-        url, ok = QInputDialog.getText(self.parent, 
+        url, ok = QInputDialog.getText(self.parent,
             self.tr('Everpad / Change link'),
             self.tr('Press new link address'),
             text=url,
@@ -525,7 +529,7 @@ class ContentEdit(QObject):
         )[0]
         if name:
             _insert_image_from_path(name)
-            
+
     def _insert_image_from_path(self, path):
             res = self.parent.resource_edit.add_attach(path)
             self.paste_res(res)
@@ -659,7 +663,7 @@ class ContentEdit(QObject):
                     self._insert_image_from_path(path)
                 else:
                     self.parent.resource_edit.add_attach(path)
-            
+
 
 class TagEdit(object):
     """Abstraction for tag edit"""
@@ -747,7 +751,7 @@ class ResourceItem(QWidget):
         preview = QLabel()
         if 'image' in res.mime:
             pixmap = QPixmap(res.file_path).scaledToWidth(32)
-            
+
         else:
             info = QFileInfo(res.file_path)
             pixmap = QFileIconProvider().icon(info).pixmap(32, 32)
@@ -951,19 +955,19 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.menubar.hide()
         self.ui.resourceArea.hide()
         self.note_edit = ContentEdit(
-            self, self.app, 
+            self, self.app,
             self.ui.contentView, self.text_changed,
         )
         self.tag_edit = TagEdit(
-            self, self.app, 
+            self, self.app,
             self.ui.tags, self.mark_touched,
         )
         self.notebook_edit = NotebookEdit(
-            self, self.app, 
+            self, self.app,
             self.ui.notebook, self.mark_touched,
         )
         self.resource_edit = ResourceEdit(
-            self, self.app, self.ui.resourceArea, 
+            self, self.app, self.ui.resourceArea,
             self.ui.resourceLabel, self.mark_touched,
         )
         self.findbar = FindBar(self)
@@ -976,22 +980,22 @@ class Editor(QMainWindow):  # TODO: kill this god shit
 
     def init_toolbar(self):
         self.save_btn = self.ui.toolBar.addAction(
-            QIcon.fromTheme('document-save'), 
+            QIcon.fromTheme('document-save'),
             self.tr('Save'), self.save,
         )
         self.close_btn = self.ui.toolBar.addAction(
-            QIcon.fromTheme('window-close'), 
-            self.tr('Close without saving'), 
+            QIcon.fromTheme('window-close'),
+            self.tr('Close without saving'),
             self.close,
         )
         self.ui.toolBar.addAction(
             QIcon.fromTheme('edit-delete'),
-            self.tr('Remove note'), 
+            self.tr('Remove note'),
             self.delete,
         )
         self.ui.toolBar.addAction(
             QIcon.fromTheme('document-print'),
-            self.tr('Print note'), 
+            self.tr('Print note'),
             self.note_edit.print_,
         )
         self.ui.toolBar.addSeparator()
@@ -1077,7 +1081,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.hide()
         self.closed = True
         self.app.settings.setValue(
-            "note-geometry-%d" % self.note.id, 
+            "note-geometry-%d" % self.note.id,
             self.saveGeometry(),
         )
         self.app.settings.setValue(

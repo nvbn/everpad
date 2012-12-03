@@ -238,6 +238,10 @@ class EverpadService(dbus.service.Object):
         self.app.indicator.show_management()
 
     @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
+    def all_notes(self):
+        self.app.indicator.show_all_notes()
+
+    @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
     def kill(self):
         try:
             return
@@ -251,10 +255,12 @@ def main():
     parser.add_argument('attach', type=str, nargs='?', help='attach file to new note')
     parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
+    parser.add_argument('--all-notes', action='store_true', help='show all notes window')
     parser.add_argument('--settings', action='store_true', help='settings and management')
     parser.add_argument('--replace', action='store_true', help='replace already runned')
     parser.add_argument('--version', '-v', action='store_true', help='show version')
     args = parser.parse_args(sys.argv[1:])
+    print args.all_notes
     if args.version:
         print_version()
     if args.replace:
@@ -282,6 +288,8 @@ def main():
             app.indicator.show_management()
         if args.attach:
             app.indicator.create(args.attach)
+        if args.all_notes:
+            app.indicator.show_all_notes()
         app.exec_()
     except IOError:
         pad = get_pad()
@@ -293,6 +301,8 @@ def main():
             pad.settings()
         if args.attach:
             pad.create_wit_attach(args.attach)
+        if args.all_notes:
+            pad.all_notes()
         sys.exit(0)
 
 if __name__ == '__main__':

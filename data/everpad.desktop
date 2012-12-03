@@ -12,12 +12,17 @@ Categories=Network;
 X-Ayatana-Desktop-Shortcuts=NewNote;Settings
 MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/pjpeg;image/png;image/tiff;image/x-bmp;image/x-gray;image/x-icb;image/x-ico;image/x-png;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-xbitmap;image/x-xpixmap;image/x-pcx;image/svg+xml;image/svg+xml-compressed;image/vnd.wap.wbmp;application/pdf;application/x-bzpdf;application/x-gzpdf;application/x-xzpdf;application/postscript;application/x-bzpostscript;application/x-gzpostscript;image/x-eps;image/x-bzeps;image/x-gzeps;application/x-dvi;application/x-bzdvi;application/x-gzdvi;image/vnd.djvu;image/tiff;application/x-cbr;application/x-cbz;application/x-cb7;application/x-cbt;audio/wav;audio/mpeg;
 
+[Settings Shortcut Group]
+Name=Show all notes
+Name[ru]=Все заметки
+Exec=everpad --all-notes
+TargetEnvironment=Unity
+
 [NewNote Shortcut Group]
 Name=Create Note
 Name[ru]=Создать заметку
 Exec=everpad --create
 TargetEnvironment=Unity
-
 
 [Settings Shortcut Group]
 Name=Settings and Management

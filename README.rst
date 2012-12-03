@@ -39,6 +39,8 @@ For ubuntu user `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
 
 Developers can clone this repository and install via ``setup.py``
 
+If you use gnome shell please install `topicons extension <https://extensions.gnome.org/extension/495/topicons/>`_
+
 Some errors?
 ============
 For debug output you need:

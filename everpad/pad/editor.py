@@ -8,11 +8,8 @@ from PySide.QtGui import (
     QTextCharFormat, QShortcut, QKeySequence,
     QDialog, QInputDialog, QFileIconProvider,
     QWidget, QScrollArea, QFont, QHBoxLayout,
-<<<<<<< HEAD
     QPrintPreviewDialog, QPrinter,
-=======
     QDropEvent, QDragEnterEvent, QDragMoveEvent,
->>>>>>> eb0e95f1edb55a20038ba1755acb79e86c751352
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
@@ -267,10 +264,9 @@ class Page(QWebPage):
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
         print message
 
-<<<<<<< HEAD
     def acceptNavigationRequest(self, frame, request, type):
         return False
-=======
+
     def event(self, e):
         if isinstance(e, QDragEnterEvent):
             data = e.mimeData()
@@ -286,7 +282,6 @@ class Page(QWebPage):
             return True
 
         return super(Page, self).event(e)
->>>>>>> eb0e95f1edb55a20038ba1755acb79e86c751352
 
 
 class ContentEdit(QObject):
@@ -643,14 +638,13 @@ class ContentEdit(QObject):
 
         return False
 
-<<<<<<< HEAD
     def print_(self):
         """Print note with preview"""
         printer = QPrinter()
         dialog = QPrintPreviewDialog(printer)
         dialog.paintRequested.connect(self.page.view().print_)
         dialog.exec_()
-=======
+
     def insert_images(self, urls, pos):
         image_extensions = ['.png', '.jpg', '.bmp', '.gif']
         for url in urls:
@@ -660,7 +654,6 @@ class ContentEdit(QObject):
                 if os.path.exists(path) and ext in image_extensions:
                     self._insert_image_from_path(path)
             
->>>>>>> eb0e95f1edb55a20038ba1755acb79e86c751352
 
 class TagEdit(object):
     """Abstraction for tag edit"""

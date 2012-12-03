@@ -1,3 +1,14 @@
+everpad (2.3-0~oneiric) oneiric; urgency=low
+
+  * Drag-n-drop for images and files
+  * Gnome shell support with topicon extension
+  * Add RTL support
+  * Arabic localization
+  * Ability to disable progress bar
+  * Bug fixes
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Mon, 3 Dec 2012 06:18:24 +0400
+
 everpad (2.2.1-0~oneiric) oneiric; urgency=low
 
   * Fix lens

@@ -1035,7 +1035,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.mark_touched()
 
     def update_title(self):
-        self.setWindowTitle(self.tr('Everpad / %s)') % self.note_edit.title)
+        self.setWindowTitle(self.tr('Everpad / %s') % self.note_edit.title)
 
     @Slot()
     def save(self):

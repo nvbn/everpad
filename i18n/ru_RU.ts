@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru_RU" sourcelanguage="">
+<!DOCTYPE TS>
+<TS version="2.0" language="ru_RU">
 <context>
     <name>ContentEdit</name>
     <message>
@@ -216,17 +217,17 @@
     <message>
         <location filename="everpad/pad/editor.py" line="955"/>
         <source>Pin note</source>
-        <translation type="unfinished"></translation>
+        <translation>Прикрепить заметку</translation>
     </message>
     <message>
         <location filename="everpad/interface/editor.py" line="118"/>
         <source>Find</source>
-        <translation type="unfinished"></translation>
+        <translation>Поиск</translation>
     </message>
     <message>
         <location filename="everpad/pad/editor.py" line="1001"/>
         <source>Note &quot;%s&quot; saved!</source>
-        <translation type="unfinished"></translation>
+        <translation>Заметка &quot;%s&quot; сохранена!</translation>
     </message>
     <message>
         <location filename="everpad/pad/editor.py" line="1020"/>
@@ -267,6 +268,16 @@
         <translation>Выход</translation>
     </message>
     <message>
+        <location filename="everpad/pad/indicator.py" line="116"/>
+        <source>Last Sync: Just now</source>
+        <translation>Последняя синхронизация: Только что</translation>
+    </message>
+    <message>
+        <location filename="everpad/pad/indicator.py" line="118"/>
+        <source>Last Sync: %s min ago</source>
+        <translation>Последняя синхронизация: %s минут назад</translation>
+    </message>
+    <message>
         <location filename="everpad/pad/indicator.py" line="132"/>
         <source>New note</source>
         <translation>Новая заметка</translation>
@@ -299,12 +310,12 @@
     <message>
         <location filename="everpad/pad/indicator.py" line="67"/>
         <source>API version missmatch, please restart</source>
-        <translation type="unfinished"></translation>
+        <translation>Версии api не совпадают</translation>
     </message>
     <message>
         <location filename="everpad/pad/indicator.py" line="71"/>
         <source>Restart everpad</source>
-        <translation type="unfinished"></translation>
+        <translation>Перезапустить everpad</translation>
     </message>
 </context>
 <context>

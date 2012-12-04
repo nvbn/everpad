@@ -652,6 +652,15 @@ class ContentEdit(QObject):
         dialog.paintRequested.connect(self.page.view().print_)
         dialog.exec_()
 
+    def email_note(self):
+        body = self.page.mainFrame().toPlainText()[
+            len(self.title):
+        ].strip()
+        url = QUrl("mailto:")
+        url.addQueryItem("subject", self.title)
+        url.addQueryItem("body", body)
+        QDesktopServices.openUrl(url)
+
     def insert_files(self, urls, pos):
         """Not only images"""
         image_extensions = ['.png', '.jpg', '.bmp', '.gif']
@@ -977,6 +986,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
     def init_shortcuts(self):
         self.save_btn.setShortcut(QKeySequence('Ctrl+s'))
         self.close_btn.setShortcut(QKeySequence('Ctrl+q'))
+        self.email_btn.setShortcut(QKeySequence('Ctrl+Shift+e'))
 
     def init_toolbar(self):
         self.save_btn = self.ui.toolBar.addAction(
@@ -997,6 +1007,11 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             QIcon.fromTheme('document-print'),
             self.tr('Print note'),
             self.note_edit.print_,
+        )
+        self.email_btn = self.ui.toolBar.addAction(
+            QIcon.fromTheme('mail-unread'),
+            self.tr('Email note'),
+            self.note_edit.email_note,
         )
         self.ui.toolBar.addSeparator()
         for action in self.note_edit.get_format_actions():

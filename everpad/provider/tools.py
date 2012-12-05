@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from everpad.provider.models import Base
 from everpad.const import HOST, SCHEMA_VERSION
+from everpad.tools import get_proxy_config, get_auth_token
 from urlparse import urlparse
 import os
 
@@ -38,14 +39,6 @@ def get_db_session(db_path=None):
     conn = session.connection()
     conn.connection.create_function('lower', 1, _nocase_lower)
     return session
-
-
-def get_proxy_config(scheme):
-    for fmt in ('%s_proxy', '%s_PROXY'):
-        proxy = os.environ.get(fmt % scheme)
-        if proxy is not None:
-            return proxy
-    return None
 
 
 def get_note_store(auth_token=None):

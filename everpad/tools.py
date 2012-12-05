@@ -5,6 +5,7 @@ from everpad.const import API_VERSION, SCHEMA_VERSION, VERSION
 import dbus
 import re
 import sys
+import os
 
 
 class InterfaceWrapper(object):
@@ -126,3 +127,10 @@ def print_version():
     print 'API version: %d' % API_VERSION
     print 'Schema version: %d' % SCHEMA_VERSION
     sys.exit(0)
+
+def get_proxy_config(scheme):
+    for fmt in ('%s_proxy', '%s_PROXY'):
+        proxy = os.environ.get(fmt % scheme)
+        if proxy is not None:
+            return proxy
+    return None

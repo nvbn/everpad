@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, '../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings, QT_TRANSLATE_NOOP
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon, QCursor
+from PySide.QtNetwork import QNetworkProxyFactory
 from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad, get_auth_token, print_version
 from everpad.pad.editor import Editor
@@ -188,6 +189,7 @@ class PadApp(QApplication):
         # direction. See for example i18n/ar_EG.ts
         QT_TRANSLATE_NOOP('QApplication', 'QT_LAYOUT_DIRECTION')
         self.installTranslator(self.translator)
+        QNetworkProxyFactory.setUseSystemConfiguration(True)
         self.indicator = Indicator(self)
         self.update_icon()
         self.indicator.show()

@@ -17,6 +17,7 @@ from everpad.const import (
     DEFAULT_FONT, DEFAULT_FONT_SIZE,
 )
 from everpad import monkey
+from everpad.tools import get_proxy_config
 import urllib
 import urlparse
 import subprocess
@@ -24,6 +25,22 @@ import webbrowser
 import oauth2 as oauth
 import os
 import shutil
+from httplib2 import ProxyInfo
+from httplib2.socks import PROXY_TYPE_HTTP
+
+
+def get_oauth_proxy(scheme):
+    proxy = get_proxy_config(scheme)
+    if proxy is None:
+        return None
+    proxy = urlparse.urlparse(proxy)
+    return ProxyInfo(
+        proxy_type=PROXY_TYPE_HTTP,
+        proxy_host=proxy.hostname,
+        proxy_port=proxy.port,
+        proxy_user=proxy.username or None,
+        proxy_pass=proxy.password or None,
+    )    
 
 
 class TLSNetworkAccessManager(QNetworkAccessManager):
@@ -51,7 +68,8 @@ class AuthPage(QWebPage):
             token = oauth.Token(self.token, self.secret)
             token.set_verifier(verifier)
             consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
-            client = oauth.Client(consumer, token)
+            client = oauth.Client(consumer, token,
+                                  proxy_info=get_oauth_proxy('https'))
             resp, content = client.request('https://%s/oauth' % HOST, 'POST')
             access_token = dict(urlparse.parse_qsl(content))
             self.parent.auth_finished(access_token['oauth_token'])
@@ -169,7 +187,7 @@ class Management(QDialog):
             self.ui.tabWidget.hide()
             self.ui.webView.show()
             consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
-            client = oauth.Client(consumer)
+            client = oauth.Client(consumer, proxy_info=get_oauth_proxy('https'))
             resp, content = client.request(
                 'https://%s/oauth?oauth_callback=' % HOST + urllib.quote('http://everpad/'),
             'GET')

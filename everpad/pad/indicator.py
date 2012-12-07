@@ -206,7 +206,7 @@ class PadApp(QApplication):
             QSystemTrayIcon.Information)
 
     def on_sync_state_changed(self, state):
-        if bool(self.settings.value('launcher-progress', 1)):
+        if int(self.settings.value('launcher-progress', 1)):
             self.launcher.update({
                 'progress': float(state + 1) / len(SYNC_STATES),
                 'progress-visible': state not in (SYNC_STATE_START, SYNC_STATE_FINISH),

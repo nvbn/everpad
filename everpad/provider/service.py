@@ -123,8 +123,9 @@ class ProviderService(dbus.service.Object):
     )
     def get_notebook_notes_count(self, id):
         return self.sq(Note).filter(
-            Note.notebook_id == id,
-        ).count()
+            and_(Note.notebook_id == id,
+            Note.action != ACTION_DELETE,
+        )).count()
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature=btype.Notebook.signature,

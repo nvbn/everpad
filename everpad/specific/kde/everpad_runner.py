@@ -43,7 +43,9 @@ class EverpadRunner(plasmascript.Runner):
             note = Note.from_tuple(note_struct)
             action = Plasma.QueryMatch(self.runner)
             action.setText(note.title)
-            action.setSubtext(html2text(note.content))
+            content = html2text(note.content)
+            content = content[:200]
+            action.setSubtext(content)
             action.setType(Plasma.QueryMatch.ExactMatch)
             action.setIcon(KIcon("everpad"))
             action.setData(str(note.id))

@@ -16,6 +16,7 @@ ACTION_CREATE = 1
 ACTION_DELETE = 2
 ACTION_CHANGE = 3
 ACTION_NOEXSIST = 4
+ACTION_CONFLICT = 5
 
 
 notetags_table = Table('notetags', Base.metadata,
@@ -32,6 +33,7 @@ class Note(Base):
     content = Column(String)
     created = Column(Integer)
     updated = Column(Integer)
+    updated_local = Column(Integer)
     notebook_id = Column(Integer, ForeignKey('notebooks.id'))
     notebook = relationship("Notebook", backref='note')
     tags = relationship("Tag",
@@ -43,6 +45,7 @@ class Note(Base):
     place_id = Column(Integer, ForeignKey('places.id'))
     place = relationship("Place", backref='note')
     action = Column(Integer)
+    conflict_parent = relationship("Notebook", backref='conflict_item')
 
     @property
     def tags_dbus(self):

@@ -212,7 +212,7 @@ class ProviderService(dbus.service.Object):
             note.action = ACTION_CREATE
         elif note.action != ACTION_CREATE:
             note.action = ACTION_CHANGE
-        note.updated = int(time.time() * 1000)
+        note.updated_local = int(time.time() * 1000)
         self.session.commit()
         self.data_changed()
         return btype.Note.from_obj(note).struct

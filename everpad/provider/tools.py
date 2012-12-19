@@ -19,6 +19,7 @@ ACTION_CREATE = 1
 ACTION_DELETE = 2
 ACTION_CHANGE = 3
 ACTION_NOEXSIST = 4
+ACTION_CONFLICT = 5
 
 def _nocase_lower(item):
     return unicode(item).lower()

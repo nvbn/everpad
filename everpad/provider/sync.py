@@ -18,7 +18,7 @@ from everpad.provider.tools import (
     ACTION_NONE, ACTION_CREATE,
     ACTION_CHANGE, ACTION_DELETE,
     get_db_session, get_note_store,
-    ACTION_NOEXSIST,
+    ACTION_NOEXSIST, ACTION_CONFLICT,
 )
 from everpad.tools import get_auth_token, sanitize, clean
 from everpad.provider import models
@@ -98,9 +98,13 @@ class SyncThread(QThread):
         self.status = STATUS_SYNC
         self.last_sync = datetime.now()
         self.sync_state_changed.emit(SYNC_STATE_START)
+        if self._need_to_update():
+            self.need_to_update = True
+            self.all_notes = list(self._iter_all_notes())
         try:
+            if self.need_to_update:
+                self.remote_changes()
             self.local_changes()
-            self.remote_changes()
         except Exception, e:  # maybe log this
             self.session.rollback()
             self.init_db()
@@ -108,6 +112,8 @@ class SyncThread(QThread):
         finally:
             self.sync_state_changed.emit(SYNC_STATE_FINISH)
             self.status = STATUS_NONE
+            self.need_to_update = False
+            self.all_notes = None
         self.data_changed.emit()
 
     def local_changes(self):
@@ -127,6 +133,27 @@ class SyncThread(QThread):
         self.tags_remote()
         self.sync_state_changed.emit(SYNC_STATE_NOTES_REMOTE)
         self.notes_remote()
+
+    def _iter_all_notes(self):
+        """Iterate all notes"""
+        offset = 0
+        while True:
+            note_list = self.note_store.findNotes(self.auth_token, NoteFilter(
+                order=NoteSortOrder.UPDATED,
+                ascending=False,
+            ), offset, EDAM_USER_NOTES_MAX)
+            for note in note_list.notes:
+                yield note
+            offset = note_list.startIndex + len(note_list.notes)
+            if note_list.totalNotes - offset <= 0:
+                break
+
+    def _need_to_update(self):
+        """Check need for update notes"""
+        update_count = self.note_store.getSyncState(self.auth_token).updateCount
+        reason = update_count != self.update_count
+        self.update_count = update_count
+        return reason
 
     def notebooks_local(self):
         """Send local notebooks changes to server"""
@@ -247,8 +274,6 @@ class SyncThread(QThread):
             except EDAMUserException as e:
                 next_action = note.action
                 self.app.log('Note %s failed' % note.title)
-                print soup.prettify()
-                print e
             note.action = next_action
         self.session.commit()
 
@@ -275,9 +300,11 @@ class SyncThread(QThread):
                 lambda nb: nb.id, self.sq(models.Notebook).all(),
             ))
             if len(ids):
-                self.sq(models.Notebook).filter(
+                self.sq(models.Notebook).filter(and_(
                     models.Notebook.id.in_(ids),
-                ).delete(synchronize_session='fetch')
+                    models.Notebook.action != ACTION_CREATE,
+                    models.Notebook.action != ACTION_CHANGE,
+                )).delete(synchronize_session='fetch')
         self.session.commit()
 
     def tags_remote(self):
@@ -303,45 +330,37 @@ class SyncThread(QThread):
                 lambda tag: tag.id, self.sq(models.Tag).all(),
             ))
             if len(ids):
-                self.sq(models.Tag).filter(
-                    models.Tag.id.in_(ids)
-                ).delete(synchronize_session='fetch')
+                self.sq(models.Tag).filter(and_(
+                    models.Tag.id.in_(ids),
+                    models.Tag.action != ACTION_CREATE,
+                )).delete(synchronize_session='fetch')
         self.session.commit()
-
-    def _iter_all_notes(self):
-        """Iterate all notes"""
-        offset = 0
-        while True:
-            note_list = self.note_store.findNotes(self.auth_token, NoteFilter(
-                order=NoteSortOrder.UPDATED,
-                ascending=False,
-            ), offset, EDAM_USER_NOTES_MAX)
-            for note in note_list.notes:
-                yield note
-            offset = note_list.startIndex + len(note_list.notes)
-            if note_list.totalNotes - offset <= 0:
-                break
 
     def notes_remote(self):
         """Receive notes from server"""
         notes_ids = []
-        update_count = self.note_store.getSyncState(self.auth_token).updateCount
-        if update_count == self.update_count:
-            return
-        self.update_count = update_count
-        for note in self._iter_all_notes():
+        for note in self.all_notes:
             self.app.log('Note %s remote' % note.title)
             try:
                 nt = self.sq(models.Note).filter(
                     models.Note.guid == note.guid,
                 ).one()
                 notes_ids.append(nt.id)
+                conflict = nt.action == ACTION_CHANGE
                 if nt.updated < note.updated:
                     note = self.note_store.getNote(
                         self.auth_token, note.guid,
                         True, True, True, True,
                     )
+                    if conflict:
+                        nt = models.Note()
                     nt.from_api(note, self.session)
+                    if conflict:
+                        nt.guid = ''
+                        nt.id = None
+                        nt.action = ACTION_CONFLICT
+                        self.session.add(nt)
+                        self.session.commit()
                     self.note_resources_remote(note, nt)
             except NoResultFound:
                 note = self.note_store.getNote(
@@ -362,6 +381,9 @@ class SyncThread(QThread):
                 self.sq(models.Note).filter(and_(
                     models.Note.id.in_(ids),
                     models.Note.action != ACTION_NOEXSIST,
+                    models.Note.action != ACTION_CREATE,
+                    models.Note.action != ACTION_CHANGE,
+                    models.Note.action != ACTION_CONFLICT,
                 )).delete(synchronize_session='fetch')        
         self.session.commit()
 

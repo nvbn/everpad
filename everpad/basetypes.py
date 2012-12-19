@@ -82,6 +82,8 @@ class Note(DbusSendable):
         ('tags', 'as'),
         ('place', 's'),
         ('pinnded', 'b'),
+        ('conflict_parent', 'i'),
+        ('conflict_items', 'ai'),
     )
 
 

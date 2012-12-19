@@ -7,6 +7,7 @@ import binascii
 import os
 import urllib
 import json
+import dbus
 
 Base = declarative_base()
 
@@ -45,7 +46,8 @@ class Note(Base):
     place_id = Column(Integer, ForeignKey('places.id'))
     place = relationship("Place", backref='note')
     action = Column(Integer)
-    conflict_parent = relationship("Notebook", backref='conflict_item')
+    conflict_parent = relationship("Note")
+    conflict_parent_id = Column(Integer, ForeignKey('notes.conflict_parent_id'))
 
     @property
     def tags_dbus(self):
@@ -93,6 +95,21 @@ class Note(Base):
     def place_dbus(self, val):
         if val:
             self.set_place(val, self.session)
+
+    @property
+    def conflict_parent_dbus(self):
+        if self.conflict_parent:
+            return self.conflict_parent.id
+        return 0
+
+    @property
+    def conflict_items_dbus(self):
+        return map(
+            lambda item: item.id,
+            self.session.query(Note).filter(
+                Note.conflict_parent_id == self.id,
+            ).all(),
+        ) or dbus.Array([], signature='i')
 
     def from_api(self, note,session):
         """Fill data from api"""

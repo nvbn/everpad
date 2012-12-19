@@ -353,12 +353,14 @@ class SyncThread(QThread):
                         True, True, True, True,
                     )
                     if conflict:
+                        parent = nt
                         nt = models.Note()
                     nt.from_api(note, self.session)
                     if conflict:
                         nt.guid = ''
                         nt.id = None
                         nt.action = ACTION_CONFLICT
+                        nt.conflict_parent_id = parent.id
                         self.session.add(nt)
                         self.session.commit()
                     self.note_resources_remote(note, nt)
@@ -380,6 +382,7 @@ class SyncThread(QThread):
             if len(ids):
                 self.sq(models.Note).filter(and_(
                     models.Note.id.in_(ids),
+                    models.Note.conflict_parent_id.in_(ids),
                     models.Note.action != ACTION_NOEXSIST,
                     models.Note.action != ACTION_CREATE,
                     models.Note.action != ACTION_CHANGE,

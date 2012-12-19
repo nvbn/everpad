@@ -37,6 +37,7 @@ import hashlib
 import urllib
 import json
 import re
+import cgi  # yep
 
 
 class ImagePrefs(QDialog):
@@ -417,7 +418,7 @@ class ContentEdit(QObject):
         """Apply title and content when filled"""
         if None not in (self._title, self._content):
             self.page.mainFrame().setHtml(self._html % {
-                'title': self._title,
+                'title': cgi.escape(self._title),
                 'content': self._content,
             })
             self.widget.setPage(self.page)

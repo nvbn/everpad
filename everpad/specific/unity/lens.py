@@ -79,7 +79,7 @@ class EverpadLens(SingleScopeLens):
             version = -1
         if version < API_VERSION:
             dim = datetime.now() - getattr(self, 'last_api_notify', datetime.now())
-            if dim.seconds > 60:
+            if dim.seconds > 600:
                 Notify.init("everpad")
                 Notify.Notification.new(
                     'everpad',

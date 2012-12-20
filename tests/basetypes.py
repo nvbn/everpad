@@ -1,8 +1,5 @@
-import sys
-sys.path.append('..')
 from everpad.basetypes import Tag, DbusSendable
 import unittest
-
 
 
 class TestBaseTypes(unittest.TestCase):
@@ -51,7 +48,6 @@ class TestBaseTypes(unittest.TestCase):
             obj.id, 12,
             'give data to object',
         )
-        
 
 
 if __name__ == '__main__':

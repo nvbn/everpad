@@ -5,4 +5,4 @@ syntax: glob
 build/*
 .idea/*
 *egg-info/
-test/settings/local.py
+tests/settings/local.py

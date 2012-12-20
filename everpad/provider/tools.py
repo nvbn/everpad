@@ -8,7 +8,7 @@ from evernote.edam.notestore import NoteStore
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from everpad.provider.models import Base
-from everpad.const import HOST, SCHEMA_VERSION
+from everpad.const import HOST, SCHEMA_VERSION, DB_PATH
 from everpad.tools import get_proxy_config, get_auth_token
 from urlparse import urlparse
 import os
@@ -32,7 +32,7 @@ def set_auth_token(token):
 
 def get_db_session(db_path=None):
     if not db_path:
-        db_path = os.path.expanduser('~/.everpad/everpad.%s.db' % SCHEMA_VERSION)
+        db_path = os.path.expanduser(DB_PATH % SCHEMA_VERSION)
     engine = create_engine('sqlite:///%s' % db_path)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)

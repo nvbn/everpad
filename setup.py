@@ -66,12 +66,12 @@ setup(name='everpad',
 	    'i18n/zh_TW.qm'
         ]),
         ('/usr/share/everpad/', [
-            'everpad/pad/editor.html',
+            'everpad/pad/editor/editor.html',
         ]),
         ('share/locale/ru/LC_MESSAGES', ['i18n/ru/LC_MESSAGES/everpad.mo']),
         ('share/locale/ar/LC_MESSAGES', ['i18n/ar/LC_MESSAGES/everpad.mo']),
         ('share/locale/zh_CN/LC_MESSAGES', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
-	('share/locale/zh_TW/LC_MESSAGES', ['i18n/zh_TW/LC_MESSAGES/everpad.mo']),
+    	('share/locale/zh_TW/LC_MESSAGES', ['i18n/zh_TW/LC_MESSAGES/everpad.mo']),
         ('/usr/share/unity/lenses/everpad', ['data/everpad.lens']),
         ('/usr/share/dbus-1/services', [
             'data/unity-lens-everpad.service',

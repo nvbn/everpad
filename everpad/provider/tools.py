@@ -32,7 +32,7 @@ def set_auth_token(token):
 
 def get_db_session(db_path=None):
     if not db_path:
-        db_path = os.path.expanduser(DB_PATH % SCHEMA_VERSION)
+        db_path = os.path.expanduser(DB_PATH)
     engine = create_engine('sqlite:///%s' % db_path)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)

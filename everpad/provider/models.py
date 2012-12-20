@@ -102,6 +102,10 @@ class Note(Base):
             return self.conflict_parent.id
         return 0
 
+    @conflict_parent_dbus.setter
+    def conflict_parent_dbus(self, val):
+        pass
+
     @property
     def conflict_items_dbus(self):
         return map(
@@ -110,6 +114,10 @@ class Note(Base):
                 Note.conflict_parent_id == self.id,
             ).all(),
         ) or dbus.Array([], signature='i')
+
+    @conflict_items_dbus.setter
+    def conflict_items_dbus(self, val):
+        pass
 
     def from_api(self, note,session):
         """Fill data from api"""

@@ -23,4 +23,4 @@ DEFAULT_FONT_SIZE = 14
 SCHEMA_VERSION = 2
 API_VERSION = 1
 VERSION = '2.3'
-DP_PATH = "~/.everpad/everpad.%s.db"
+DB_PATH = "~/.everpad/everpad.%s.db" % SCHEMA_VERSION

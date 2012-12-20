@@ -37,103 +37,8 @@ import socket
 SYNC_MANUAL = -1
 
 
-class SyncThread(QThread):
-    """Sync notes with evernote thread"""
-    force_sync_signal = Signal()
-    sync_state_changed = Signal(int)
-    data_changed = Signal()
-
-    def __init__(self, *args, **kwargs):
-        QThread.__init__(self, *args, **kwargs)
-        self.app = AppClass.instance()
-        self.status = STATUS_NONE
-        self.last_sync = datetime.now()
-        self.update_count = 0
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.sync)
-        self.update_timer()
-        self.wait_condition = QWaitCondition()
-        self.mutex = QMutex()
-
-    def update_timer(self):
-        self.timer.stop()
-        delay = int(self.app.settings.value('sync_delay') or 0) or DEFAULT_SYNC_DELAY
-        if delay != SYNC_MANUAL:
-            self.timer.start(delay)
-
-    def run(self):
-        self.init_db()
-        self.init_network()
-        while True:
-            self.mutex.lock()
-            self.wait_condition.wait(self.mutex)
-            self.perform()
-            self.mutex.unlock()
-            time.sleep(1)  # prevent cpu eating
-
-    def init_db(self):
-        self.session = get_db_session()
-        self.sq = self.session.query
-
-    def init_network(self):
-        while True:
-            try:
-                self.auth_token = get_auth_token()
-                self.note_store = get_note_store(self.auth_token)
-                break
-            except socket.error:
-                time.sleep(30)
-
-    def force_sync(self):
-        self.timer.stop()
-        self.sync()
-        self.update_timer()
-
-    @Slot()
-    def sync(self):
-        self.wait_condition.wakeAll()
-
-    def perform(self):
-        """Perform all sync"""
-        self.status = STATUS_SYNC
-        self.last_sync = datetime.now()
-        self.sync_state_changed.emit(SYNC_STATE_START)
-        if self._need_to_update():
-            self.need_to_update = True
-            self.all_notes = list(self._iter_all_notes())
-        try:
-            if self.need_to_update:
-                self.remote_changes()
-            self.local_changes()
-        except Exception, e:  # maybe log this
-            self.session.rollback()
-            self.init_db()
-            self.app.log(e)
-        finally:
-            self.sync_state_changed.emit(SYNC_STATE_FINISH)
-            self.status = STATUS_NONE
-            self.need_to_update = False
-            self.all_notes = None
-        self.data_changed.emit()
-
-    def local_changes(self):
-        """Send local changes to evernote server"""
-        self.sync_state_changed.emit(SYNC_STATE_NOTEBOOKS_LOCAL)
-        self.notebooks_local()
-        self.sync_state_changed.emit(SYNC_STATE_TAGS_LOCAL)
-        self.tags_local()
-        self.sync_state_changed.emit(SYNC_STATE_NOTES_LOCAL)
-        self.notes_local()
-
-    def remote_changes(self):
-        """Receive remote changes from evernote"""
-        self.sync_state_changed.emit(SYNC_STATE_NOTEBOOKS_REMOTE)
-        self.notebooks_remote()
-        self.sync_state_changed.emit(SYNC_STATE_TAGS_REMOTE)
-        self.tags_remote()
-        self.sync_state_changed.emit(SYNC_STATE_NOTES_REMOTE)
-        self.notes_remote()
-
+class SyncAgent(object):
+    """Split agent for latest backends support"""
     def _iter_all_notes(self):
         """Iterate all notes"""
         offset = 0
@@ -415,3 +320,102 @@ class SyncThread(QThread):
                 models.Resource.note_id == note_model.id,
             )).delete(synchronize_session='fetch')        
         self.session.commit()
+
+
+class SyncThread(QThread, SyncAgent):
+    """Sync notes with evernote thread"""
+    force_sync_signal = Signal()
+    sync_state_changed = Signal(int)
+    data_changed = Signal()
+
+    def __init__(self, *args, **kwargs):
+        QThread.__init__(self, *args, **kwargs)
+        self.app = AppClass.instance()
+        self.status = STATUS_NONE
+        self.last_sync = datetime.now()
+        self.update_count = 0
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.sync)
+        self.update_timer()
+        self.wait_condition = QWaitCondition()
+        self.mutex = QMutex()
+
+    def update_timer(self):
+        self.timer.stop()
+        delay = int(self.app.settings.value('sync_delay') or 0) or DEFAULT_SYNC_DELAY
+        if delay != SYNC_MANUAL:
+            self.timer.start(delay)
+
+    def run(self):
+        self.init_db()
+        self.init_network()
+        while True:
+            self.mutex.lock()
+            self.wait_condition.wait(self.mutex)
+            self.perform()
+            self.mutex.unlock()
+            time.sleep(1)  # prevent cpu eating
+
+    def init_db(self):
+        self.session = get_db_session()
+        self.sq = self.session.query
+
+    def init_network(self):
+        while True:
+            try:
+                self.auth_token = get_auth_token()
+                self.note_store = get_note_store(self.auth_token)
+                break
+            except socket.error:
+                time.sleep(30)
+
+    def force_sync(self):
+        self.timer.stop()
+        self.sync()
+        self.update_timer()
+
+    @Slot()
+    def sync(self):
+        self.wait_condition.wakeAll()
+
+    def perform(self):
+        """Perform all sync"""
+        self.status = STATUS_SYNC
+        self.last_sync = datetime.now()
+        self.sync_state_changed.emit(SYNC_STATE_START)
+        if self._need_to_update():
+            self.need_to_update = True
+            self.all_notes = list(self._iter_all_notes())
+        try:
+            if self.need_to_update:
+                self.remote_changes()
+            self.local_changes()
+        except Exception, e:  # maybe log this
+            self.session.rollback()
+            self.init_db()
+            self.app.log(e)
+        finally:
+            self.sync_state_changed.emit(SYNC_STATE_FINISH)
+            self.status = STATUS_NONE
+            self.need_to_update = False
+            self.all_notes = None
+        self.data_changed.emit()
+
+    def local_changes(self):
+        """Send local changes to evernote server"""
+        self.sync_state_changed.emit(SYNC_STATE_NOTEBOOKS_LOCAL)
+        self.notebooks_local()
+        self.sync_state_changed.emit(SYNC_STATE_TAGS_LOCAL)
+        self.tags_local()
+        self.sync_state_changed.emit(SYNC_STATE_NOTES_LOCAL)
+        self.notes_local()
+
+    def remote_changes(self):
+        """Receive remote changes from evernote"""
+        self.sync_state_changed.emit(SYNC_STATE_NOTEBOOKS_REMOTE)
+        self.notebooks_remote()
+        self.sync_state_changed.emit(SYNC_STATE_TAGS_REMOTE)
+        self.tags_remote()
+        self.sync_state_changed.emit(SYNC_STATE_NOTES_REMOTE)
+        self.notes_remote()
+

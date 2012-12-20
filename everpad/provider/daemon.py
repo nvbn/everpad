@@ -2,11 +2,10 @@ import sys
 sys.path.insert(0, '../..')
 from everpad.provider.service import ProviderService
 from everpad.provider.sync import SyncThread
-from everpad.provider.tools import set_auth_token, get_db_session
+from everpad.provider.tools import AppClass, set_auth_token, get_db_session
 from everpad.tools import get_auth_token, print_version
 from everpad.provider import models
 from PySide.QtCore import Slot, QSettings
-
 import dbus
 import dbus.mainloop.glib
 import signal
@@ -16,23 +15,15 @@ import getpass
 import argparse
 
 
-if 'kde' in os.environ.get('DESKTOP_SESSION'):  # kde init qwidget for wallet access
-    from PySide.QtGui import QApplication
-    App = QApplication
-else:
-    from PySide.QtCore import QCoreApplication
-    App = QCoreApplication
-
-
-class ProviderApp(App):
+class ProviderApp(AppClass):
     def __init__(self, verbose, *args, **kwargs):
-        App.__init__(self, *args, **kwargs)
+        AppClass.__init__(self, *args, **kwargs)
         self.settings = QSettings('everpad', 'everpad-provider')
         self.verbose = verbose
         session_bus = dbus.SessionBus()
         self.bus = dbus.service.BusName("com.everpad.Provider", session_bus)
-        self.service = ProviderService(self, session_bus, '/EverpadProvider')
-        self.sync_thread = SyncThread(self)
+        self.service = ProviderService(session_bus, '/EverpadProvider')
+        self.sync_thread = SyncThread()
         self.sync_thread.sync_state_changed.connect(
             Slot(int)(self.service.sync_state_changed),
         )

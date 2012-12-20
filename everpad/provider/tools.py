@@ -56,3 +56,11 @@ def get_note_store(auth_token=None):
             http_proxy=get_proxy_config(urlparse(note_store_url).scheme))
     note_store_protocol = TBinaryProtocol.TBinaryProtocol(note_store_http_client)
     return NoteStore.Client(note_store_protocol)
+
+
+if 'kde' in os.environ.get('DESKTOP_SESSION'):  # kde init qwidget for wallet access
+    from PySide.QtGui import QApplication
+    AppClass = QApplication
+else:
+    from PySide.QtCore import QCoreApplication
+    AppClass = QCoreApplication

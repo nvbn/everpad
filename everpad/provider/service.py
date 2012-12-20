@@ -5,13 +5,15 @@ from everpad.provider.models import (
     ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
     ACTION_NOEXSIST,
 )
-from everpad.provider.tools import get_db_session
+from everpad.provider.tools import AppClass, get_db_session
 from sqlalchemy import or_, and_, func
 from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
 from PySide.QtCore import Signal, QObject, Qt
+from everpad.const import (
+    STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY, API_VERSION,
+)
 import everpad.basetypes as btype
-from everpad.const import STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY, API_VERSION
 import dbus
 import dbus.service
 import time
@@ -23,10 +25,10 @@ class ProviderServiceQObject(QObject):
 
 
 class ProviderService(dbus.service.Object):
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ProviderService, self).__init__(*args, **kwargs)
         self.qobject = ProviderServiceQObject()
-        self.app = app
+        self.app = AppClass.instance()
 
     @property
     def session(self):

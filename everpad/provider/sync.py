@@ -15,7 +15,7 @@ from evernote.edam.limits.constants import (
 )
 from evernote.edam.error.ttypes import EDAMUserException
 from everpad.provider.tools import (
-    ACTION_NONE, ACTION_CREATE,
+    ACTION_NONE, ACTION_CREATE, AppClass,
     ACTION_CHANGE, ACTION_DELETE,
     get_db_session, get_note_store,
     ACTION_NOEXSIST, ACTION_CONFLICT,
@@ -43,9 +43,9 @@ class SyncThread(QThread):
     sync_state_changed = Signal(int)
     data_changed = Signal()
 
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         QThread.__init__(self, *args, **kwargs)
-        self.app = app
+        self.app = AppClass.instance()
         self.status = STATUS_NONE
         self.last_sync = datetime.now()
         self.update_count = 0

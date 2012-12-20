@@ -5,6 +5,7 @@ from PySide.QtGui import (
     QLabel, QVBoxLayout, QFrame, QFont,
     QMessageBox, QAction, QWidget,
     QListWidgetItem, QMenu, QInputDialog,
+    QApplication,
 )
 from PySide.QtWebKit import QWebView, QWebPage
 from PySide.QtCore import Slot, Qt, QPoint, QUrl
@@ -82,9 +83,9 @@ class AuthPage(QWebPage):
 class Management(QDialog):
     """Management dialog"""
 
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         QDialog.__init__(self, *args, **kwargs)
-        self.app = app
+        self.app = QApplication.instance()
         self.closed = False
         self.startup_path = os.path.expanduser('~/.config/autostart/')
         if not os.path.exists(self.startup_path):

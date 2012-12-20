@@ -1,4 +1,4 @@
-from PySide.QtGui import QCompleter, QStringListModel
+from PySide.QtGui import QCompleter, QStringListModel, QApplication
 from PySide.QtCore import Slot
 from everpad.basetypes import Note, Tag, Notebook
 import re
@@ -7,10 +7,10 @@ import re
 class TagEdit(object):
     """Abstraction for tag edit"""
 
-    def __init__(self, parent, app, widget, on_change):
+    def __init__(self, parent, widget, on_change):
         """Init and connect signals"""
         self.parent = parent
-        self.app = app
+        self.app = QApplication.instance()
         self.widget = widget
         self.tags_list = map(lambda tag:
             Tag.from_tuple(tag).name,
@@ -58,10 +58,10 @@ class TagEdit(object):
 class NotebookEdit(object):
     """Abstraction for notebook edit"""
 
-    def __init__(self, parent, app, widget, on_change):
+    def __init__(self, parent, widget, on_change):
         """Init and connect signals"""
         self.parent = parent
-        self.app = app
+        self.app = QApplication.instance()
         self.widget = widget
         for notebook_struct in self.app.provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)

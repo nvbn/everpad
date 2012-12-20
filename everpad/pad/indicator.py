@@ -27,9 +27,9 @@ from datetime import datetime
 
 
 class Indicator(QSystemTrayIcon):
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         QSystemTrayIcon.__init__(self, *args, **kwargs)
-        self.app = app
+        self.app = QApplication.instance()
         self.menu = QMenu()
         self.setContextMenu(self.menu)
         self.menu.aboutToShow.connect(self.update)
@@ -130,7 +130,7 @@ class Indicator(QSystemTrayIcon):
             editor = self.opened_notes[note.id]
             editor.activateWindow()
         else:
-            editor = Editor(self.app, note)
+            editor = Editor(note)
             editor.show()
             self.opened_notes[note.id] = editor
         if search_term:
@@ -160,7 +160,7 @@ class Indicator(QSystemTrayIcon):
     @Slot()
     def show_all_notes(self):
         if not hasattr(self, 'list') or getattr(self.list, 'closed', True):
-            self.list = List(self.app)
+            self.list = List()
             self.list.show()
         else:
             self.list.activateWindow()
@@ -168,7 +168,7 @@ class Indicator(QSystemTrayIcon):
     @Slot()
     def show_management(self):
         if not hasattr(self, 'management') or getattr(self.management, 'closed', True):
-            self.management = Management(self.app)
+            self.management = Management()
             self.management.show()
         else:
             self.management.activateWindow()
@@ -190,7 +190,7 @@ class PadApp(QApplication):
         QT_TRANSLATE_NOOP('QApplication', 'QT_LAYOUT_DIRECTION')
         self.installTranslator(self.translator)
         QNetworkProxyFactory.setUseSystemConfiguration(True)
-        self.indicator = Indicator(self)
+        self.indicator = Indicator()
         self.update_icon()
         self.indicator.show()
 
@@ -214,8 +214,8 @@ class PadApp(QApplication):
 
 
 class EverpadService(dbus.service.Object):
-    def __init__(self, app, *args, **kwargs):
-        self.app = app
+    def __init__(self, *args, **kwargs):
+        self.app = QApplication.instance()
         dbus.service.Object.__init__(self, *args, **kwargs)
 
     @dbus.service.method("com.everpad.App", in_signature='i', out_signature='')
@@ -285,7 +285,7 @@ def main():
         )
         app.launcher = get_launcher('application://everpad.desktop', session_bus, '/')
         bus = dbus.service.BusName("com.everpad.App", session_bus)
-        service = EverpadService(app, session_bus, '/EverpadService')
+        service = EverpadService(session_bus, '/EverpadService')
         if args.open:
             app.indicator.open(args.open)
         if args.create:

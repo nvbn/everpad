@@ -8,7 +8,8 @@ from PySide.QtGui import (
     QListWidgetItem, QMenu, QInputDialog,
     QStandardItemModel, QStandardItem,
     QItemSelection, QKeySequence, QShortcut,
-    )
+    QApplication,
+)
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.list import Ui_List
 from everpad.pad.tools import get_icon
@@ -20,9 +21,9 @@ import datetime
 class List(QDialog):
     """All Notes dialog"""
 
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         QDialog.__init__(self, *args, **kwargs)
-        self.app = app
+        self.app = QApplication.instance()
         self.closed = False
         self.sort_order = None
         self.ui = Ui_List()

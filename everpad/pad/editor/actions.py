@@ -1,4 +1,4 @@
-from PySide.QtGui import QIcon, QDialog, QWidget
+from PySide.QtGui import QIcon, QDialog, QWidget, QApplication
 from PySide.QtCore import  Slot
 from PySide.QtWebKit import QWebPage
 from everpad.interface.tableinsert import Ui_TableInsertDialog
@@ -8,9 +8,9 @@ from everpad.pad.tools import get_icon
 
 
 class ImagePrefs(QDialog):
-    def __init__(self, app, res, *args, **kwargs):
+    def __init__(self, res, *args, **kwargs):
         QDialog.__init__(self, *args, **kwargs)
-        self.app = app
+        self.app = QApplication.instance()
         self.res = res
         self.ui = Ui_ImageDialog()
         self.ui.setupUi(self)

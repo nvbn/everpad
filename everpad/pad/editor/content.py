@@ -3,7 +3,7 @@ from PySide.QtGui import (
     QShortcut, QKeySequence, QInputDialog, 
     QPrintPreviewDialog, QPrinter, QDropEvent,
     QDragEnterEvent, QDragMoveEvent, QApplication,
-    QDesktopServices,
+    QDesktopServices, QApplication,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
@@ -116,10 +116,10 @@ class ContentEdit(QObject):
     _html = open(_editor_path).read()
 
     copy_available = Signal(bool)
-    def __init__(self, parent, app, widget, on_change):
+    def __init__(self, parent, widget, on_change):
         QObject.__init__(self)
         self.parent = parent
-        self.app = app
+        self.app = QApplication.instance()
         self.widget = widget
         self.page = Page(self)
         self._on_change = on_change
@@ -424,7 +424,7 @@ class ContentEdit(QObject):
     def _show_image_dialog(self, res):
         res.w = int(self.page.active_width)
         res.h = int(self.page.active_height)
-        dialog = ImagePrefs(self.app, res, self.parent)
+        dialog = ImagePrefs(res, self.parent)
         if dialog.exec_():
             w, h = dialog.get_size()
             self.page.mainFrame().evaluateJavaScript(

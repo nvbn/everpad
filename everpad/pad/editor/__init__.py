@@ -1,6 +1,6 @@
 from PySide.QtGui import (
     QMainWindow, QIcon, QMessageBox, QAction,
-    QShortcut, QKeySequence,
+    QShortcut, QKeySequence, QApplication,
 )
 from PySide.QtCore import Slot
 from everpad.interface.editor import Ui_Editor
@@ -16,9 +16,9 @@ import dbus
 class Editor(QMainWindow):  # TODO: kill this god shit
     """Note editor"""
 
-    def __init__(self, app, note, *args, **kwargs):
+    def __init__(self, note, *args, **kwargs):
         QMainWindow.__init__(self, *args, **kwargs)
-        self.app = app
+        self.app = QApplication.instance()
         self.note = note
         self.closed = False
         self.ui = Ui_Editor()
@@ -39,19 +39,16 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui.menubar.hide()
         self.ui.resourceArea.hide()
         self.note_edit = ContentEdit(
-            self, self.app,
-            self.ui.contentView, self.text_changed,
+            self, self.ui.contentView, self.text_changed,
         )
         self.tag_edit = TagEdit(
-            self, self.app,
-            self.ui.tags, self.mark_touched,
+            self, self.ui.tags, self.mark_touched,
         )
         self.notebook_edit = NotebookEdit(
-            self, self.app,
-            self.ui.notebook, self.mark_touched,
+            self, self.ui.notebook, self.mark_touched,
         )
         self.resource_edit = ResourceEdit(
-            self, self.app, self.ui.resourceArea,
+            self, self.ui.resourceArea,
             self.ui.resourceLabel, self.mark_touched,
         )
         self.findbar = FindBar(self)

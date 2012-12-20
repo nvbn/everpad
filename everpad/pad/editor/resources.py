@@ -1,7 +1,7 @@
 from PySide.QtGui import (
     QPixmap, QLabel, QVBoxLayout, QFileDialog,
     QMenu, QInputDialog, QFileIconProvider,
-    QWidget, QHBoxLayout,
+    QWidget, QHBoxLayout, QApplication,
 )
 from PySide.QtCore import Slot, Qt, QUrl, QFileInfo
 from everpad.basetypes import Resource, NONE_ID
@@ -42,11 +42,11 @@ class ResourceItem(QWidget):
 class ResourceEdit(object):  # TODO: move event to item
     """Abstraction for notebook edit"""
 
-    def __init__(self, parent, app, widget, label, on_change):
+    def __init__(self, parent, widget, label, on_change):
         """Init and connect signals"""
         self.label = label
         self.parent = parent
-        self.app = app
+        self.app = QApplication.instance()
         self.widget = widget
         self.note = None
         self.on_change = on_change

@@ -32,16 +32,18 @@ class FakeSyncThread(SyncAgent):
         self.note_store = note_store
         if self._need_to_update():
             self.need_to_update = True
-            self.all_notes = list(self._iter_all_notes())
         else:
             self.need_to_update = False
-            self.all_notes = []
+
+    @property
+    def all_notes(self):
+        """Prevent caching"""
+        return self._iter_all_notes()
 
     def _remove_all_notes(self):
         """Remove all notes on evernote"""
-        for note in self._iter_all_notes():
+        for note in self.all_notes:
             self.note_store.deleteNote(self.auth_token, note.guid)
-        self.all_notes = []
 
     def log(self, val):
         pass
@@ -222,7 +224,8 @@ class SyncTestCase(unittest.TestCase):
     def test_remote_notes(self):
         """Test syncing remote notes"""
         self.sync._remove_all_notes()
-        self.sync.notebooks_remote()  # prevent syncing note without received notebook
+        # prevent syncing notes without received notebook
+        self.sync.notebooks_remote()
         remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
         remote = self.note_store.createNote(self.auth_token, ttypes.Note(
             title='test',
@@ -240,6 +243,7 @@ class SyncTestCase(unittest.TestCase):
         ).one()
         self.assertEqual(note.title, remote.title)
         remote.title += '*'
+        remote.updated = int(time.time() * 1000)
         self.note_store.updateNote(self.auth_token, remote)
         self.sync.notes_remote()
         note = self.sq(Note).filter(
@@ -249,7 +253,8 @@ class SyncTestCase(unittest.TestCase):
         self.note_store.deleteNote(self.auth_token, note.guid)
         self.sync.notes_remote()
         with self.assertRaises(NoResultFound):
-            self.sq(Note).filter(
+            # fetch synchronized not very genius, but we don't need that
+            get_db_session().query(Note).filter(
                 Note.guid == remote.guid,
             ).one()
 

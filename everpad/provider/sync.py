@@ -200,16 +200,15 @@ class SyncAgent(object):
                 self.session.add(nb)
                 self.session.commit()
                 notebooks_ids.append(nb.id)
-        if len(notebooks_ids):
-            ids = filter(lambda id: id not in notebooks_ids, map(
-                lambda nb: nb.id, self.sq(models.Notebook).all(),
-            ))
-            if len(ids):
-                self.sq(models.Notebook).filter(and_(
-                    models.Notebook.id.in_(ids),
-                    models.Notebook.action != ACTION_CREATE,
-                    models.Notebook.action != ACTION_CHANGE,
-                )).delete(synchronize_session='fetch')
+        ids = filter(lambda id: id not in notebooks_ids, map(
+            lambda nb: nb.id, self.sq(models.Notebook).all(),
+        ))
+        if len(ids):
+            self.sq(models.Notebook).filter(and_(
+                models.Notebook.id.in_(ids),
+                models.Notebook.action != ACTION_CREATE,
+                models.Notebook.action != ACTION_CHANGE,
+            )).delete(synchronize_session='fetch')
         self.session.commit()
 
     def tags_remote(self):
@@ -230,15 +229,14 @@ class SyncAgent(object):
                 self.session.add(tg)
                 self.session.commit()
                 tags_ids.append(tg.id)
-        if len(tags_ids):
-            ids = filter(lambda id: id not in tags_ids, map(
-                lambda tag: tag.id, self.sq(models.Tag).all(),
-            ))
-            if len(ids):
-                self.sq(models.Tag).filter(and_(
-                    models.Tag.id.in_(ids),
-                    models.Tag.action != ACTION_CREATE,
-                )).delete(synchronize_session='fetch')
+        ids = filter(lambda id: id not in tags_ids, map(
+            lambda tag: tag.id, self.sq(models.Tag).all(),
+        ))
+        if len(ids):
+            self.sq(models.Tag).filter(and_(
+                models.Tag.id.in_(ids),
+                models.Tag.action != ACTION_CREATE,
+            )).delete(synchronize_session='fetch')
         self.session.commit()
 
     def notes_remote(self):
@@ -280,19 +278,18 @@ class SyncAgent(object):
                 self.session.commit()
                 notes_ids.append(nt.id)
                 self.note_resources_remote(note, nt)
-        if len(notes_ids):
-            ids = filter(lambda id: id not in notes_ids, map(
-                lambda note: note.id, self.sq(models.Note).all(),
-            ))
-            if len(ids):
-                self.sq(models.Note).filter(and_(
-                    models.Note.id.in_(ids),
-                    models.Note.conflict_parent_id.in_(ids),
-                    models.Note.action != ACTION_NOEXSIST,
-                    models.Note.action != ACTION_CREATE,
-                    models.Note.action != ACTION_CHANGE,
-                    models.Note.action != ACTION_CONFLICT,
-                )).delete(synchronize_session='fetch')        
+        ids = filter(lambda id: id not in notes_ids, map(
+            lambda note: note.id, self.sq(models.Note).all(),
+        ))
+        if len(ids):
+            self.sq(models.Note).filter(and_(
+                models.Note.id.in_(ids),
+                models.Note.conflict_parent_id.in_(ids),
+                models.Note.action != ACTION_NOEXSIST,
+                models.Note.action != ACTION_CREATE,
+                models.Note.action != ACTION_CHANGE,
+                models.Note.action != ACTION_CONFLICT,
+            )).delete(synchronize_session='fetch')        
         self.session.commit()
 
     def note_resources_remote(self, note_api, note_model):
@@ -418,4 +415,3 @@ class SyncThread(QThread, SyncAgent):
         self.tags_remote()
         self.sync_state_changed.emit(SYNC_STATE_NOTES_REMOTE)
         self.notes_remote()
-

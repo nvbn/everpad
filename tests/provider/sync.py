@@ -6,7 +6,7 @@ from everpad.provider.sync import SyncAgent
 from everpad.provider.tools import get_db_session, get_note_store
 from everpad.provider.models import (
     Note, Notebook, Tag, Resource, ACTION_CREATE, ACTION_CHANGE,
-    ACTION_NONE, ACTION_DELETE,
+    ACTION_NONE, ACTION_DELETE, ACTION_CONFLICT,
 )
 from evernote.edam.type import ttypes
 from sqlalchemy.orm.exc import NoResultFound
@@ -18,6 +18,7 @@ import time
 
 
 note_store = get_note_store(TOKEN)  # prevent reconecting
+resource_path = os.path.join(os.path.dirname(__file__), '../test.png')
 
 
 class FakeSyncThread(SyncAgent):
@@ -153,10 +154,9 @@ class SyncTestCase(unittest.TestCase):
         )
         self.session.add(note)
         self.session.commit()
-        path = os.path.join(os.path.dirname(__file__), '../test.png')
         res = Resource(
             note_id=note.id, file_name='test.png',
-            file_path=path, mime='image/png',
+            file_path=resource_path, mime='image/png',
             action=ACTION_CREATE,
         )
         self.session.add(res)
@@ -221,13 +221,12 @@ class SyncTestCase(unittest.TestCase):
         ).one()
         self.assertEqual(tag.name, name + '*')
 
-    def test_remote_notes(self):
-        """Test syncing remote notes"""
+    def _create_remote_note(self, **params):
         self.sync._remove_all_notes()
         # prevent syncing notes without received notebook
         self.sync.notebooks_remote()
         remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
-        remote = self.note_store.createNote(self.auth_token, ttypes.Note(
+        return self.note_store.createNote(self.auth_token, ttypes.Note(
             title='test',
             content=u"""
                 <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
@@ -236,7 +235,12 @@ class SyncTestCase(unittest.TestCase):
             notebookGuid=remote_notebook.guid,
             created=int(time.time() * 1000),
             updated=int(time.time() * 1000),
+            **params
         ))
+
+    def test_remote_notes(self):
+        """Test syncing remote notes"""
+        remote = self._create_remote_note()
         self.sync.notes_remote()
         note = self.sq(Note).filter(
             Note.guid == remote.guid,
@@ -257,6 +261,58 @@ class SyncTestCase(unittest.TestCase):
             get_db_session().query(Note).filter(
                 Note.guid == remote.guid,
             ).one()
+
+    def test_remote_resources(self):
+        """Test syncing remote resources"""
+        remote = self._create_remote_note(
+            resources=[ttypes.Resource(
+                data=ttypes.Data(body=open(resource_path).read()),
+                mime='image/png',
+                attributes=ttypes.ResourceAttributes(
+                    fileName='test.png',
+                )
+            )],
+        )
+        self.sync.notes_remote()
+        resource = self.sq(Note).filter(
+            Note.guid == remote.guid,
+        ).one().resources[0]
+        self.assertEqual(
+            'test.png', resource.file_name,
+        )
+        remote.resources = None
+        self.note_store.updateNote(self.auth_token, remote)
+        self.sync.notes_remote()
+        with self.assertRaises(NoResultFound):
+            # fetch synchronized not very genius, but we don't need that
+            get_db_session().query(Resource).filter(
+                Resource.guid == resource.guid,
+            ).one()
+
+    def test_conflicts(self):
+        """Test conflict situation syncing"""
+        remote = self._create_remote_note()
+        self.sync.notes_remote()
+        note = self.sq(Note).filter(
+            Note.guid == remote.guid,
+        ).one()
+        remote.updated = int(time.time() * 1000)
+        remote.title += '*'
+        self.note_store.updateNote(self.auth_token, remote)
+        note.title += '!'
+        note.action = ACTION_CHANGE
+        self.session.commit()
+        self.sync.notes_remote()
+        self.sync.notes_local()
+        note = self.sq(Note).filter(
+            Note.guid == remote.guid,
+        ).one()
+        conflict = self.sq(Note).filter(
+            Note.conflict_parent_id == note.id,
+        ).one()
+        self.assertEqual(conflict.action, ACTION_CONFLICT)
+        self.assertEqual(note.title, 'test!')
+        self.assertEqual(conflict.title, 'test*')
 
 
 if __name__ == '__main__':

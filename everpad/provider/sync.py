@@ -141,6 +141,7 @@ class SyncAgent(object):
         for note in self.sq(models.Note).filter(and_(
             models.Note.action != ACTION_NONE,
             models.Note.action != ACTION_NOEXSIST,
+            models.Note.action != ACTION_CONFLICT,
         )):
             self.app.log('Note %s local' % note.title)
             content = (u"""
@@ -311,11 +312,10 @@ class SyncAgent(object):
                 self.session.add(rs)
                 self.session.commit()
                 resources_ids.append(rs.id)
-        if len(resources_ids):
-            self.sq(models.Resource).filter(and_(
-                ~models.Resource.id.in_(resources_ids),
-                models.Resource.note_id == note_model.id,
-            )).delete(synchronize_session='fetch')        
+        self.sq(models.Resource).filter(and_(
+            ~models.Resource.id.in_(resources_ids),
+            models.Resource.note_id == note_model.id,
+        )).delete(synchronize_session='fetch')        
         self.session.commit()
 
 

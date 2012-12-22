@@ -1,17 +1,20 @@
 import sys
 sys.path.insert(0, '..')
 from settings import TOKEN
+from everpad.const import HOST
 from everpad.provider.sync import SyncAgent
 from everpad.provider.tools import get_db_session, get_note_store
 from everpad.provider.models import (
     Note, Notebook, Tag, Resource, ACTION_CREATE, ACTION_CHANGE,
     ACTION_NONE, ACTION_DELETE,
 )
+from evernote.edam.type import ttypes
 from sqlalchemy.orm.exc import NoResultFound
 from itertools import ifilter
 from datetime import datetime
 import unittest
 import os
+import time
 
 
 note_store = get_note_store(TOKEN)  # prevent reconecting
@@ -34,12 +37,25 @@ class FakeSyncThread(SyncAgent):
             self.need_to_update = False
             self.all_notes = []
 
+    def _remove_all_notes(self):
+        """Remove all notes on evernote"""
+        for note in self._iter_all_notes():
+            self.note_store.deleteNote(self.auth_token, note.guid)
+        self.all_notes = []
+
     def log(self, val):
         pass
 
 
 class SyncTestCase(unittest.TestCase):
     def setUp(self):
+        self.assertEqual(
+            HOST, 'sandbox.evernote.com',
+            """
+            Run tests only wiht sandbox,
+            it's remove all you notes!!!
+            """,
+        )
         self.sync = FakeSyncThread()
         self.session = self.sync.session
         self.sq = self.sync.session.query
@@ -156,6 +172,86 @@ class SyncTestCase(unittest.TestCase):
             self.auth_token, note.guid, True, True, False, False,
         )
         self.assertIsNone(note_remote.resources)
+
+    def test_remote_notebooks(self):
+        """Test syncing remote notebooks"""
+        name = str(datetime.now())
+        remote = self.note_store.createNotebook(
+            self.auth_token, ttypes.Notebook(
+                name=name,
+            ),
+        )
+        self.sync.notebooks_remote()
+        notebook = self.sq(Notebook).filter(
+            Notebook.guid == remote.guid,
+        ).one()
+        self.assertEqual(notebook.name, name)
+        remote.name += '*'
+        self.note_store.updateNotebook(
+            self.auth_token, remote,
+        )
+        self.sync.notebooks_remote()
+        notebook = self.sq(Notebook).filter(
+            Notebook.guid == remote.guid,
+        ).one()
+        self.assertEqual(notebook.name, name + '*')
+
+    def test_remote_tags(self):
+        """Test syncing remote tags"""
+        name = str(datetime.now())
+        remote = self.note_store.createTag(
+            self.auth_token, ttypes.Tag(
+                name=name,
+            ),
+        )
+        self.sync.tags_remote()
+        tag = self.sq(Tag).filter(
+            Tag.guid == remote.guid,
+        ).one()
+        self.assertEqual(tag.name, name)
+        remote.name += '*'
+        self.note_store.updateTag(
+            self.auth_token, remote,
+        )
+        self.sync.tags_remote()
+        tag = self.sq(Tag).filter(
+            Tag.guid == remote.guid,
+        ).one()
+        self.assertEqual(tag.name, name + '*')
+
+    def test_remote_notes(self):
+        """Test syncing remote notes"""
+        self.sync._remove_all_notes()
+        self.sync.notebooks_remote()  # prevent syncing note without received notebook
+        remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
+        remote = self.note_store.createNote(self.auth_token, ttypes.Note(
+            title='test',
+            content=u"""
+                <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+                <en-note>test</en-note>
+            """,
+            notebookGuid=remote_notebook.guid,
+            created=int(time.time() * 1000),
+            updated=int(time.time() * 1000),
+        ))
+        self.sync.notes_remote()
+        note = self.sq(Note).filter(
+            Note.guid == remote.guid,
+        ).one()
+        self.assertEqual(note.title, remote.title)
+        remote.title += '*'
+        self.note_store.updateNote(self.auth_token, remote)
+        self.sync.notes_remote()
+        note = self.sq(Note).filter(
+            Note.guid == remote.guid,
+        ).one()
+        self.assertEqual(note.title, remote.title)
+        self.note_store.deleteNote(self.auth_token, note.guid)
+        self.sync.notes_remote()
+        with self.assertRaises(NoResultFound):
+            self.sq(Note).filter(
+                Note.guid == remote.guid,
+            ).one()
 
 
 if __name__ == '__main__':

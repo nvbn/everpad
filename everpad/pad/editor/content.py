@@ -202,7 +202,7 @@ class ContentEdit(QObject):
                 del media['src']
         self._content = sanitize(
             soup=soup.find(id='content'),
-        ).replace('  ', u'\xa0 ')
+        ).replace('  ', u'\xa0\xa0').replace(u'\xa0 ', u'\xa0\xa0')
         return self._content
 
     @content.setter

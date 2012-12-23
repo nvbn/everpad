@@ -18,6 +18,7 @@ class ServiceTestCase(unittest.TestCase):
         self.service = ProviderService()
         self.service._session = get_db_session()
         models.Note.session = self.service._session  # TODO: fix that shit
+        self.session = self.service._session
 
     def _to_ids(self, items):
         return set(map(lambda item: item.id, items))
@@ -173,6 +174,32 @@ class ServiceTestCase(unittest.TestCase):
         self.assertEqual(
             self._file_names(new_received), self._file_names(received),
         )
+
+    def test_note_conflicts_serialisation(self):
+        """Test notes with conflict serialisztion"""
+        parent = models.Note(
+            title='123',
+            content='456',
+        )
+        self.session.add(parent)
+        self.session.commit()
+        conflicts = []
+        for i in range(10):
+            conflict = models.Note(
+                title='123',
+                content='456',
+                conflict_parent_id=parent.id,
+            )
+            self.session.add(conflict)
+            conflicts.append(conflict)
+        self.session.commit()
+        self.assertEqual(
+            set(parent.conflict_items_dbus),
+            self._to_ids(conflicts),
+        )
+        for conflict in conflicts:
+            self.assertEqual(parent.id,
+                conflict.conflict_parent_dbus)
 
 
 class FindTestCase(unittest.TestCase):

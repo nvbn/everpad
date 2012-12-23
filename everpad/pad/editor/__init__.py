@@ -9,7 +9,8 @@ from everpad.pad.editor.actions import ImagePrefs, TableInsert, FindBar
 from everpad.pad.editor.content import Page, ContentEdit
 from everpad.pad.editor.resources import ResourceEdit, ResourceItem
 from everpad.pad.editor.widgets import TagEdit, NotebookEdit
-from everpad.basetypes import Resource
+from everpad.basetypes import Resource, Note
+from dbus.exceptions import DBusException
 import dbus
 
 
@@ -54,6 +55,32 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.findbar = FindBar(self)
         self.init_toolbar()
         self.init_shortcuts()
+        self.init_alternatives()
+
+    def init_alternatives(self):
+        try:
+            if self.note.conflict_items:
+                template = self.ui.alternativeVersions.text()
+                conflicts = map(
+                    lambda item: Note.from_tuple(self.app.provider.get_note(
+                        item,
+                    )), self.note.conflict_items,
+                )
+                text = template % ', '.join(map(
+                    lambda note: '<a href="%d">%s</a>' % (
+                        note.id, note.title,
+                    ), conflicts,
+                ))
+                self.ui.alternativeVersions.setText(text)
+                self.ui.alternativeVersions.linkActivated.connect(
+                    lambda id: self.app.indicator.open(
+                        Note.from_tuple(self.app.provider.get_note(int(id))),
+                    )
+                )
+            else:
+                self.ui.alternativeVersions.hide()
+        except DBusException:
+            self.ui.alternativeVersions.hide()
 
     def init_shortcuts(self):
         self.save_btn.setShortcut(QKeySequence('Ctrl+s'))
@@ -129,7 +156,14 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.mark_touched()
 
     def update_title(self):
-        self.setWindowTitle(self.tr('Everpad / %s') % self.note_edit.title)
+        title = self.note_edit.title
+        if self.note.conflict_parent:
+            title += self.tr(' altrentive of: %s') % (
+                Note.from_tuple(self.app.provider.get_note(
+                    self.note.conflict_parent,
+                )).title,
+            )
+        self.setWindowTitle(self.tr('Everpad / %s') % title)
 
     @Slot()
     def save(self):

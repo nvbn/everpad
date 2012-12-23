@@ -3,7 +3,7 @@ sys.path.append('../..')
 from everpad.provider.models import (
     Note, Notebook, Tag, Resource, Place,
     ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
-    ACTION_NOEXSIST,
+    ACTION_NOEXSIST, ACTION_CONFLICT,
 )
 from everpad.provider.tools import AppClass, get_db_session
 from sqlalchemy import or_, and_, func
@@ -90,6 +90,7 @@ class ProviderService(dbus.service.Object):
         qs = self.sq(Note).filter(and_(
             Note.action != ACTION_DELETE,
             Note.action != ACTION_NOEXSIST,
+            Note.action != ACTION_CONFLICT,
         *filters)).order_by({
             btype.Note.ORDER_TITLE: Note.title,
             btype.Note.ORDER_UPDATED: Note.updated,

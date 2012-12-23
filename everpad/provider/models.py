@@ -46,9 +46,7 @@ class Note(Base):
     place_id = Column(Integer, ForeignKey('places.id'))
     place = relationship("Place", backref='note')
     action = Column(Integer)
-    conflict_parent = relationship(
-        "Note", post_update=False,
-    )
+    conflict_parent = relationship("Note")
     conflict_parent_id = Column(
         Integer, ForeignKey('notes.conflict_parent_id'),
         nullable=True, 
@@ -104,7 +102,7 @@ class Note(Base):
     @property
     def conflict_parent_dbus(self):
         if self.conflict_parent:
-            return self.conflict_parent.id
+            return self.conflict_parent_id
         return 0
 
     @conflict_parent_dbus.setter

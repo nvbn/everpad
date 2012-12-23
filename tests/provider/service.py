@@ -52,8 +52,8 @@ class ServiceTestCase(unittest.TestCase):
                 )
                 self.assertEqual(notebook.name, updated.name)
 
-    def test_notes(self):
-        """Test notes"""
+    def test_notes_with_notebook(self):
+        """Test notes with notebook"""
         notebook = Notebook.from_tuple(
             self.service.create_notebook('test'),
         )
@@ -63,7 +63,7 @@ class ServiceTestCase(unittest.TestCase):
                 id=NONE_ID,
                 title='New note',
                 content="New note content",
-                tags=dbus.Array([], signature='i'),
+                tags=dbus.Array([], signature='s'),
                 notebook=notebook.id,
                 created=NONE_VAL,
                 updated=NONE_VAL,
@@ -84,6 +84,7 @@ class ServiceTestCase(unittest.TestCase):
                 ),
             )),
         )
+        filtered = []
         for num, note in enumerate(notes):
             note.title += '*'
             if num % 2:
@@ -95,6 +96,31 @@ class ServiceTestCase(unittest.TestCase):
                     self.service.update_note(note.struct),
                 )
                 self.assertEqual(note.title, updated.title)
+                filtered.append(updated)
+        self.assertEqual(len(filtered),
+            self.service.get_notebook_notes_count(notebook.id),
+        )
+
+    def test_tags(self):
+        """Test tags"""
+        tags = map(str, range(100))
+        notebook = Notebook.from_tuple(
+            self.service.create_notebook('test'),
+        )
+        self.service.create_note(Note(
+            id=NONE_ID,
+            title='New note',
+            content="New note content",
+            tags=tags,
+            notebook=notebook.id,
+            created=NONE_VAL,
+            updated=NONE_VAL,
+            place='',
+        ).struct)
+        remote_tags = map(Tag.from_tuple, self.service.list_tags())
+        self.assertEqual(set(tags), set(map(
+            lambda tag: tag.name, remote_tags,
+        )))
 
 
 if __name__ == '__main__':

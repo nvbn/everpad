@@ -128,6 +128,7 @@ class ProviderService(dbus.service.Object):
         return self.sq(Note).filter(
             and_(Note.notebook_id == id,
             Note.action != ACTION_DELETE,
+            Note.action != ACTION_NOEXSIST,
         )).count()
 
     @dbus.service.method(

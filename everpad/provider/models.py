@@ -104,7 +104,7 @@ class Note(Base):
     @property
     def conflict_parent_dbus(self):
         if self.conflict_parent:
-            return self.conflict_parent.id
+            return self.conflict_parent_id
         return 0
 
     @conflict_parent_dbus.setter

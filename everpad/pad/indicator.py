@@ -14,6 +14,7 @@ from everpad.const import (
 )
 from everpad.specific import get_launcher
 from functools import partial
+from datetime import datetime
 import signal
 import dbus
 import dbus.service
@@ -23,7 +24,6 @@ import fcntl
 import os
 import getpass
 import time
-from datetime import datetime
 
 
 class Indicator(QSystemTrayIcon):
@@ -148,6 +148,8 @@ class Indicator(QSystemTrayIcon):
             notebook=notebook_id,
             created=NONE_VAL,
             updated=NONE_VAL,
+            conflict_parent=NONE_VAL,
+            conflict_items=dbus.Array([], signature='i'),
             place='',
         ).struct
         note = Note.from_tuple(

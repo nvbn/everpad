@@ -190,8 +190,9 @@ class ProviderService(dbus.service.Object):
         note = Note(
             action=ACTION_NOEXSIST,
         )
-        btype.Note.from_tuple(data).give_to_obj(note)
-        note.id = None
+        dbus_note = btype.Note.from_tuple(data)
+        dbus_note.id = None
+        dbus_note.give_to_obj(note)
         note.updated = int(time.time() * 1000)
         note.created = int(time.time() * 1000)
         self.session.add(note)
@@ -209,6 +210,7 @@ class ProviderService(dbus.service.Object):
         try:
             note = self.sq(Note).filter(
                 Note.id == received_note.id,
+                Note.action != ACTION_DELETE,
             ).one()
         except NoResultFound:
             raise DBusException('Note not found')

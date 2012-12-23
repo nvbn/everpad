@@ -5,7 +5,8 @@ from dbus.exceptions import DBusException
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
 from everpad.basetypes import (
-    Note, Notebook, Tag, Resource, NONE_ID, NONE_VAL,
+    Note, Notebook, Tag, Resource, Place,
+    NONE_ID, NONE_VAL,
 )
 from everpad.provider import models
 import unittest
@@ -52,12 +53,13 @@ class ServiceTestCase(unittest.TestCase):
                 )
                 self.assertEqual(notebook.name, updated.name)
 
-    def test_notes_with_notebook(self):
-        """Test notes with notebook"""
+    def test_notes_with_notebook_and_places(self):
+        """Test notes with notebook and places"""
         notebook = Notebook.from_tuple(
             self.service.create_notebook('test'),
         )
         notes = []
+        get_place = lambda num: '123' if num < 50 else '456'
         for i in range(100):
             notes.append(Note.from_tuple(self.service.create_note(Note(
                 id=NONE_ID,
@@ -67,7 +69,7 @@ class ServiceTestCase(unittest.TestCase):
                 notebook=notebook.id,
                 created=NONE_VAL,
                 updated=NONE_VAL,
-                place='',
+                place=get_place(i),
             ).struct)))
         filtered = []
         for num, note in enumerate(notes):
@@ -100,6 +102,10 @@ class ServiceTestCase(unittest.TestCase):
         self.assertEqual(len(filtered),
             self.service.get_notebook_notes_count(notebook.id),
         )
+        self.assertEqual(set(['123', '456']), set(map(
+            lambda place: Place.from_tuple(place).name,
+            self.service.list_places(),
+        )))
 
     def test_tags(self):
         """Test tags"""
@@ -121,6 +127,203 @@ class ServiceTestCase(unittest.TestCase):
         self.assertEqual(set(tags), set(map(
             lambda tag: tag.name, remote_tags,
         )))
+
+    def _file_names(self, items):
+        return set(map(lambda item: item.file_name, items))
+
+    def test_note_resources(self):
+        """Test note resources"""
+        notebook = Notebook.from_tuple(
+            self.service.create_notebook('test'),
+        )
+        struct = self.service.create_note(Note(
+            id=NONE_ID,
+            title='New note',
+            content="New note content",
+            tags=[],
+            notebook=notebook.id,
+            created=NONE_VAL,
+            updated=NONE_VAL,
+            place='',
+        ).struct)
+        note = Note.from_tuple(self.service.update_note(struct))
+        resources = []
+        for i in range(100):
+            resources.append(Resource(
+                id=NONE_ID,
+                file_name="name/%d" % i,
+                file_path="path/%d" % i,
+                mime='image/png',
+                hash='',
+            ))
+        self.service.update_note_resources(note.struct, 
+            map(lambda resource: resource.struct, resources),
+        )
+        received = map(Resource.from_tuple,
+            self.service.get_note_resources(note.id))
+        self.assertEqual(
+            self._file_names(resources), self._file_names(received),
+        )
+        received = received[:50]
+        self.service.update_note_resources(note.struct, 
+            map(lambda resource: resource.struct, received),
+        )
+        new_received = map(Resource.from_tuple,
+            self.service.get_note_resources(note.id))
+        self.assertEqual(
+            self._file_names(new_received), self._file_names(received),
+        )
+
+
+class FindTestCase(unittest.TestCase):
+    def setUp(self):
+        self.service = ProviderService()
+        self.service._session = get_db_session()
+        models.Note.session = self.service._session  # TODO: fix that shit
+        self.notebook = Notebook.from_tuple(
+            self.service.create_notebook('test'),
+        )
+        self.notebook2 = Notebook.from_tuple(
+            self.service.create_notebook('test2'),
+        )
+        notes = [
+            self.service.create_note(Note(
+                id=NONE_ID,
+                title='New note',
+                content="New note content",
+                tags=['ab', 'cd'],
+                notebook=self.notebook.id,
+                created=NONE_VAL,
+                updated=NONE_VAL,
+                place='first',
+                pinnded=False,
+            ).struct),
+            self.service.create_note(Note(
+                id=NONE_ID,
+                title='Old note',
+                content="Old note content",
+                tags=['ef', 'gh'],
+                notebook=self.notebook2.id,
+                created=NONE_VAL,
+                updated=NONE_VAL,
+                place='second',
+                pinnded=False,
+            ).struct),
+            self.service.create_note(Note(
+                id=NONE_ID,
+                title='not',
+                content="oke",
+                tags=['ab', 'gh'],
+                notebook=self.notebook.id,
+                created=NONE_VAL,
+                updated=NONE_VAL,
+                place='second',
+                pinnded=True,
+            ).struct),
+        ]
+        self.notes = map(lambda note:
+            Note.from_tuple(self.service.update_note(note)),
+        notes)
+
+    def _to_ids(self, items):
+        return set(map(lambda item: item.id, items))
+
+    def _find(self, *args, **kwargs):
+        return map(Note.from_tuple,
+            self.service.find_notes(*args, **kwargs))
+
+    def test_by_words(self):
+        """Test notes find by words"""
+        all = self._find(
+            'not', dbus.Array([], signature='i'),
+            dbus.Array([], signature='i'), 0,
+            100, Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(
+            set(self._to_ids(all)), 
+            set(self._to_ids(self.notes)),
+        )
+        two = self._find(
+            'note', dbus.Array([], signature='i'),
+            dbus.Array([], signature='i'), 0,
+            100, Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(
+            set(self._to_ids(two)),
+            set(self._to_ids(self.notes[:2])),
+        )
+        blank = self._find(
+            'not note', dbus.Array([], signature='i'),
+            dbus.Array([], signature='i'), 0,
+            100, Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(len(blank), 0)
+
+    def test_by_tags(self):
+        """Test notef find by tags"""
+        tags = map(Tag.from_tuple, self.service.list_tags())
+        first_last = self._find(
+            '', dbus.Array([], signature='i'),
+            [tags[0].id], 0, 100, Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(
+            set(self._to_ids(first_last)), 
+            set(self._to_ids([self.notes[0], self.notes[2]])),
+        )
+        second = self._find(
+            '', dbus.Array([], signature='i'),
+            [tags[2].id], 0, 100,
+            Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(
+            self._to_ids(second), set([self.notes[1].id]),
+        )
+        all = self._find(
+            '', dbus.Array([], signature='i'),
+            map(lambda tag: tag.id, tags), 0, 100,
+            Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(
+            self._to_ids(all), self._to_ids(self.notes),
+        )
+
+    def test_by_notebooks(self):
+        """Test find note by notebooks"""
+        all = self._find(
+            '', self._to_ids([self.notebook, self.notebook2]),
+            dbus.Array([], signature='i'), 0,
+            100, Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(
+            self._to_ids(all), self._to_ids(self.notes),
+        )
+        second = self._find(
+            '', [self.notebook2.id],
+            dbus.Array([], signature='i'), 0,
+            100, Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(
+            self._to_ids(second), set([self.notes[1].id]),
+        )
+
+    def test_combine(self):
+        """Test find by combination"""
+        places = map(Place.from_tuple, self.service.list_places())
+        tags = map(Tag.from_tuple, self.service.list_tags())
+        first = self._find(
+            'new', [self.notebook.id], [tags[0].id], places[0].id,
+            100, Note.ORDER_UPDATED_DESC, False,
+        )
+        self.assertEqual(
+            self._to_ids(first), set([self.notes[0].id]),
+        )
+        last = self._find(
+            'oke', [self.notebook.id], [tags[0].id], places[1].id,
+            100, Note.ORDER_UPDATED_DESC, True,
+        )
+        self.assertEqual(
+            self._to_ids(last), set([self.notes[2].id]),
+        )
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Thu Nov  1 23:45:47 2012
+# Created: Sun Dec 23 23:38:40 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,6 +42,9 @@ class Ui_Editor(object):
         self.resourceLabel.setTextFormat(QtCore.Qt.AutoText)
         self.resourceLabel.setObjectName("resourceLabel")
         self.verticalLayout.addWidget(self.resourceLabel)
+        self.alternativeVersions = QtGui.QLabel(self.centralwidget)
+        self.alternativeVersions.setObjectName("alternativeVersions")
+        self.verticalLayout.addWidget(self.alternativeVersions)
         self.resourceArea = QtGui.QScrollArea(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -105,6 +108,7 @@ class Ui_Editor(object):
         self.tags.setToolTip(QtGui.QApplication.translate("Editor", "Note tags", None, QtGui.QApplication.UnicodeUTF8))
         self.tags.setPlaceholderText(QtGui.QApplication.translate("Editor", "Commas separated tags", None, QtGui.QApplication.UnicodeUTF8))
         self.resourceLabel.setText(QtGui.QApplication.translate("Editor", "%d attached files, <a href=\'#\'>show</a> / <a href=\'#\'> add another</a>", None, QtGui.QApplication.UnicodeUTF8))
+        self.alternativeVersions.setText(QtGui.QApplication.translate("Editor", "This note has alternative versions: %s", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("Editor", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFIle.setTitle(QtGui.QApplication.translate("Editor", "Note", None, QtGui.QApplication.UnicodeUTF8))
         self.menuEdit.setTitle(QtGui.QApplication.translate("Editor", "Edit", None, QtGui.QApplication.UnicodeUTF8))

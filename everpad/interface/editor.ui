@@ -66,6 +66,13 @@
      </widget>
     </item>
     <item>
+     <widget class="QLabel" name="alternativeVersions">
+      <property name="text">
+       <string>This note has alternative versions: %s</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QScrollArea" name="resourceArea">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">

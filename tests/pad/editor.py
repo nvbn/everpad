@@ -33,6 +33,18 @@ CONTENTS = [
     u"<ul><li>1</li><li><ul><li>2</li><li>3</li></ul></li><li>4</li></ul>",
 ]
 
+CHANGING_CONTENTS = [
+    (u"<p>< a b cd</p>", u"<p>&lt; a b cd</p>"),
+    (u"> a b cd", u"&gt; a b cd"),
+    (u"<p>ok</p><a b cd", u"<p>ok</p>"),
+]
+
+TITLES = [
+    u"&lt;&lt;ok ok ok",
+    ''.join([u"verybigtitle"] * 50),
+    u"ok<p asdasd",
+]
+
 
 class EditorTestCase(unittest.TestCase):
     def setUp(self):
@@ -67,6 +79,30 @@ class EditorTestCase(unittest.TestCase):
             self.assertEqual(
                 editor.note_edit.content,
                 content,
+            )
+
+    def test_content_changing(self):
+        """Test content changing"""
+        editor = Editor(self.note)
+        for prev, current in CHANGING_CONTENTS:
+            editor.note_edit.content = prev
+            self.assertEqual(
+                editor.note_edit.content,
+                current,
+            )
+
+    def test_title_nochange(self):
+        """Test title nochange"""
+        editor = Editor(self.note)
+        self.assertEqual(
+            editor.note_edit.title,
+            "New note",
+        )
+        for title in TITLES:
+            editor.note_edit.title = title
+            self.assertEqual(
+                editor.note_edit.title,
+                title,
             )
 
 

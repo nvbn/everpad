@@ -115,6 +115,7 @@ class ProviderService(dbus.service.Object):
         try:
             return btype.Notebook.from_obj(self.sq(Notebook).filter(
                 Notebook.id == id,
+                Notebook.action != ACTION_DELETE,
             ).one()).struct
         except NoResultFound:
             raise DBusException('Notebook does not exist')
@@ -138,6 +139,7 @@ class ProviderService(dbus.service.Object):
             notebook = btype.Notebook.from_tuple(notebook_struct)
             nb = self.sq(Notebook).filter(
                 Notebook.id == notebook.id,
+                Notebook.action != ACTION_DELETE,
             ).one()
             if self.sq(Notebook).filter(and_(
                 Notebook.id != notebook.id,
@@ -162,6 +164,7 @@ class ProviderService(dbus.service.Object):
         try:
             self.sq(Notebook).filter(
                 Notebook.id == id,
+                Notebook.action != ACTION_DELETE,
             ).one().action = ACTION_DELETE
             self.session.commit()
             self.data_changed()

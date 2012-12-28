@@ -202,6 +202,11 @@
         }
     }, false);
     var title = document.getElementById('title');
+    title.addEventListener('keydown', function(event) {
+        if (event.keyCode == 27) {
+            event.preventDefault();
+        }
+    });
     title.addEventListener('focus', function() {
         window.qpage.set_current_focus("head");
         isContent = false;

@@ -66,7 +66,7 @@ class ServiceTestCase(unittest.TestCase):
                 id=NONE_ID,
                 title='New note',
                 content="New note content",
-                tags=dbus.Array([], signature='s'),
+                tags=['123', '345'],
                 notebook=notebook.id,
                 created=NONE_VAL,
                 updated=NONE_VAL,
@@ -128,6 +128,31 @@ class ServiceTestCase(unittest.TestCase):
         self.assertEqual(set(tags), set(map(
             lambda tag: tag.name, remote_tags,
         )))
+        filtered = []
+        for num, tag in enumerate(remote_tags):
+            if num % 2:
+                filtered.append(tag)
+            else:
+                self.service.delete_tag(tag.id)
+        tags = filtered  # tags.remove(tag) not work, wtf
+        self.assertEqual(
+            self._to_ids(tags), self._to_ids(map(
+                Tag.from_tuple, self.service.list_tags(),
+            )),
+        )
+        filtered = []
+        for num, tag in enumerate(tags):
+            tag.name += '*'
+            if num % 2:
+                self.service.delete_tag(tag.id)
+                with self.assertRaises(DBusException):
+                    self.service.update_tag(tag.struct)
+            else:
+                updated = Tag.from_tuple(
+                    self.service.update_tag(tag.struct),
+                )
+                self.assertEqual(tag.name, updated.name)
+                filtered.append(updated)
 
     def _file_names(self, items):
         return set(map(lambda item: item.file_name, items))

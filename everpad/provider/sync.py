@@ -100,7 +100,7 @@ class SyncAgent(object):
         self.session.commit()
 
     def tags_local(self):
-        """Send loacl tags changes to server"""
+        """Send local tags changes to server"""
         for tag in self.sq(models.Tag).filter(
             models.Tag.action != ACTION_NONE,
         ):

@@ -181,7 +181,62 @@ class ProviderService(dbus.service.Object):
     def list_tags(self):
         return map(lambda tag:
             btype.Tag.from_obj(tag).struct,
-        self.sq(Tag).all())
+        self.sq(Tag).filter(
+            Tag.action != ACTION_DELETE,
+        ))
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='i',
+        out_signature='i',
+    )
+    def get_tag_notes_count(self, id):
+        return self.sq(Note).filter(
+            and_(Note.tags.any(Tag.id == id),
+            Note.action != ACTION_DELETE,
+            Note.action != ACTION_NOEXSIST,
+        )).count()
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='i',
+        out_signature='b',
+    )
+    def delete_tag(self, id):
+        try:
+            self.sq(Tag).filter(
+                Tag.id == id,
+                Tag.action != ACTION_DELETE,
+            ).one().action = ACTION_DELETE
+            self.session.commit()
+            self.data_changed()
+            return True
+        except NoResultFound:
+            raise DBusException('Tag does not exist')
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature=btype.Tag.signature,
+        out_signature=btype.Tag.signature,
+    )
+    def update_tag(self, tag_struct):
+        try:
+            tag = btype.Tag.from_tuple(tag_struct)
+            tg = self.sq(Tag).filter(
+                Tag.id == tag.id,
+                Tag.action != ACTION_DELETE,
+            ).one()
+            if self.sq(Tag).filter(and_(
+                Tag.id != tag.id,
+                Tag.name == tag.name,
+            )).count():
+                raise DBusException(
+                    'Tag with this name already exist',
+                )
+            tg.action = ACTION_CHANGE
+            self.session.commit()
+            tag.give_to_obj(tg)
+            self.data_changed()
+            return btype.Tag.from_obj(tg).struct
+        except NoResultFound:
+            raise DBusException('Tag does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider",

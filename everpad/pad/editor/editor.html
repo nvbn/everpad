@@ -197,6 +197,8 @@
             } else {
                 window.qpage.find_previous();
             }
+        } else if (event.keyCode == 27) {
+            event.preventDefault();
         }
     }, false);
     var title = document.getElementById('title');

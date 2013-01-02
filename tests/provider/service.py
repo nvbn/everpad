@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 sys.path.insert(0, '..')
 import settings
@@ -238,6 +239,9 @@ class FindTestCase(unittest.TestCase):
         self.notebook2 = Notebook.from_tuple(
             self.service.create_notebook('test2'),
         )
+        self.notebook3 = Notebook.from_tuple(
+            self.service.create_notebook(u'Блокнот'),
+        )
         notes = [
             self.service.create_note(Note(
                 id=NONE_ID,
@@ -272,6 +276,28 @@ class FindTestCase(unittest.TestCase):
                 place='second',
                 pinnded=True,
             ).struct),
+            self.service.create_note(Note(
+                id=NONE_ID,
+                title=u'Заметка',
+                content=u"Заметка",
+                tags=[u'тэг'],
+                notebook=self.notebook.id,
+                created=NONE_VAL,
+                updated=NONE_VAL,
+                place=u'место',
+                pinnded=False,
+            ).struct),
+            self.service.create_note(Note(
+                id=NONE_ID,
+                title=u'заметка',
+                content=u"заметка",
+                tags=[u'тэг'],
+                notebook=self.notebook.id,
+                created=NONE_VAL,
+                updated=NONE_VAL,
+                place=u'место',
+                pinnded=False,
+            ).struct),
         ]
         self.notes = map(lambda note:
             Note.from_tuple(self.service.update_note(note)),
@@ -293,7 +319,7 @@ class FindTestCase(unittest.TestCase):
         )
         self.assertEqual(
             set(self._to_ids(all)), 
-            set(self._to_ids(self.notes)),
+            set(self._to_ids(self.notes[:-2])),
         )
         two = self._find(
             'note', dbus.Array([], signature='i'),
@@ -375,6 +401,18 @@ class FindTestCase(unittest.TestCase):
         )
         self.assertEqual(
             self._to_ids(last), set([self.notes[2].id]),
+        )
+
+    def test_unicode_ignorecase(self):
+        """Test unicode ignorecase"""
+        all = self._find(
+            u'заметка', dbus.Array([], signature='i'),
+            dbus.Array([], signature='i'), 0,
+            100, Note.ORDER_UPDATED_DESC, -1,
+        )
+        self.assertEqual(
+            set(self._to_ids(all)), 
+            set(self._to_ids(self.notes[-2:])),
         )
 
 

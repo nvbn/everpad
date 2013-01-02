@@ -11,7 +11,7 @@ from sqlalchemy import and_
 from evernote.edam.limits.constants import (
     EDAM_NOTE_TITLE_LEN_MAX, EDAM_NOTE_CONTENT_LEN_MAX,
     EDAM_TAG_NAME_LEN_MAX, EDAM_NOTEBOOK_NAME_LEN_MAX,
-    EDAM_USER_NOTES_MAX,
+    EDAM_USER_NOTES_MAX, EDAM_TAG_NAME_REGEX,
 )
 from evernote.edam.error.ttypes import EDAMUserException
 from everpad.provider.tools import (
@@ -34,6 +34,7 @@ from datetime import datetime
 import binascii
 import time
 import socket
+import re
 SYNC_MANUAL = -1
 
 
@@ -105,6 +106,8 @@ class SyncAgent(object):
             models.Tag.action != ACTION_NONE,
         ):
             self.app.log('Tag %s local' % tag.name)
+            if not re.match(EDAM_TAG_NAME_REGEX, tag.name):
+                continue  # just ignore it
             kwargs = dict(
                 name=tag.name[:EDAM_TAG_NAME_LEN_MAX].strip().encode('utf8'),
             )

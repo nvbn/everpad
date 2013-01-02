@@ -29,6 +29,7 @@ class List(QDialog):
         self.ui = Ui_List()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
+        self.app.data_changed.connect(self._reload_notebooks_list)
 
         self.notebooksModel = QStandardItemModel()
         self.ui.notebooksList.setModel(self.notebooksModel)

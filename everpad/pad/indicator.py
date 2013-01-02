@@ -181,6 +181,8 @@ class Indicator(QSystemTrayIcon):
 
 
 class PadApp(QApplication):
+    data_changed = Signal()
+
     def __init__(self, *args, **kwargs):
         QApplication.__init__(self, *args, **kwargs)
         self.settings = QSettings('everpad', 'everpad-pad')
@@ -213,6 +215,10 @@ class PadApp(QApplication):
                 'progress': float(state + 1) / len(SYNC_STATES),
                 'progress-visible': state not in (SYNC_STATE_START, SYNC_STATE_FINISH),
             })
+
+    def on_data_changed(self):
+        """Note, notebook or tag changed"""
+        self.data_changed.emit()
 
 
 class EverpadService(dbus.service.Object):
@@ -283,6 +289,11 @@ def main():
         app.provider.connect_to_signal(
             'sync_state_changed',
             app.on_sync_state_changed,
+            dbus_interface="com.everpad.provider",
+        )
+        app.provider.connect_to_signal(
+            'data_changed',
+            app.on_data_changed,
             dbus_interface="com.everpad.provider",
         )
         app.launcher = get_launcher('application://everpad.desktop', session_bus, '/')

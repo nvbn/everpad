@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 sys.path.insert(0, '..')
 from settings import TOKEN
@@ -5,8 +6,8 @@ from everpad.const import HOST
 from everpad.provider.sync import SyncAgent
 from everpad.provider.tools import get_db_session, get_note_store
 from everpad.provider.models import (
-    Note, Notebook, Tag, Resource, ACTION_CREATE, ACTION_CHANGE,
-    ACTION_NONE, ACTION_DELETE, ACTION_CONFLICT,
+    Note, Notebook, Place, Tag, Resource, ACTION_CREATE, 
+    ACTION_CHANGE, ACTION_NONE, ACTION_DELETE, ACTION_CONFLICT,
 )
 from evernote.edam.type import ttypes
 from sqlalchemy.orm.exc import NoResultFound
@@ -64,6 +65,23 @@ class SyncTestCase(unittest.TestCase):
         self.sq = self.sync.session.query
         self.auth_token = self.sync.auth_token
         self.note_store = self.sync.note_store
+
+    def _create_remote_note(self, **params):
+        self.sync._remove_all_notes()
+        # prevent syncing notes without received notebook
+        self.sync.notebooks_remote()
+        remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
+        return self.note_store.createNote(self.auth_token, ttypes.Note(
+            title='test',
+            content=u"""
+                <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+                <en-note>test</en-note>
+            """,
+            notebookGuid=remote_notebook.guid,
+            created=int(time.time() * 1000),
+            updated=int(time.time() * 1000),
+            **params
+        ))
 
     def test_local_notebooks(self):
         """Test sync local notebooks"""
@@ -221,23 +239,6 @@ class SyncTestCase(unittest.TestCase):
         ).one()
         self.assertEqual(tag.name, name + '*')
 
-    def _create_remote_note(self, **params):
-        self.sync._remove_all_notes()
-        # prevent syncing notes without received notebook
-        self.sync.notebooks_remote()
-        remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
-        return self.note_store.createNote(self.auth_token, ttypes.Note(
-            title='test',
-            content=u"""
-                <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-                <en-note>test</en-note>
-            """,
-            notebookGuid=remote_notebook.guid,
-            created=int(time.time() * 1000),
-            updated=int(time.time() * 1000),
-            **params
-        ))
-
     def test_remote_notes(self):
         """Test syncing remote notes"""
         remote = self._create_remote_note()
@@ -313,6 +314,19 @@ class SyncTestCase(unittest.TestCase):
         self.assertEqual(conflict.action, ACTION_CONFLICT)
         self.assertEqual(note.title, 'test!')
         self.assertEqual(conflict.title, 'test*')
+
+    def test_sync_with_unicode_place(self):
+        """Test sync with unicode place from #186"""
+        place_name = u"rasserie André"
+        note = self._create_remote_note(
+            attributes=ttypes.NoteAttributes(
+                placeName=place_name.encode('utf8'),
+            )
+        )
+        self.sync.notes_remote()
+        self.assertTrue(
+            self.sq(Place).filter(Place.name == place_name).count(),
+        )
 
 
 if __name__ == '__main__':

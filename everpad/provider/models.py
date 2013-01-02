@@ -144,7 +144,7 @@ class Note(Base):
             ).all()
         place_name = None
         if note.attributes.placeName:
-            place_name = note.attributes.placeName
+            place_name = note.attributes.placeName.decode('utf8')
         elif note.attributes.longitude:
             data = json.loads(urllib.urlopen(
                 'http://maps.googleapis.com/maps/api/geocode/json?latlng=%.4f,%.4f&sensor=false' % (

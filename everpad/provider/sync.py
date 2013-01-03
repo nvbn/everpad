@@ -183,6 +183,7 @@ class SyncAgent(object):
             except EDAMUserException as e:
                 next_action = note.action
                 self.app.log('Note %s failed' % note.title)
+                self.app.log(e)
             note.action = next_action
         self.session.commit()
 

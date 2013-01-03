@@ -91,8 +91,9 @@ def sanitize(soup=None, html=None):
         'en-media', 'en-todo', 'en-crypt',
     )
     _disallowed_attrs = (
-        'id', 'class', 'onclick', 'ondblclick',
-        'accesskey', 'data', 'dynsrc', 'tabindex',
+        'id', 'class', 'onclick', 'ondblclick', 'rel',
+        'accesskey', 'data', 'dynsrc', 'tabindex', 'typeof',
+        'property',
     )
     _protocols = (
         'http', 'https', 'file',

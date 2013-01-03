@@ -2,6 +2,7 @@ from sqlalchemy import Table, Column, Integer, ForeignKey, String, Text, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
+from everpad.tools import prepare_file_path
 from BeautifulSoup import BeautifulSoup
 import binascii
 import os
@@ -227,7 +228,7 @@ class Resource(Base):
             os.mkdir(path)
         except OSError:
             pass
-        self.file_path = os.path.join(path, self.file_name)
+        self.file_path = prepare_file_path(path, self.file_name)
         with open(self.file_path, 'w') as data:
             data.write(resource.data.body)
 

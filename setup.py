@@ -17,9 +17,7 @@ setup(name='everpad',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=True,
-    install_requires=[
-        'BeautifulSoup'
-    ],
+    install_requires=[],
     entry_points={
         'gui_scripts': [
             'everpad=everpad.pad.indicator:main'

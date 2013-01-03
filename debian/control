@@ -10,7 +10,7 @@ Homepage: https://github.com/nvbn/everpad/
 
 Package: everpad
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-pyside.qtcore ,python-pyside.qtgui, python-dbus, python-beautifulsoup, sni-qt, python-pysqlite2, python-keyring, python-support, python-sqlalchemy, python-oauth2, python-unity-singlet, python-magic, python-pyside.qtwebkit, python-html2text, gtk2-engines-pixbuf
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-pyside.qtcore ,python-pyside.qtgui, python-dbus, python-beautifulsoup, sni-qt, python-pysqlite2, python-keyring, python-support, python-sqlalchemy, python-oauth2, python-unity-singlet | unity-singlet, python-magic, python-pyside.qtwebkit, python-html2text, gtk2-engines-pixbuf
 Description: Ubuntu integrated evernote client
  Evernote client with unity integration
 

@@ -119,8 +119,10 @@ def sanitize(soup=None, html=None):
          lambda txt, cur: txt + unicode(cur), soup.contents,
     u'').replace('\n', ''))
 
+
 def html_unescape(html):
     return HTMLParser().unescape(html)
+
 
 def print_version():
     print 'Everpad version: %s' % VERSION
@@ -128,9 +130,21 @@ def print_version():
     print 'Schema version: %d' % SCHEMA_VERSION
     sys.exit(0)
 
+
 def get_proxy_config(scheme):
     for fmt in ('%s_proxy', '%s_PROXY'):
         proxy = os.environ.get(fmt % scheme)
         if proxy is not None:
             return proxy
     return None
+
+
+def prepare_file_path(dest, file_name):
+    file_path = os.path.join(dest, file_name)
+    iteration = 0
+    while os.path.isfile(file_path):
+        file_path = os.path.join(dest, '%d_%s' % (
+            iteration, file_name,
+        ))
+        iteration += 1
+    return file_path

@@ -5,6 +5,7 @@ from PySide.QtGui import (
 )
 from PySide.QtCore import Slot, Qt, QUrl, QFileInfo
 from everpad.basetypes import Resource, NONE_ID
+from everpad.tools import prepare_file_path
 from functools import partial
 import subprocess
 import magic
@@ -182,7 +183,7 @@ class ResourceEdit(object):  # TODO: move event to item
         except OSError:
             pass
         file_name = name.split('/')[-1]
-        file_path = os.path.join(dest, file_name)
+        file_path = prepare_file_path(dest, file_name)
         if os.path.isfile(name):
             shutil.copyfile(name, file_path)
         else:

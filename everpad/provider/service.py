@@ -115,9 +115,9 @@ class ProviderService(dbus.service.Object):
     def get_notebook(self, id):
         try:
             return btype.Notebook.from_obj(self.sq(Notebook).filter(
-                Notebook.id == id,
+                and_(Notebook.id == id,
                 Notebook.action != ACTION_DELETE,
-            ).one()).struct
+            )).one()).struct
         except NoResultFound:
             raise DBusException('Notebook does not exist')
 
@@ -140,9 +140,9 @@ class ProviderService(dbus.service.Object):
         try:
             notebook = btype.Notebook.from_tuple(notebook_struct)
             nb = self.sq(Notebook).filter(
-                Notebook.id == notebook.id,
+                and_(Notebook.id == notebook.id,
                 Notebook.action != ACTION_DELETE,
-            ).one()
+            )).one()
             if self.sq(Notebook).filter(and_(
                 Notebook.id != notebook.id,
                 Notebook.name == notebook.name,
@@ -165,9 +165,9 @@ class ProviderService(dbus.service.Object):
     def delete_notebook(self, id):
         try:
             self.sq(Notebook).filter(
-                Notebook.id == id,
+                and_(Notebook.id == id,
                 Notebook.action != ACTION_DELETE,
-            ).one().action = ACTION_DELETE
+            )).one().action = ACTION_DELETE
             self.session.commit()
             self.data_changed()
             return True
@@ -203,9 +203,9 @@ class ProviderService(dbus.service.Object):
     def delete_tag(self, id):
         try:
             self.sq(Tag).filter(
-                Tag.id == id,
+                and_(Tag.id == id,
                 Tag.action != ACTION_DELETE,
-            ).one().action = ACTION_DELETE
+            )).one().action = ACTION_DELETE
             self.session.commit()
             self.data_changed()
             return True
@@ -220,9 +220,9 @@ class ProviderService(dbus.service.Object):
         try:
             tag = btype.Tag.from_tuple(tag_struct)
             tg = self.sq(Tag).filter(
-                Tag.id == tag.id,
+                and_(Tag.id == tag.id,
                 Tag.action != ACTION_DELETE,
-            ).one()
+            )).one()
             if self.sq(Tag).filter(and_(
                 Tag.id != tag.id,
                 Tag.name == tag.name,
@@ -266,9 +266,9 @@ class ProviderService(dbus.service.Object):
         received_note = btype.Note.from_tuple(note)
         try:
             note = self.sq(Note).filter(
-                Note.id == received_note.id,
+                and_(Note.id == received_note.id,
                 Note.action != ACTION_DELETE,
-            ).one()
+            )).one()
         except NoResultFound:
             raise DBusException('Note not found')
         received_note.give_to_obj(note)

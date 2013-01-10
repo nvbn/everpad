@@ -276,7 +276,6 @@ class SyncAgent(object):
                     nt.from_api(note, self.session)
                     if conflict:
                         nt.guid = ''
-                        nt.id = None
                         nt.action = ACTION_CONFLICT
                         nt.conflict_parent_id = parent.id
                         self.session.add(nt)

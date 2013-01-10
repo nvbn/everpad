@@ -320,7 +320,14 @@ class ProviderService(dbus.service.Object):
     )
     def delete_note(self, id):
         try:
-            self.sq(Note).filter(Note.id == id).one().action = ACTION_DELETE
+            note = self.sq(Note).filter(Note.id == id).one()
+            if note.action == ACTION_CONFLICT:
+                # prevent circular dependency error
+                note.conflict_parent_id = None
+                self.session.commit()
+                self.session.delete(note)
+            else:
+                note.action = ACTION_DELETE
             self.session.commit()
             self.data_changed()
             return True

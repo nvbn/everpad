@@ -47,10 +47,10 @@ class Note(Base):
     place_id = Column(Integer, ForeignKey('places.id'))
     place = relationship("Place", backref='note')
     action = Column(Integer)
-    conflict_parent = relationship("Note")
+    conflict_parent = relationship("Note", post_update=False)
     conflict_parent_id = Column(
         Integer, ForeignKey('notes.conflict_parent_id'),
-        nullable=True, 
+        nullable=True,
     )
 
     @property

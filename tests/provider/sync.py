@@ -24,6 +24,7 @@ resource_path = os.path.join(os.path.dirname(__file__), '../test.png')
 
 class FakeSyncThread(SyncAgent):
     def __init__(self):
+        self.logs = []
         self.app = type('fake', (object,), {
             'log': self.log,
         })
@@ -48,7 +49,7 @@ class FakeSyncThread(SyncAgent):
             self.note_store.deleteNote(self.auth_token, note.guid)
 
     def log(self, val):
-        pass
+        self.logs.append(val)
 
 
 class SyncTestCase(unittest.TestCase):
@@ -327,6 +328,25 @@ class SyncTestCase(unittest.TestCase):
         self.assertTrue(
             self.sq(Place).filter(Place.name == place_name).count(),
         )
+
+    def test_tag_notebook_validation(self):
+        """Test tags and notebooks names validation for #201"""
+        notebook = Notebook(
+            name="Blog posts%s" % str(datetime.now()), action=ACTION_CREATE,
+        )
+        self.session.add(notebook)
+        self.session.commit()
+        self.sync.notebooks_local()
+        self.assertNotIn('skipped', self.sync.logs[-1])
+        self.assertNotIn('Notebook.name', self.sync.logs[-1])
+        tag = Tag(
+            name="spackeria%s" % str(datetime.now()), action=ACTION_CREATE,
+        )
+        self.session.add(tag)
+        self.session.commit()
+        self.sync.tags_local()
+        self.assertNotIn('skipped', self.sync.logs[-1])
+        self.assertNotIn('Tag.name', self.sync.logs[-1])
 
 
 if __name__ == '__main__':

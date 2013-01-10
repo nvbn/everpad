@@ -35,7 +35,7 @@ from datetime import datetime
 import binascii
 import time
 import socket
-import re
+import regex
 SYNC_MANUAL = -1
 
 
@@ -72,7 +72,8 @@ class SyncAgent(object):
                 name=notebook.name[:EDAM_NOTEBOOK_NAME_LEN_MAX].strip().encode('utf8'),
                 defaultNotebook=notebook.default,
             )
-            if not re.match(EDAM_NOTEBOOK_NAME_REGEX, tag.name):
+            if not regex.search(EDAM_NOTEBOOK_NAME_REGEX, notebook.name):
+                self.app.log('notebook %s skipped' % notebook.name)
                 continue  # just ignore it
             if notebook.guid:
                 kwargs['guid'] = notebook.guid
@@ -86,7 +87,7 @@ class SyncAgent(object):
                         break
                     except EDAMUserException, e:
                         notebook.name = notebook.name + '*'  # shit, but work
-                        print e
+                        self.log(e)
             elif notebook.action == ACTION_CREATE:
                 nb = self.note_store.createNotebook(
                     self.auth_token, nb,
@@ -99,7 +100,7 @@ class SyncAgent(object):
                     )
                     self.session.delete(notebook)
                 except EDAMUserException, e:
-                    print e
+                    self.log(e)
             notebook.action = ACTION_NONE
         self.session.commit()
 
@@ -109,7 +110,8 @@ class SyncAgent(object):
             models.Tag.action != ACTION_NONE,
         ):
             self.app.log('Tag %s local' % tag.name)
-            if not re.match(EDAM_TAG_NAME_REGEX, tag.name):
+            if not regex.search(EDAM_TAG_NAME_REGEX, tag.name):
+                self.app.log('tag %s skipped' % tag.name)
                 continue  # just ignore it
             kwargs = dict(
                 name=tag.name[:EDAM_TAG_NAME_LEN_MAX].strip().encode('utf8'),
@@ -117,16 +119,19 @@ class SyncAgent(object):
             if tag.guid:
                 kwargs['guid'] = tag.guid
             tg = Tag(**kwargs)
-            if tag.action == ACTION_CHANGE:
-                tg = self.note_store.updateTag(
-                    self.auth_token, tg,
-                )
-            elif tag.action == ACTION_CREATE:
-                tg = self.note_store.createTag(
-                    self.auth_token, tg,
-                )
-                tag.guid = tg.guid
-            tag.action = ACTION_NONE
+            try:
+                if tag.action == ACTION_CHANGE:
+                    tg = self.note_store.updateTag(
+                        self.auth_token, tg,
+                    )
+                elif tag.action == ACTION_CREATE:
+                    tg = self.note_store.createTag(
+                        self.auth_token, tg,
+                    )
+                    tag.guid = tg.guid
+                tag.action = ACTION_NONE
+            except EDAMUserException as e:
+                self.app.log(e)
         self.session.commit()
 
     def _resources_for_note(self, note):

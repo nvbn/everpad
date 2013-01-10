@@ -20,6 +20,8 @@
 <script type="text/javascript">
     var isContent = false;
     var currentLink = undefined;
+    var currentTable = undefined;
+
     function insertEl(el) {
         var _this = document.getElementById('content');
         try {
@@ -39,6 +41,7 @@
             _this.appendChild(el);
         }
     }
+
     function insertCheck() {
         var el = document.createElement('input');
         el.setAttribute('type', 'checkbox');
@@ -48,6 +51,7 @@
         }, false);
         insertEl(el);
     }
+
     function insertRes(preview, hash, mime) {
         var el = document.createElement("img");
         el.setAttribute('src', preview);
@@ -58,7 +62,8 @@
         }, false);
         insertEl(el);
     }
-    function insertTable(rows, cols, width) {
+
+    function insertTable(rows, cols, width, id) {
         var table = document.createElement("table");
         table.setAttribute('border', 1);
         table.setAttribute('width', width);
@@ -68,17 +73,48 @@
         var tbody = document.createElement('tbody');
         table.appendChild(tbody);
         for (var i = 0; i < rows; i++) {
-          var row = table.insertRow(-1);
-          for (var j = 0; j < cols; j++) {
-            var cell = row.insertCell(-1);
-            cell.setAttribute('valign', 'top');
-            var br = document.createElement('br');
-            cell.appendChild(br);
-          }
+            var row = table.insertRow(-1);
+            for (var j = 0; j < cols; j++) {
+                var cell = row.insertCell(-1);
+                cell.setAttribute('valign', 'top');
+                var br = document.createElement('br');
+                cell.appendChild(br);
+            }
         }
-
+        table.setAttribute('id', id);
+        table.addEventListener('contextmenu', function() {
+            window.qpage.set_active_table(table.getAttribute('id'));
+            currentTable = table;
+        }, false);
         insertEl(table);
     }
+
+    function updateTable(rows, cols, width, id) {
+        var table = document.getElementById(id);
+        table.setAttribute('width', width);
+        for (var i = 0; i < rows; i++) {
+            var row = table.rows[i];
+            if (!row)
+                row = table.insertRow(-1);
+            for (var j = 0; j < cols; j++) {
+                var cell = row.cells[j];
+                if (!cell)
+                    cell = row.insertCell(-1);
+                cell.setAttribute('valign', 'top');
+                var br = document.createElement('br');
+                cell.appendChild(br);
+            }
+        }
+        while (table.rows.length > rows)
+            table.deleteRow(-1);
+
+        while (table.rows[0].cells.length > cols)
+            for (var i = 0; i < table.rows.length; i++) {
+                var row = table.rows[i];
+                row.deleteCell(-1);
+            }
+    }
+
     function insertLink(url) {
         var range = window.getSelection().getRangeAt(0),
             content = range.extractContents(),
@@ -93,9 +129,11 @@
             currentLink = link;
         }, false);
     }
+
     function changeLink(url) {
         currentLink.setAttribute('href', url);
     }
+
     function removeLink() {
         while (currentLink.firstChild)
             currentLink.parentNode.insertBefore(currentLink.firstChild,
@@ -103,11 +141,13 @@
             );
         currentLink.parentNode.removeChild(currentLink);
     }
+
     function changeRes(hash, width, height) {
         var el = document.querySelector('[hash="' + hash + '"]');
         el.setAttribute('width', width);
         el.setAttribute('height', height);
     }
+
     function resExist(hash) {
         var el = document.querySelector('[hash="' + hash + '"]');
         if (el)
@@ -115,11 +155,24 @@
         else
             return false;
     }
+
+    function getTableRows(id) {
+        var table = document.getElementById(id);
+        return table.rows.length;
+    }
+
+    function getTableCells(id) {
+        var table = document.getElementById(id);
+        return table.rows[0].cells.length;
+    }
+
     var content = document.getElementById('content');
+
     content.addEventListener('focus', function() {
         window.qpage.set_current_focus("body");
         isContent = true;
     }, false);
+
     function adjustBulletedList(untab) {
         var el = document.getSelection().anchorNode;
         while (el.parentNode) {
@@ -171,6 +224,7 @@
         }
         return false;
     }
+
     content.addEventListener('keydown', function(event) {
         if (event.keyCode == 9) {
             event.preventDefault();
@@ -201,32 +255,49 @@
             event.preventDefault();
         }
     }, false);
+
     var title = document.getElementById('title');
+
     title.addEventListener('keydown', function(event) {
         if (event.keyCode == 27) {
             event.preventDefault();
         }
     });
+
     title.addEventListener('focus', function() {
         window.qpage.set_current_focus("head");
         isContent = false;
     }, false);
+
     var checkboxes = document.querySelectorAll('input[type=checkbox]');
+
     [].forEach.call(checkboxes, function(el){
         el.addEventListener('change', function() {
         window.qpage.page_changed();
         this.setAttribute("checked", this.checked);
     }, false);});
+
     var resources = document.querySelectorAll('img[hash]');
+
     [].forEach.call(resources, function(el){
         el.addEventListener('contextmenu', function() {
             window.qpage.set_active_image_info(el.getAttribute('hash'), el.width, el.height);
     }, false);});
+
     var links = document.querySelectorAll('a');
+
     [].forEach.call(links, function(el){
         el.addEventListener('contextmenu', function() {
             window.qpage.set_active_link(el.getAttribute('href'));
             currentLink = el;
+    }, false);});
+
+    var tables = document.querySelectorAll('table');
+
+    [].forEach.call(tables, function(el){
+        el.addEventListener('contextmenu', function() {
+            window.qpage.set_active_table(el.getAttribute('id'));
+            currentTable = el;
     }, false);});
 </script>
 </body>

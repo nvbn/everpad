@@ -45,12 +45,16 @@ class ImagePrefs(QDialog):
             self._auto_change = False
 
 
-class TableInsert(QDialog):
-    def __init__(self, *args, **kwargs):
-        QDialog.__init__(self, *args, **kwargs)
+class TableWidget(QDialog):
+    def __init__(self, parent, rows=None, cells=None, *args, **kwargs):
+        QDialog.__init__(self, parent, *args, **kwargs)
         self.ui = Ui_TableInsertDialog()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
+        if rows:  # typecasting sucks
+            self.ui.rows.setText(str(int(rows)))
+        if cells:
+            self.ui.columns.setText(str(int(cells)))
 
     def get_width(self):
         result = self.ui.width.text()

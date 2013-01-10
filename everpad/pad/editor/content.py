@@ -10,7 +10,7 @@ from PySide.QtCore import (
     QFileInfo,
 )
 from PySide.QtWebKit import QWebPage, QWebSettings
-from everpad.pad.editor.actions import ImagePrefs, TableInsert
+from everpad.pad.editor.actions import ImagePrefs, TableWidget
 from everpad.pad.tools import file_icon_path
 from everpad.tools import sanitize, clean, html_unescape
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
@@ -31,6 +31,7 @@ class Page(QWebPage):
         self.edit = edit
         self.active_image = None
         self.active_link = None
+        self.active_table = None
         settings = self.settings()
         family = self.edit.app.settings.value(
             'note-font-family', DEFAULT_FONT,
@@ -82,6 +83,10 @@ class Page(QWebPage):
     def set_active_link(self, url):
         self.active_link = url
 
+    @Slot(str)
+    def set_active_table(self, id):
+        self.active_table = id
+
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
         print message
 
@@ -131,6 +136,7 @@ class ContentEdit(QObject):
         self.widget.customContextMenuRequested.connect(self.context_menu)
         self._init_actions()
         self._init_shortcuts()
+        self._last_table_num = 0
 
     def _init_actions(self):
         self.check_action = QAction(self.tr('Insert Checkbox'), self)
@@ -202,6 +208,9 @@ class ContentEdit(QObject):
                 media.name = 'en-media'
                 del media['src']
                 del media['title']
+        # remove tables id's before save
+        for table in soup.findAll('table'):
+            del table['id']
         self._content = sanitize(
             soup=soup.find(id='content'),
         ).replace('  ', u'\xa0\xa0').replace(u'\xa0 ', u'\xa0\xa0')
@@ -233,6 +242,10 @@ class ContentEdit(QObject):
                     media['title'] = ''
             else:
                 media.hidden = True
+        # set tables id's for identifing on hover
+        for num, table in enumerate(soup.findAll('table')):
+            table['id'] = 'table_%d' % num
+            self._last_table_num = num
         self._content = re.sub(
             r'(&nbsp;| ){5}', '<img class="tab" />',
             unicode(soup).replace(u'\xa0', ' '),
@@ -286,6 +299,12 @@ class ContentEdit(QObject):
                 self.tr('Image Preferences'),
                 Slot()(partial(self._show_image_dialog, res)),
             )
+        if self.page.active_table:
+            menu.addAction(
+                self.tr('Change table'),
+                Slot()(partial(self._update_table, self.page.active_table)),
+            )
+            self.page.active_table = None
         menu.addSeparator()
         menu.addAction(self.page.action(QWebPage.RemoveFormat))
         menu.addAction(self.page.action(QWebPage.SelectAll))
@@ -351,13 +370,34 @@ class ContentEdit(QObject):
 
     @Slot()
     def _insert_table(self):
-        dialog = TableInsert(self.parent)
+        dialog = TableWidget(self.parent)
+        self._last_table_num += 1
         if dialog.exec_():
             self.page.mainFrame().evaluateJavaScript(
-                'insertTable(%s, %s, "%s");' % (
+                'insertTable(%s, %s, "%s", "table_%d");' % (
                     dialog.ui.rows.text(),
                     dialog.ui.columns.text(),
                     dialog.get_width(),
+                    self._last_table_num,
+                )
+            )
+
+    def _update_table(self, id):
+        rows = self.page.mainFrame().evaluateJavaScript(
+            'getTableRows("%s")' % id,
+        )
+        cells = self.page.mainFrame().evaluateJavaScript(
+            'getTableCells("%s")' % id,
+        )
+        dialog = TableWidget(self.parent, rows, cells)
+        self._last_table_num += 1
+        if dialog.exec_():
+            self.page.mainFrame().evaluateJavaScript(
+                'updateTable(%s, %s, "%s", "%s");' % (
+                    dialog.ui.rows.text(),
+                    dialog.ui.columns.text(),
+                    dialog.get_width(),
+                    id,
                 )
             )
 

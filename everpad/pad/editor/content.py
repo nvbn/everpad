@@ -231,7 +231,7 @@ class ContentEdit(QObject):
                 media.name = 'img'
                 res = self.parent.resource_edit.get_by_hash(media['hash'])  # shit!
                 if res:
-                    if 'img' in media['type']:
+                    if media['type'].find('image') == 0:
                         media['src'] = 'file://%s' % res.file_path
                     else:
                         media['src'] = file_icon_path
@@ -460,7 +460,7 @@ class ContentEdit(QObject):
         return map(lambda action: self._action_with_icon(*action), actions)
 
     def paste_res(self, res):
-        if 'image' in res.mime:
+        if res.mime.find('image') == 0:
             preview = 'file://%s' % res.file_path
         else:
             preview = file_icon_path

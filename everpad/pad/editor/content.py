@@ -11,6 +11,7 @@ from PySide.QtCore import (
 )
 from PySide.QtWebKit import QWebPage, QWebSettings
 from everpad.pad.editor.actions import ImagePrefs, TableInsert
+from everpad.pad.tools import file_icon_path
 from everpad.tools import sanitize, clean, html_unescape
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
 from BeautifulSoup import BeautifulSoup
@@ -200,6 +201,7 @@ class ContentEdit(QObject):
             if media.get('hash'):
                 media.name = 'en-media'
                 del media['src']
+                del media['title']
         self._content = sanitize(
             soup=soup.find(id='content'),
         ).replace('  ', u'\xa0\xa0').replace(u'\xa0 ', u'\xa0\xa0')
@@ -220,10 +222,15 @@ class ContentEdit(QObject):
                 media.name = 'img'
                 res = self.parent.resource_edit.get_by_hash(media['hash'])  # shit!
                 if res:
-                    media['src'] = 'file://%s' % res.file_path
+                    if 'img' in media['type']:
+                        media['src'] = 'file://%s' % res.file_path
+                    else:
+                        media['src'] = file_icon_path
+                    media['title'] = res.file_name
                     res.in_content = True
                 else:
                     media['src'] = ''
+                    media['title'] = ''
             else:
                 media.hidden = True
         self._content = re.sub(

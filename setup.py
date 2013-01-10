@@ -60,8 +60,8 @@ setup(name='everpad',
         ('/usr/share/everpad/i18n/', [
             'i18n/ru_RU.qm',
             'i18n/ar_EG.qm',
-	    'i18n/zh_CN.qm',
-	    'i18n/zh_TW.qm'
+    	    'i18n/zh_CN.qm',
+    	    'i18n/zh_TW.qm'
         ]),
         ('/usr/share/everpad/', [
             'everpad/pad/editor/editor.html',

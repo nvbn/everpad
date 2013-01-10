@@ -12,6 +12,7 @@ from evernote.edam.limits.constants import (
     EDAM_NOTE_TITLE_LEN_MAX, EDAM_NOTE_CONTENT_LEN_MAX,
     EDAM_TAG_NAME_LEN_MAX, EDAM_NOTEBOOK_NAME_LEN_MAX,
     EDAM_USER_NOTES_MAX, EDAM_TAG_NAME_REGEX,
+    EDAM_NOTEBOOK_NAME_REGEX,
 )
 from evernote.edam.error.ttypes import EDAMUserException
 from everpad.provider.tools import (
@@ -71,6 +72,8 @@ class SyncAgent(object):
                 name=notebook.name[:EDAM_NOTEBOOK_NAME_LEN_MAX].strip().encode('utf8'),
                 defaultNotebook=notebook.default,
             )
+            if not re.match(EDAM_NOTEBOOK_NAME_REGEX, tag.name):
+                continue  # just ignore it
             if notebook.guid:
                 kwargs['guid'] = notebook.guid
             nb = Notebook(**kwargs)

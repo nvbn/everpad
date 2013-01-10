@@ -38,6 +38,7 @@ class ProviderApp(AppClass):
         self.service.qobject.remove_authenticate_signal.connect(
             self.on_remove_authenticated,
         )
+        self.service.qobject.terminate.connect(self.terminate)
 
     @Slot(str)
     def on_authenticated(self, token):
@@ -66,6 +67,11 @@ class ProviderApp(AppClass):
     def log(self, data):
         if self.verbose:
             print data
+
+    @Slot()
+    def terminate(self):
+        self.sync_thread.quit()
+        self.quit()
 
 
 def main():

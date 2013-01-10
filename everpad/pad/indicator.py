@@ -48,14 +48,6 @@ class Indicator(QSystemTrayIcon):
         ))
 
     @Slot()
-    def kill_all(self):
-        try:
-            self.app.provider.kill()
-        except dbus.exceptions.DBusException:
-            pass
-        os.system('everpad --replace')
-
-    @Slot()
     def update(self):
         self.menu.clear()
         try:
@@ -70,8 +62,12 @@ class Indicator(QSystemTrayIcon):
                 self.tr('API version missmatch, please restart'),
             )
             action.setEnabled(False)
+            if version < API_VERSION:
+                handler = self.app.provider.kill
+            else:
+                handler = partial(os.execlp, 'everpad', '--replace')
             self.menu.addAction(
-                self.tr('Restart everpad'), self.kill_all,
+                self.tr('Restart everpad'), handler,
             )
             return
         if get_auth_token():
@@ -177,7 +173,7 @@ class Indicator(QSystemTrayIcon):
 
     @Slot()
     def exit(self):
-        sys.exit(0)
+        self.app.quit()
 
 
 class PadApp(QApplication):
@@ -253,10 +249,7 @@ class EverpadService(dbus.service.Object):
 
     @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
     def kill(self):
-        try:
-            return
-        finally:
-            sys.exit(0)
+        self.app.quit()
 
 
 def main():

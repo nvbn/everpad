@@ -22,6 +22,7 @@ import time
 class ProviderServiceQObject(QObject):
     authenticate_signal = Signal(str)
     remove_authenticate_signal = Signal()
+    terminate = Signal()
 
 
 class ProviderService(dbus.service.Object):
@@ -448,10 +449,8 @@ class ProviderService(dbus.service.Object):
         "com.everpad.Provider", in_signature='',
     )
     def kill(self):
-        try:
-            return
-        finally:
-            sys.exit(0)
+        self.qobject.terminate.emit()
+        return
 
     @dbus.service.signal(
         'com.everpad.provider', signature='i',

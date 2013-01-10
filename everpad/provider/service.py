@@ -57,6 +57,16 @@ class ProviderService(dbus.service.Object):
             raise DBusException('Note not found')
 
     @dbus.service.method(
+        "com.everpad.Provider", in_signature='i',
+        out_signature='a%s' % btype.Note.signature,
+    )
+    def get_note_alternatives(self, id):
+        qs = self.sq(Note).filter(
+            Note.conflict_parent_id == id,
+        )
+        return map(lambda note: btype.Note.from_obj(note).struct, qs.all())
+
+    @dbus.service.method(
         "com.everpad.Provider", in_signature='saiaiiiii',
         out_signature='a%s' % btype.Note.signature,
     )
@@ -324,6 +334,7 @@ class ProviderService(dbus.service.Object):
             if note.action == ACTION_CONFLICT:
                 # prevent circular dependency error
                 note.conflict_parent_id = None
+                note.conflict_parent = []
                 self.session.commit()
                 self.session.delete(note)
             else:

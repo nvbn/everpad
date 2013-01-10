@@ -56,10 +56,12 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.init_toolbar()
         self.init_shortcuts()
         self.init_alternatives()
+        self.app.data_changed.connect(self.init_alternatives)
 
     def init_alternatives(self):
         try:
-            if self.note.conflict_items:
+            conflict_items = self.app.provider.get_note_alternatives(self.note.id)
+            if conflict_items:
                 template = self.ui.alternativeVersions.text()
                 conflicts = map(
                     lambda item: Note.from_tuple(self.app.provider.get_note(

@@ -74,6 +74,7 @@ class SyncAgent(object):
             )
             if not regex.search(EDAM_NOTEBOOK_NAME_REGEX, notebook.name):
                 self.app.log('notebook %s skipped' % notebook.name)
+                tag.action = ACTION_NONE
                 continue  # just ignore it
             if notebook.guid:
                 kwargs['guid'] = notebook.guid
@@ -111,6 +112,7 @@ class SyncAgent(object):
         ):
             self.app.log('Tag %s local' % tag.name)
             if not regex.search(EDAM_TAG_NAME_REGEX, tag.name):
+                tag.action = ACTION_NONE
                 self.app.log('tag %s skipped' % tag.name)
                 continue  # just ignore it
             kwargs = dict(
@@ -189,7 +191,7 @@ class SyncAgent(object):
                     self.note_store.deleteNote(self.auth_token, nt.guid)
                     self.session.delete(note)
             except EDAMUserException as e:
-                next_action = note.action
+                next_action = ACTION_NONE
                 self.app.log('Note %s failed' % note.title)
                 self.app.log(e)
             note.action = next_action

@@ -48,9 +48,9 @@
         }, false);
         insertEl(el);
     }
-    function insertRes(filePath, hash, mime) {
+    function insertRes(preview, hash, mime) {
         var el = document.createElement("img");
-        el.setAttribute('src', 'file://' + filePath);
+        el.setAttribute('src', preview);
         el.setAttribute('hash', hash);
         el.setAttribute('type', mime)
         el.addEventListener('contextmenu', function(event){

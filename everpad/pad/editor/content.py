@@ -420,10 +420,13 @@ class ContentEdit(QObject):
         return map(lambda action: self._action_with_icon(*action), actions)
 
     def paste_res(self, res):
+        if 'image' in res.mime:
+            preview = 'file://%s' % res.file_path
+        else:
+            preview = file_icon_path
         self.page.mainFrame().evaluateJavaScript(
             'insertRes("%s", "%s", "%s");' % (
-                res.file_path,
-                res.hash, res.mime,
+                preview, res.hash, res.mime,
             ),
         )
         self.page_changed()

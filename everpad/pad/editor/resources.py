@@ -125,12 +125,11 @@ class ResourceEdit(object):  # TODO: move event to item
             subprocess.Popen(['xdg-open', res.file_path])
         elif button == Qt.RightButton:
             menu = QMenu(self.parent)
-            if res.mime.find('image') == 0:
-                menu.addAction(
-                    self.app.translate('ResourceEdit', 'Put to Content'), Slot()(partial(
-                        self.to_content, res=res,
-                    )),
-                )
+            menu.addAction(
+                self.app.translate('ResourceEdit', 'Put to Content'), Slot()(partial(
+                    self.to_content, res=res,
+                )),
+            )
             if not self.parent.note_edit.in_content(res):
                 menu.addAction(
                     self.app.translate('ResourceEdit', 'Remove Resource'), Slot()(partial(

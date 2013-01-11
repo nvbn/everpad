@@ -53,7 +53,7 @@ setup(name='everpad',
             'data/editor-icons/everpad-pin.png',
         ]),
         ('/usr/share/icons/hicolor/48x48/actions', [
-            'data/editor/everpad-file.png',
+            'data/everpad-file.png',
         ]),
         ('/usr/share/icons/hicolor/64x64/apps', [
             'data/everpad-mono.png', 'data/everpad-lens.png',

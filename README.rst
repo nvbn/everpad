@@ -10,7 +10,7 @@ https://bugs.launchpad.net/appmenu-qt/+bug/1057167
 Everpad
 =======
 
-.. image:: http://ubuntuone.com/3WKTW42w6BZ928InVuthiP
+.. image:: http://ubuntuone.com/4ABojaepuBiaDVv2VsDB7o
 
 Evernote client well integrated with linux desktop.
 

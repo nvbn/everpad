@@ -37,7 +37,7 @@ Ubuntu users can use `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
 
 ``sudo apt-get install everpad`` 
 
-If you use gnome shell please install `topicons extension <https://extensions.gnome.org/extension/495/topicons/>`_
+If you use gnome shell please `read wiki <https://github.com/nvbn/everpad/wiki/how-to-install>`_
 
 You can see more about everpad installation, including method for other linux, in `wiki <https://github.com/nvbn/everpad/wiki/how-to-install>`_
 

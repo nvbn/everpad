@@ -13,12 +13,12 @@ def get_file_icon_path():
     foe embedding in html.
     """
     paths = (
-        '/usr/share/icons/hicolor/48x48/actions/everpad-file.png',
-        '/usr/local/share/icons/hicolor/48x48/actions/everpad-file.png',
         os.path.join(
             os.path.dirname(__file__),
             '../../data/everpad-file.png',
         ),
+        '/usr/local/share/icons/hicolor/48x48/actions/everpad-file.png',
+        '/usr/share/icons/hicolor/48x48/actions/everpad-file.png',
     )
     for path in paths:
         if os.path.isfile(path):

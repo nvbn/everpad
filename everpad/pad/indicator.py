@@ -12,7 +12,7 @@ from everpad.const import (
     STATUS_SYNC, SYNC_STATES, SYNC_STATE_START,
     SYNC_STATE_FINISH, API_VERSION,
 )
-from everpad.specific import get_launcher
+from everpad.specific import get_launcher, get_tray_icon
 from functools import partial
 from datetime import datetime
 import signal
@@ -195,10 +195,8 @@ class PadApp(QApplication):
         self.indicator.show()
 
     def update_icon(self):
-        if int(self.settings.value('black-icon', 0)):
-            self.icon = QIcon.fromTheme('everpad-black', QIcon('../../data/everpad-black.png'))
-        else:
-            self.icon = QIcon.fromTheme('everpad-mono', QIcon('../../data/everpad-mono.png'))
+        is_black = int(self.settings.value('black-icon', 0))
+        self.icon = get_tray_icon(is_black)
         self.indicator.setIcon(self.icon)
 
     def send_notify(self, text):

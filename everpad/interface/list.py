@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'everpad/interface/list.ui'
+# Form implementation generated from reading ui file 'list.ui'
 #
-# Created: Mon Oct 22 03:22:26 2012
-#      by: pyside-uic 0.2.13 running on PySide 1.1.0
+# Created: Fri Jan 11 08:37:50 2013
+#      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,10 +13,11 @@ class Ui_List(object):
     def setupUi(self, List):
         List.setObjectName("List")
         List.resize(800, 600)
-        List.setModal(False)
-        self.verticalLayout = QtGui.QVBoxLayout(List)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.splitter = QtGui.QSplitter(List)
+        self.centralwidget = QtGui.QWidget(List)
+        self.centralwidget.setObjectName("centralwidget")
+        self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.splitter = QtGui.QSplitter(self.centralwidget)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setChildrenCollapsible(False)
         self.splitter.setObjectName("splitter")
@@ -59,13 +60,21 @@ class Ui_List(object):
         self.notesList.setObjectName("notesList")
         self.notesList.header().setDefaultSectionSize(200)
         self.notesList.header().setSortIndicatorShown(True)
-        self.verticalLayout.addWidget(self.splitter)
+        self.horizontalLayout.addWidget(self.splitter)
+        List.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(List)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 25))
+        self.menubar.setObjectName("menubar")
+        List.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(List)
+        self.statusbar.setObjectName("statusbar")
+        List.setStatusBar(self.statusbar)
 
         self.retranslateUi(List)
         QtCore.QMetaObject.connectSlotsByName(List)
 
     def retranslateUi(self, List):
-        List.setWindowTitle(QtGui.QApplication.translate("List", "Everpad / All Notes", None, QtGui.QApplication.UnicodeUTF8))
+        List.setWindowTitle(QtGui.QApplication.translate("List", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
         self.newNotebookBtn.setToolTip(QtGui.QApplication.translate("List", "Create Notebook", None, QtGui.QApplication.UnicodeUTF8))
         self.newNotebookBtn.setText(QtGui.QApplication.translate("List", "Notebook", None, QtGui.QApplication.UnicodeUTF8))
         self.newNoteBtn.setToolTip(QtGui.QApplication.translate("List", "Create Note", None, QtGui.QApplication.UnicodeUTF8))

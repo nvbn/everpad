@@ -2,7 +2,7 @@
 import sys
 sys.path.append('../..')
 from PySide.QtGui import (
-    QDialog, QIcon, QPixmap,
+    QMainWindow, QIcon, QPixmap,
     QLabel, QVBoxLayout, QFrame,
     QMessageBox, QAction, QWidget,
     QListWidgetItem, QMenu, QInputDialog,
@@ -18,11 +18,11 @@ import dbus
 import datetime
 
 
-class List(QDialog):
+class List(QMainWindow):
     """All Notes dialog"""
 
     def __init__(self, *args, **kwargs):
-        QDialog.__init__(self, *args, **kwargs)
+        QMainWindow.__init__(self, *args, **kwargs)
         self.app = QApplication.instance()
         self.closed = False
         self.sort_order = None
@@ -63,9 +63,13 @@ class List(QDialog):
             self.notebook_selected(selected.indexes()[-1])
 
     def showEvent(self, *args, **kwargs):
-        QDialog.showEvent(self, *args, **kwargs)
+        super(List, self).showEvent(*args, **kwargs)
         self._reload_notebooks_list()
         self.readSettings()
+
+    def closeEvent(self):
+        event.ignore()
+        self.hide()
 
     def writeSettings(self):
         self.app.settings.setValue('list-geometry', self.saveGeometry())

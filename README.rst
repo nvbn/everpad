@@ -29,7 +29,7 @@ Client support:
 
 Installation
 ============
-Ubuntu users can use `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
+Ubuntu 12.04+ users can use `ppa <https://launchpad.net/~nvbn-rm/+archive/ppa>`_:
 
 ``sudo add-apt-repository ppa:nvbn-rm/ppa``
 

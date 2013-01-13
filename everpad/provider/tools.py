@@ -58,7 +58,7 @@ def get_note_store(auth_token=None):
     return NoteStore.Client(note_store_protocol)
 
 
-if 'kde' in os.environ.get('DESKTOP_SESSION'):  # kde init qwidget for wallet access
+if 'kde' in os.environ.get('DESKTOP_SESSION', ''):  # kde init qwidget for wallet access
     from PySide.QtGui import QApplication
     AppClass = QApplication
 else:

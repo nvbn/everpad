@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Wed Jan 16 20:10:47 2013
+# Created: Thu Jan 17 00:38:49 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -109,6 +109,6 @@ class Ui_Dialog(object):
         self.label_6.setText(QtGui.QApplication.translate("Dialog", "Black tray icon", None, QtGui.QApplication.UnicodeUTF8))
         self.progressLabel.setText(QtGui.QApplication.translate("Dialog", "Launcher progress bar", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("Dialog", "Search on the home lens", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Apperance", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Appearance", None, QtGui.QApplication.UnicodeUTF8))
 
 from PySide import QtWebKit

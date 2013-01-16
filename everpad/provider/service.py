@@ -464,6 +464,21 @@ class ProviderService(dbus.service.Object):
         return API_VERSION
 
     @dbus.service.method(
+        "com.everpad.Provider", in_signature='s',
+        out_signature='s',
+    )
+    def get_settings_value(self, name):
+        return self.app.settings.value(name, '')
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='ss',
+        out_signature='',
+    )
+    def set_settings_value(self, name, value):
+        self.app.settings.setValue(name, value)
+        return
+
+    @dbus.service.method(
         "com.everpad.Provider", in_signature='',
     )
     def kill(self):

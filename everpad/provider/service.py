@@ -476,6 +476,7 @@ class ProviderService(dbus.service.Object):
     )
     def set_settings_value(self, name, value):
         self.app.settings.setValue(name, value)
+        self.settings_changed(name, value)
         return
 
     @dbus.service.method(
@@ -496,3 +497,10 @@ class ProviderService(dbus.service.Object):
     )
     def data_changed(self):
         return
+
+    @dbus.service.signal(
+        'com.everpad.provider', signature='ss',
+    )
+    def settings_changed(self, name, value):
+        return
+

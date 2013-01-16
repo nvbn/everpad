@@ -24,6 +24,17 @@ import re
 import cgi
 
 
+url = re.compile(r"((https?://|www)[-\w./#?%=&]+)")
+def set_links(text):
+    """Insert a href"""
+    soup = BeautifulSoup(text)
+    # don't change if text contains html
+    if len(soup.findAll()):
+        return text
+    else:
+        return url.sub(r'<a href="\1">\1</a>', text)
+
+
 class Page(QWebPage):
     def __init__(self, edit):
         QWebPage.__init__(self)

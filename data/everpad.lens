@@ -5,7 +5,7 @@ Name=Everpad
 Icon=everpad-lens
 Description=Everpad notes lens
 SearchHint=Search everpad notes
-Shortcut=v
+Shortcut=e
 
 [Desktop Entry]
 X-Ubuntu-Gettext-Domain=unity-lens-everpad

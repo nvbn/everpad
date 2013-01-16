@@ -26,6 +26,7 @@ class List(QMainWindow):
         self.ui = Ui_List()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
+        self.setWindowTitle(self.tr("Everpad / All Notes"))
         self.app.data_changed.connect(self._reload_notebooks_list)
 
         self.notebooksModel = QStandardItemModel()

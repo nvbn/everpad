@@ -163,6 +163,7 @@ class ResourceEdit(object):  # TODO: move event to item
             self.on_change()
             if not self._resources:
                 self.widget.hide()
+            self.update_label()
 
     def save(self, res):
         """Save resource"""

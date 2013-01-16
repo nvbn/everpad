@@ -44,9 +44,17 @@ class EverpadLens(SingleScopeLens):
             self.update_props,
             dbus_interface="com.everpad.provider",
         )
+        provider.connect_to_signal(
+            'settings_changed',
+            self.settings_changed,
+            dbus_interface="com.everpad.provider",
+        )
         self.update_props()
-        self._lens.props.search_in_global = bool(int(provider.get_settings_value('search-on-home') or 1))
         self._scope.connect('preview-uri', self.preview)
+
+    def settings_changed(self, name, value):
+        if name == 'search-on-home':
+            self.update_props()
 
     def update_props(self):
         icon = Gio.ThemedIcon.new("/usr/share/icons/unity-icon-theme/places/svg/group-recent.svg")
@@ -63,6 +71,7 @@ class EverpadLens(SingleScopeLens):
             place = Place.from_tuple(place_struct)
             places.add_option(str(place.id), place.name, icon)
         self._lens.props.filters = [notebooks, tags, places]
+        self._lens.props.search_in_global = bool(int(provider.get_settings_value('search-on-home') or 1))
 
     pin_notes = ListViewCategory(_("Pin Notes"), 'everpad-lens')
     all_notes = ListViewCategory(_("All Notes"), 'everpad-lens')

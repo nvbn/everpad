@@ -26,7 +26,6 @@ _ = gettext.gettext
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 provider = get_provider()
 
-
 class EverpadLens(SingleScopeLens):
 
     class Meta:
@@ -35,7 +34,6 @@ class EverpadLens(SingleScopeLens):
         search_hint = _('Search Everpad')
         icon = 'everpad-lens'
         search_on_blank = True
-        search_in_global = True
         bus_name = 'net.launchpad.Unity.Lens.EverpadLens'
         bus_path = '/net/launchpad/unity/lens/everpad'
 
@@ -47,7 +45,7 @@ class EverpadLens(SingleScopeLens):
             dbus_interface="com.everpad.provider",
         )
         self.update_props()
-        self._lens.props.search_in_global = True
+        self._lens.props.search_in_global = bool(int(provider.get_settings_value('search-on-home') or 1))
         self._scope.connect('preview-uri', self.preview)
 
     def update_props(self):

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>396</width>
+    <width>425</width>
     <height>372</height>
    </rect>
   </property>
@@ -105,7 +105,8 @@
           <string/>
          </property>
         </widget>
-       </item><item row="3" column="0">
+       </item>
+       <item row="3" column="0">
         <widget class="QLabel" name="progressLabel">
          <property name="text">
           <string>Launcher progress bar</string>
@@ -114,6 +115,20 @@
        </item>
        <item row="3" column="1">
         <widget class="QCheckBox" name="progressCheckBox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Search on the home lens</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="searchOnHome">
          <property name="text">
           <string/>
          </property>

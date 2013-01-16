@@ -113,6 +113,7 @@ class Management(QDialog):
         self.ui.noteSize.valueChanged.connect(self.font_size_changed)
         self.ui.blackTray.stateChanged.connect(self.tray_changed)
         self.ui.progressCheckBox.stateChanged.connect(self.progress_changed)
+        self.ui.searchOnHome.stateChanged.connect(self.search_on_home_changed)
         self.update_tabs()
 
     @Slot(str)
@@ -139,6 +140,14 @@ class Management(QDialog):
             self.app.settings.setValue('launcher-progress', 1)
 
     @Slot()
+    def search_on_home_changed(self):
+        if self.ui.searchOnHome.checkState() == Qt.Unchecked:
+            value = '0'
+        else:
+            value = '1'
+        self.app.provider.set_settings_value('search-on-home', value)
+
+    @Slot()
     def update_tabs(self):
         if get_auth_token():
             self.ui.authBtn.setText(self.tr('Remove Authorisation'))
@@ -158,6 +167,9 @@ class Management(QDialog):
         else Qt.Unchecked)
         self.ui.progressCheckBox.setCheckState(Qt.Checked
             if int(self.app.settings.value('launcher-progress', 1))
+        else Qt.Unchecked)
+        self.ui.searchOnHome.setCheckState(Qt.Checked
+            if int(self.app.provider.get_settings_value('search-on-home') or 1)
         else Qt.Unchecked)
 
     @Slot()

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Fri Nov 16 15:34:59 2012
-#      by: pyside-uic 0.2.13 running on PySide 1.1.0
+# Created: Wed Jan 16 20:10:47 2013
+#      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(396, 372)
+        Dialog.resize(425, 372)
         Dialog.setModal(False)
         self.verticalLayout = QtGui.QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -72,6 +72,13 @@ class Ui_Dialog(object):
         self.progressCheckBox.setText("")
         self.progressCheckBox.setObjectName("progressCheckBox")
         self.gridLayout_2.addWidget(self.progressCheckBox, 3, 1, 1, 1)
+        self.label_7 = QtGui.QLabel(self.tab_2)
+        self.label_7.setObjectName("label_7")
+        self.gridLayout_2.addWidget(self.label_7, 4, 0, 1, 1)
+        self.searchOnHome = QtGui.QCheckBox(self.tab_2)
+        self.searchOnHome.setText("")
+        self.searchOnHome.setObjectName("searchOnHome")
+        self.gridLayout_2.addWidget(self.searchOnHome, 4, 1, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.webView = QtWebKit.QWebView(Dialog)
@@ -101,6 +108,7 @@ class Ui_Dialog(object):
         self.label_5.setText(QtGui.QApplication.translate("Dialog", "Note font size", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("Dialog", "Black tray icon", None, QtGui.QApplication.UnicodeUTF8))
         self.progressLabel.setText(QtGui.QApplication.translate("Dialog", "Launcher progress bar", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setText(QtGui.QApplication.translate("Dialog", "Search on the home lens", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Apperance", None, QtGui.QApplication.UnicodeUTF8))
 
 from PySide import QtWebKit

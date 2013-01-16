@@ -3,11 +3,11 @@ from PySide.QtGui import (
     QShortcut, QKeySequence, QInputDialog, 
     QPrintPreviewDialog, QPrinter, QDropEvent,
     QDragEnterEvent, QDragMoveEvent, QApplication,
-    QDesktopServices, QApplication,
+    QDesktopServices, QApplication, QClipboard,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
-    QFileInfo,
+    QFileInfo, QMimeData,
 )
 from PySide.QtWebKit import QWebPage, QWebSettings
 from everpad.pad.editor.actions import ImagePrefs, TableWidget
@@ -62,7 +62,21 @@ class Page(QWebPage):
 
         # This allows JavaScript to call back to Slots, connect to Signals
         # and access/modify Qt props
-        self.mainFrame().addToJavaScriptWindowObject("qpage", self)
+        self.mainFrame().addToJavaScriptWindowObject("qpage", self)  
+
+    def triggerAction(self, action, *args, **kwargs):
+        if action == QWebPage.Paste:
+            self._patch_clipboard()
+        return super(Page, self).triggerAction(action, *args, **kwargs)
+
+    def _patch_clipboard(self):
+        clipboard = self.edit.app.clipboard()
+        value = clipboard.mimeData()
+        if value.hasText():
+            data = set_links(value.text())
+            value = QMimeData()
+            value.setHtml(data)
+        clipboard.setMimeData(value)
 
     @Slot()
     def show_findbar(self):

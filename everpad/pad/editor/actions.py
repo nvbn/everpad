@@ -1,5 +1,5 @@
 from PySide.QtGui import QIcon, QDialog, QWidget, QApplication
-from PySide.QtCore import  Slot
+from PySide.QtCore import Slot
 from PySide.QtWebKit import QWebPage
 from everpad.interface.tableinsert import Ui_TableInsertDialog
 from everpad.interface.image import Ui_ImageDialog

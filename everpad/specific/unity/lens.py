@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '..')
-from singlet.lens import SingleScopeLens, IconViewCategory, ListViewCategory
-from gi.repository import Gio, Unity, GObject, Notify
+from singlet.lens import SingleScopeLens, ListViewCategory
+from gi.repository import Gio, Unity, Notify
 from singlet.utils import run_lens
 from everpad.tools import get_provider, get_pad
 from everpad.basetypes import Note, Tag, Notebook, Place, Resource
@@ -25,6 +25,7 @@ _ = gettext.gettext
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 provider = get_provider()
+
 
 class EverpadLens(SingleScopeLens):
 
@@ -111,7 +112,7 @@ class EverpadLens(SingleScopeLens):
         ):
             note = Note.from_tuple(note_struct)
             results.append(json.dumps({'id': note.id, 'search': search}),
-                'everpad-note', self.pin_notes if note.pinnded else self.all_notes, 
+                'everpad-note', self.pin_notes if note.pinnded else self.all_notes,
                 "text/html", note.title, html2text(note.content),
             '')
 
@@ -140,7 +141,7 @@ class EverpadLens(SingleScopeLens):
 
     def on_filtering_changed(self, scope):
         tags = scope.get_filter('tags')
-        self.tag_filter_ids = map(lambda tag: int(tag.props.id), 
+        self.tag_filter_ids = map(lambda tag: int(tag.props.id),
             filter(lambda tag: tag.props.active, tags.options))
         notebook = scope.get_filter('notebooks').get_active_option()
         if notebook:

@@ -2,13 +2,10 @@
 import sys
 sys.path.append('../..')
 from PySide.QtGui import (
-    QMainWindow, QIcon, QPixmap,
-    QLabel, QVBoxLayout, QFrame,
-    QMessageBox, QAction, QWidget,
-    QListWidgetItem, QMenu, QInputDialog,
+    QMainWindow, QIcon, QApplication,
+    QMessageBox, QMenu, QInputDialog,
     QStandardItemModel, QStandardItem,
     QItemSelection, QKeySequence, QShortcut,
-    QApplication,
 )
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.list import Ui_List
@@ -66,10 +63,6 @@ class List(QMainWindow):
         super(List, self).showEvent(*args, **kwargs)
         self._reload_notebooks_list()
         self.readSettings()
-
-    def closeEvent(self):
-        event.ignore()
-        self.hide()
 
     def writeSettings(self):
         self.app.settings.setValue('list-geometry', self.saveGeometry())

@@ -21,13 +21,13 @@ from everpad.provider.tools import (
     get_db_session, get_note_store,
     ACTION_NOEXSIST, ACTION_CONFLICT,
 )
-from everpad.tools import get_auth_token, sanitize, clean
+from everpad.tools import get_auth_token, sanitize
 from everpad.provider import models
 from everpad.const import (
     STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY,
     SYNC_STATE_START, SYNC_STATE_NOTEBOOKS_LOCAL,
-    SYNC_STATE_TAGS_LOCAL, SYNC_STATE_NOTES_LOCAL, 
-    SYNC_STATE_NOTEBOOKS_REMOTE, SYNC_STATE_TAGS_REMOTE, 
+    SYNC_STATE_TAGS_LOCAL, SYNC_STATE_NOTES_LOCAL,
+    SYNC_STATE_NOTEBOOKS_REMOTE, SYNC_STATE_TAGS_REMOTE,
     SYNC_STATE_NOTES_REMOTE, SYNC_STATE_FINISH,
 )
 from BeautifulSoup import BeautifulStoneSoup
@@ -74,7 +74,7 @@ class SyncAgent(object):
             )
             if not regex.search(EDAM_NOTEBOOK_NAME_REGEX, notebook.name):
                 self.app.log('notebook %s skipped' % notebook.name)
-                tag.action = ACTION_NONE
+                notebook.action = ACTION_NONE
                 continue  # just ignore it
             if notebook.guid:
                 kwargs['guid'] = notebook.guid
@@ -145,7 +145,7 @@ class SyncAgent(object):
                 fileName=res.file_name.encode('utf8'),
             ),
         ), self.sq(models.Resource).filter(and_(
-            models.Resource.note_id == note.id, 
+            models.Resource.note_id == note.id,
             models.Resource.action != models.ACTION_DELETE,
         )))
 
@@ -303,7 +303,7 @@ class SyncAgent(object):
                 models.Note.action != ACTION_CREATE,
                 models.Note.action != ACTION_CHANGE,
                 models.Note.action != ACTION_CONFLICT,
-            )).delete(synchronize_session='fetch')        
+            )).delete(synchronize_session='fetch')
         self.session.commit()
 
     def note_resources_remote(self, note_api, note_model):
@@ -328,7 +328,7 @@ class SyncAgent(object):
         self.sq(models.Resource).filter(and_(
             ~models.Resource.id.in_(resources_ids),
             models.Resource.note_id == note_model.id,
-        )).delete(synchronize_session='fetch')        
+        )).delete(synchronize_session='fetch')
         self.session.commit()
 
 

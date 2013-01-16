@@ -1,5 +1,5 @@
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, Text, Boolean
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 from everpad.tools import prepare_file_path
@@ -65,7 +65,7 @@ class Note(Base):
                 try:
                     tags.append(self.session.query(Tag).filter(
                         Tag.name == tag,
-                    ).one()) # shit shit shit
+                    ).one())  # shit shit shit
                 except NoResultFound:
                     tg = Tag(name=tag, action=ACTION_CREATE)
                     self.session.add(tg)
@@ -88,7 +88,7 @@ class Note(Base):
             self.notebook = self.session.query(Notebook).filter(
                 Notebook.default == True,
             ).one()
-        
+
     @property
     def place_dbus(self):
         if self.place:
@@ -128,7 +128,7 @@ class Note(Base):
         soup = BeautifulSoup(note.content.decode('utf8'))
         content = reduce(
             lambda txt, cur: txt + unicode(cur),
-            soup.find('en-note').contents, 
+            soup.find('en-note').contents,
         u'')
         self.title = note.title.decode('utf8')
         self.content = content

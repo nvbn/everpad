@@ -1,9 +1,9 @@
 import sys
 sys.path.insert(0, '../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings, QT_TRANSLATE_NOOP
-from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon, QCursor
+from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QCursor
 from PySide.QtNetwork import QNetworkProxyFactory
-from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
+from everpad.basetypes import Note, NONE_ID, NONE_VAL
 from everpad.tools import get_provider, get_pad, get_auth_token, print_version
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
@@ -23,7 +23,6 @@ import argparse
 import fcntl
 import os
 import getpass
-import time
 
 
 class Indicator(QSystemTrayIcon):

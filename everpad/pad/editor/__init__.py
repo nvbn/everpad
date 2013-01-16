@@ -5,9 +5,9 @@ from PySide.QtGui import (
 from PySide.QtCore import Slot
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
-from everpad.pad.editor.actions import ImagePrefs, FindBar
-from everpad.pad.editor.content import Page, ContentEdit
-from everpad.pad.editor.resources import ResourceEdit, ResourceItem
+from everpad.pad.editor.actions import FindBar
+from everpad.pad.editor.content import ContentEdit
+from everpad.pad.editor.resources import ResourceEdit
 from everpad.pad.editor.widgets import TagEdit, NotebookEdit
 from everpad.basetypes import Resource, Note
 from dbus.exceptions import DBusException

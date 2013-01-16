@@ -1,18 +1,12 @@
 import sys
 sys.path.append('../..')
-from PySide.QtGui import (
-    QDialog, QIcon, QPixmap,
-    QLabel, QVBoxLayout, QFrame, QFont,
-    QMessageBox, QAction, QWidget,
-    QListWidgetItem, QMenu, QInputDialog,
-    QApplication,
-)
-from PySide.QtWebKit import QWebView, QWebPage
-from PySide.QtCore import Slot, Qt, QPoint, QUrl
+from PySide.QtGui import QDialog, QFont, QApplication
+from PySide.QtWebKit import QWebPage
+from PySide.QtCore import Slot, Qt
 from PySide.QtNetwork import QNetworkAccessManager, QSslConfiguration, QSsl
 from everpad.interface.management import Ui_Dialog
 from everpad.pad.tools import get_icon
-from everpad.tools import get_provider, get_auth_token
+from everpad.tools import get_auth_token
 from everpad.const import (
     CONSUMER_KEY, CONSUMER_SECRET, HOST,
     DEFAULT_FONT, DEFAULT_FONT_SIZE,
@@ -21,8 +15,6 @@ from everpad import monkey
 from everpad.tools import get_proxy_config
 import urllib
 import urlparse
-import subprocess
-import webbrowser
 import oauth2 as oauth
 import os
 import shutil
@@ -41,7 +33,7 @@ def get_oauth_proxy(scheme):
         proxy_port=proxy.port,
         proxy_user=proxy.username or None,
         proxy_pass=proxy.password or None,
-    )    
+    )
 
 
 class TLSNetworkAccessManager(QNetworkAccessManager):

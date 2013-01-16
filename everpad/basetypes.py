@@ -65,7 +65,6 @@ class DbusSendable(object):
         )
 
 
-    
 class Note(DbusSendable):
     ORDER_TITLE = 0
     ORDER_UPDATED = 1

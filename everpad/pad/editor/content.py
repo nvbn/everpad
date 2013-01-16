@@ -1,13 +1,13 @@
 from PySide.QtGui import (
-    QIcon, QPixmap, QAction, QFileDialog,
-    QShortcut, QKeySequence, QInputDialog, 
+    QIcon, QAction, QFileDialog,
+    QShortcut, QKeySequence, QInputDialog,
     QPrintPreviewDialog, QPrinter, QDropEvent,
     QDragEnterEvent, QDragMoveEvent, QApplication,
-    QDesktopServices, QApplication, QClipboard,
+    QDesktopServices,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
-    QFileInfo, QMimeData,
+    QMimeData,
 )
 from PySide.QtWebKit import QWebPage, QWebSettings
 from everpad.pad.editor.actions import ImagePrefs, TableWidget
@@ -17,7 +17,6 @@ from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
 from BeautifulSoup import BeautifulSoup
 from functools import partial
 import webbrowser
-import magic
 import os
 import json
 import re
@@ -25,6 +24,8 @@ import cgi
 
 
 url = re.compile(r"((https?://|www)[-\w./#?%=&]+)")
+
+
 def set_links(text):
     """Insert a href"""
     soup = BeautifulSoup(text)
@@ -62,7 +63,7 @@ class Page(QWebPage):
 
         # This allows JavaScript to call back to Slots, connect to Signals
         # and access/modify Qt props
-        self.mainFrame().addToJavaScriptWindowObject("qpage", self)  
+        self.mainFrame().addToJavaScriptWindowObject("qpage", self)
 
     def triggerAction(self, action, *args, **kwargs):
         if action == QWebPage.Paste:
@@ -147,6 +148,7 @@ class ContentEdit(QObject):
     _html = open(_editor_path).read()
 
     copy_available = Signal(bool)
+
     def __init__(self, parent, widget, on_change):
         QObject.__init__(self)
         self.parent = parent

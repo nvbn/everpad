@@ -9,10 +9,8 @@ from everpad.provider.tools import AppClass, get_db_session
 from sqlalchemy import or_, and_, func
 from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
-from PySide.QtCore import Signal, QObject, Qt
-from everpad.const import (
-    STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY, API_VERSION,
-)
+from PySide.QtCore import Signal, QObject
+from everpad.const import STATUS_SYNC, DEFAULT_SYNC_DELAY, API_VERSION
 import everpad.basetypes as btype
 import dbus
 import dbus.service
@@ -503,4 +501,3 @@ class ProviderService(dbus.service.Object):
     )
     def settings_changed(self, name, value):
         return
-

@@ -1,4 +1,3 @@
-from PySide.QtCore import QTranslator, QLocale
 from PySide.QtGui import QIcon
 import os
 

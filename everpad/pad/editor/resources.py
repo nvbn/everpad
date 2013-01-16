@@ -1,7 +1,7 @@
 from PySide.QtGui import (
     QPixmap, QLabel, QVBoxLayout, QFileDialog,
-    QMenu, QInputDialog, QFileIconProvider,
-    QWidget, QHBoxLayout, QApplication,
+    QMenu, QFileIconProvider, QWidget,
+    QHBoxLayout, QApplication, QMessageBox,
 )
 from PySide.QtCore import Slot, Qt, QUrl, QFileInfo
 from everpad.basetypes import Resource, NONE_ID
@@ -78,7 +78,7 @@ class ResourceEdit(object):  # TODO: move event to item
     @Slot(QUrl)
     def label_uri(self, uri):
         uri = str(uri)
-        if  uri == 'add':
+        if uri == 'add':
             self.add()
         elif uri == 'show':
             if self.widget.isHidden():

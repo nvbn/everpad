@@ -95,5 +95,7 @@ setup(name='everpad',
     	('/opt/extras.ubuntu.com/everpad/i18n/zh_CN/LC_MESSAGES', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
     	('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/zh_TW.qm']),
     	('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/ja.qm']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/ja/LC_MESSAGES', ['i18n/ja/LC_MESSAGES/everpad.mo']),
     ] + get_files(),
 )

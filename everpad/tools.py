@@ -55,11 +55,6 @@ def get_pad(bus=None):
     return dbus.Interface(pad, "com.everpad.App")
 
 
-def get_auth_token():
-    import keyring
-    return keyring.get_password('everpad', 'oauth_token')
-
-
 def clean(text):  # from http://stackoverflow.com/questions/1707890/fast-way-to-filter-illegal-xml-unicode-chars-in-python
     illegal_unichrs = [
         (0x00, 0x08), (0x0B, 0x1F), (0x7F, 0x84), (0x86, 0x9F),

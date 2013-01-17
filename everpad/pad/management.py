@@ -6,7 +6,6 @@ from PySide.QtCore import Slot, Qt
 from PySide.QtNetwork import QNetworkAccessManager, QSslConfiguration, QSsl
 from everpad.interface.management import Ui_Dialog
 from everpad.pad.tools import get_icon
-from everpad.tools import get_auth_token
 from everpad.const import (
     CONSUMER_KEY, CONSUMER_SECRET, HOST,
     DEFAULT_FONT, DEFAULT_FONT_SIZE,
@@ -141,7 +140,7 @@ class Management(QDialog):
 
     @Slot()
     def update_tabs(self):
-        if get_auth_token():
+        if self.app.provider.is_authenticated():
             self.ui.authBtn.setText(self.tr('Remove Authorisation'))
         else:
             self.ui.authBtn.setText(self.tr('Authorise'))
@@ -185,7 +184,7 @@ class Management(QDialog):
 
     @Slot()
     def change_auth(self):
-        if get_auth_token():
+        if self.app.provider.is_authenticated():
             self.app.provider.remove_authentication()
             self.update_tabs()
         else:

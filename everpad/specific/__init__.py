@@ -22,3 +22,34 @@ def get_tray_icon(is_black=False):
         return QIcon.fromTheme('everpad-black', QIcon('../../data/everpad-black.png'))
     else:
         return QIcon.fromTheme('everpad-mono', QIcon('../../data/everpad-mono.png'))
+
+
+if 'kde' in os.environ.get('DESKTOP_SESSION', ''):  # kde init qwidget for wallet access
+    from PySide.QtGui import QApplication
+    AppClass = QApplication
+else:
+    from PySide.QtCore import QCoreApplication
+    AppClass = QCoreApplication
+
+
+class QSettingsKeyringAdpdater(object):
+    def __init__(self, settings):
+        self._settings = settings
+
+    def _prepare_name(self, app, name):
+        return '%s_%s' % (app, name)
+
+    def set_password(self, app, name, password):
+        self._settings.setValue(self._prepare_name(app, name), password)
+
+    def get_password(self, app, name):
+        self._settings.value(self._prepare_name(app, name))
+
+
+def get_keyring():
+    if os.environ.get('DESKTOP_SESSION', 'default') in ('Lubuntu', 'LXDE'):
+        # keyring fails on initialisation in lxde
+        return QSettingsKeyringAdpdater(AppClass.instance().settings)
+    else:
+        import keyring
+        return keyring

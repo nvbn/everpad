@@ -8,7 +8,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from everpad.provider.models import Base
 from everpad.const import HOST, DB_PATH
-from everpad.tools import get_proxy_config, get_auth_token
+from everpad.tools import get_proxy_config
+from everpad.specific import get_keyring
 from urlparse import urlparse
 import os
 
@@ -26,8 +27,11 @@ def _nocase_lower(item):
 
 
 def set_auth_token(token):
-    import keyring
-    keyring.set_password('everpad', 'oauth_token', token)
+    get_keyring().set_password('everpad', 'oauth_token', token)
+
+
+def get_auth_token():
+    return get_keyring().get_password('everpad', 'oauth_token')
 
 
 def get_db_session(db_path=None):
@@ -56,11 +60,3 @@ def get_note_store(auth_token=None):
             http_proxy=get_proxy_config(urlparse(note_store_url).scheme))
     note_store_protocol = TBinaryProtocol.TBinaryProtocol(note_store_http_client)
     return NoteStore.Client(note_store_protocol)
-
-
-if 'kde' in os.environ.get('DESKTOP_SESSION', ''):  # kde init qwidget for wallet access
-    from PySide.QtGui import QApplication
-    AppClass = QApplication
-else:
-    from PySide.QtCore import QCoreApplication
-    AppClass = QCoreApplication

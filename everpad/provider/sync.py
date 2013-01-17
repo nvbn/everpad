@@ -16,12 +16,14 @@ from evernote.edam.limits.constants import (
 )
 from evernote.edam.error.ttypes import EDAMUserException
 from everpad.provider.tools import (
-    ACTION_NONE, ACTION_CREATE, AppClass,
+    ACTION_NONE, ACTION_CREATE,
     ACTION_CHANGE, ACTION_DELETE,
     get_db_session, get_note_store,
     ACTION_NOEXSIST, ACTION_CONFLICT,
+    get_auth_token,
 )
-from everpad.tools import get_auth_token, sanitize
+from everpad.specific import AppClass
+from everpad.tools import sanitize
 from everpad.provider import models
 from everpad.const import (
     STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY,

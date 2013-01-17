@@ -5,7 +5,8 @@ from everpad.provider.models import (
     ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
     ACTION_NOEXSIST, ACTION_CONFLICT,
 )
-from everpad.provider.tools import AppClass, get_db_session
+from everpad.provider.tools import get_db_session, get_auth_token
+from everpad.specific import AppClass
 from sqlalchemy import or_, and_, func
 from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
@@ -382,6 +383,13 @@ class ProviderService(dbus.service.Object):
     def remove_authentication(self):
         self.qobject.remove_authenticate_signal.emit()
         self.data_changed()
+
+    @dbus.service.method(
+        "com.everpad.Provider",
+        in_signature='', out_signature='b',
+    )
+    def is_authenticated(self):
+        return bool(get_auth_token())
 
     @dbus.service.method(
         "com.everpad.Provider",

@@ -4,7 +4,7 @@ from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings, QT_TRAN
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QCursor
 from PySide.QtNetwork import QNetworkProxyFactory
 from everpad.basetypes import Note, NONE_ID, NONE_VAL
-from everpad.tools import get_provider, get_pad, get_auth_token, print_version
+from everpad.tools import get_provider, get_pad, print_version
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
 from everpad.pad.list import List
@@ -69,7 +69,7 @@ class Indicator(QSystemTrayIcon):
                 self.tr('Restart everpad'), handler,
             )
             return
-        if get_auth_token():
+        if self.app.provider.is_authenticated():
             pin_notes = self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,

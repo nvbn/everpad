@@ -77,8 +77,6 @@ class ProviderApp(AppClass):
 
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    fp = open('/tmp/everpad-provider-%s.lock' % getpass.getuser(), 'w')
-    fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
     try:
         os.mkdir(os.path.expanduser('~/.everpad/'))
         os.mkdir(os.path.expanduser('~/.everpad/data/'))
@@ -90,9 +88,14 @@ def main():
     args = parser.parse_args(sys.argv[1:])
     if args.version:
         print_version()
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    app = ProviderApp(args.verbose, sys.argv)
-    app.exec_()
+    fp = open('/tmp/everpad-provider-%s.lock' % getpass.getuser(), 'w')
+    try:
+        fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        app = ProviderApp(args.verbose, sys.argv)
+        app.exec_()
+    except IOError:
+        print "everpad-provider already runned"
 
 if __name__ == '__main__':
     main()

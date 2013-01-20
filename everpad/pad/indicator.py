@@ -302,16 +302,24 @@ def main():
         app.exec_()
     except IOError:
         pad = get_pad()
+        action_performed = False
         if args.open:
             pad.open(args.open)
+            action_performed = True
         if args.create:
             pad.create()
+            action_performed = True
         if args.settings:
             pad.settings()
+            action_performed = True
         if args.attach:
             pad.create_wit_attach(args.attach)
+            action_performed = True
         if args.all_notes:
             pad.all_notes()
+            action_performed = True
+        if not action_performed:
+            print 'everpad already runned'
         sys.exit(0)
 
 if __name__ == '__main__':

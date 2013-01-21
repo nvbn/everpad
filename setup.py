@@ -18,7 +18,7 @@ setup(name='everpad',
     include_package_data=True,
     zip_safe=True,
     install_requires=[
-        "BeautifulSoup"
+        "BeautifulSoup",
         "html2text",
         "httplib2",
         "keyring",

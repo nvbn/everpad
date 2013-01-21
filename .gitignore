@@ -4,5 +4,6 @@ syntax: glob
 *pip-delete-this-directory.txt
 build/*
 .idea/*
-*egg-info/
+*.egg
+*.egg-info
 tests/settings/local.py

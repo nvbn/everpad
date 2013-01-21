@@ -17,7 +17,13 @@ setup(name='everpad',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=True,
-    install_requires=[],
+    install_requires=[
+        "httplib2",
+        "oauth2",
+        "sqlalchemy",
+        "regex",
+        "keyring",
+    ],
     entry_points={
         'gui_scripts': [
             'everpad=everpad.pad.indicator:main'

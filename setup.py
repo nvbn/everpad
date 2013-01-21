@@ -18,11 +18,14 @@ setup(name='everpad',
     include_package_data=True,
     zip_safe=True,
     install_requires=[
+        "BeautifulSoup"
+        "html2text",
         "httplib2",
-        "oauth2",
-        "sqlalchemy",
-        "regex",
         "keyring",
+        "py-oauth2 ",
+        "pysqlite ",
+        "regex",
+        "sqlalchemy",
     ],
     entry_points={
         'gui_scripts': [

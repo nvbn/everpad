@@ -3,7 +3,7 @@ sys.path.insert(0, '..')
 from singlet.lens import SingleScopeLens, ListViewCategory
 from gi.repository import Gio, Unity, Notify
 from singlet.utils import run_lens
-from everpad.tools import get_provider, get_pad
+from everpad.tools import get_provider, get_pad, resource_filename
 from everpad.basetypes import Note, Tag, Notebook, Place, Resource
 from everpad.const import API_VERSION
 from html2text import html2text
@@ -18,7 +18,7 @@ import json
 
 path = os.path.join(os.path.dirname(__file__), '../../../i18n')
 if not os.path.isdir(path):
-    path = '/usr/share/locale/'
+    path =  resource_filename('share/locale/')
 gettext.bindtextdomain('everpad', path)
 gettext.textdomain('everpad')
 _ = gettext.gettext
@@ -58,7 +58,7 @@ class EverpadLens(SingleScopeLens):
             self.update_props()
 
     def update_props(self):
-        icon = Gio.ThemedIcon.new("/usr/share/icons/unity-icon-theme/places/svg/group-recent.svg")
+        icon = Gio.ThemedIcon.new(resource_filename("share/icons/unity-icon-theme/places/svg/group-recent.svg"))
         tags = Unity.CheckOptionFilter.new('tags', _('Tags'), icon, True)
         for tag_struct in provider.list_tags():
             tag = Tag.from_tuple(tag_struct)

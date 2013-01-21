@@ -6,6 +6,7 @@ import dbus
 import re
 import sys
 import os
+import pkg_resources
 
 
 class InterfaceWrapper(object):
@@ -147,3 +148,8 @@ def prepare_file_path(dest, file_name):
         ))
         iteration += 1
     return file_path
+
+
+def resource_filename(file_name):
+    return pkg_resources.resource_filename(
+        pkg_resources.Requirement.parse("everpad"), file_name)

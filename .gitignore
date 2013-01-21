@@ -2,8 +2,9 @@ syntax: glob
 
 *.pyc
 *pip-delete-this-directory.txt
-build/*
-.idea/*
+/build
+/.idea
+/dist
 *.egg
 *.egg-info
 tests/settings/local.py

@@ -16,7 +16,7 @@ import gettext
 import json
 
 
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'i18n')
+path = os.path.join(os.path.dirname(__file__), '../../../i18n')
 if not os.path.isdir(path):
     path = '/usr/share/locale/'
 gettext.bindtextdomain('everpad', path)

@@ -10,7 +10,7 @@ from PySide.QtGui import (
 from PySide.QtCore import Slot, Qt, QPoint
 from everpad.interface.list import Ui_List
 from everpad.pad.tools import get_icon
-from everpad.basetypes import Notebook, Note, NONE_ID
+from everpad.basetypes import Notebook, Note, Tag, NONE_ID
 import dbus
 import datetime
 
@@ -27,14 +27,18 @@ class List(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
         self.setWindowTitle(self.tr("Everpad / All Notes"))
-        self.app.data_changed.connect(self._reload_notebooks_list)
-
+        self.app.data_changed.connect(self._reload_data)
+        
         self.notebooksModel = QStandardItemModel()
         self.ui.notebooksList.setModel(self.notebooksModel)
         self.ui.notebooksList.selection.connect(self.selection_changed)
         self.ui.notebooksList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
-
+	
+        self.tagsModel = QStandardItemModel()
+        self.ui.tagsList.setModel(self.tagsModel)
+        self.ui.tagsList.selection.connect(self.tag_selection_changed)
+        
         self.notesModel = QStandardItemModel()
         self.notesModel.setHorizontalHeaderLabels(
             [self.tr('Title'), self.tr('Last Updated')])
@@ -59,10 +63,15 @@ class List(QMainWindow):
     def selection_changed(self, selected, deselected):
         if len(selected.indexes()):
             self.notebook_selected(selected.indexes()[-1])
+    
+    @Slot(QItemSelection, QItemSelection)
+    def tag_selection_changed(self, selected, deselected):
+        if len(selected.indexes()):
+            self.tag_selected(selected.indexes()[-1])
 
     def showEvent(self, *args, **kwargs):
         super(List, self).showEvent(*args, **kwargs)
-        self._reload_notebooks_list()
+        self._reload_data()
         self.readSettings()
 
     def writeSettings(self):
@@ -108,6 +117,32 @@ class List(QMainWindow):
         notebook_filter = [notebook_id] if notebook_id > 0 else dbus.Array([], signature='i')
         notes = self.app.provider.find_notes(
             '', notebook_filter, dbus.Array([], signature='i'),
+            0, 2 ** 31 - 1, Note.ORDER_TITLE, -1,
+        )  # fails with sys.maxint in 64
+        for note_struct in notes:
+            note = Note.from_tuple(note_struct)
+            self.notesModel.appendRow(QNoteItemFactory(note).make_items())
+
+        sort_order = self.sort_order
+        if sort_order is None:
+            sort_order = self.app.settings.value('list-notes-sort-order')
+
+        if sort_order:
+            logicalIndex, order = sort_order
+            order = Qt.SortOrder.values[order]
+            self.ui.notesList.sortByColumn(int(logicalIndex), order)
+
+    def tag_selected(self, index):
+        self.notesModel.setRowCount(0)
+        
+        item = self.tagsModel.itemFromIndex(index)
+        if hasattr(item, 'tag'):
+            tag_id = item.tag.id
+        else:
+            tag_id = 0
+        tag_filter = [tag_id] if tag_id > 0 else dbus.Array([], signature='i')
+        notes = self.app.provider.find_notes(
+            '', dbus.Array([], signature='i'), tag_filter,
             0, 2 ** 31 - 1, Note.ORDER_TITLE, -1,
         )  # fails with sys.maxint in 64
         for note_struct in notes:
@@ -215,7 +250,12 @@ class List(QMainWindow):
         menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_note)
         menu.exec_(self.ui.notesList.mapToGlobal(pos))
 
+    def _reload_data(self):
+        self._reload_notebooks_list()
+        self._reload_tags_list()
+
     def _reload_notebooks_list(self, select_notebook_id=None):
+        # TODO QTree for nested notebooks
         self.notebooksModel.clear()
         root = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes'))
         self.notebooksModel.appendRow(root)
@@ -229,8 +269,9 @@ class List(QMainWindow):
 
             if select_notebook_id and notebook.id == select_notebook_id:
                 selected_item = item
-
+        
         self.ui.notebooksList.expandAll()
+	
         if selected_item:
             index = self.notebooksModel.indexFromItem(selected_item)
             self.ui.notebooksList.setCurrentIndex(index)
@@ -248,12 +289,29 @@ class List(QMainWindow):
             name, status = QInputDialog.getText(self, title, message)
         return name, status
 
+    def _reload_tags_list(self, select_tag_id=None):
+        # TODO QTree for nested tags
+        self.tagsModel.clear()
+        tagRoot = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Tags'))
+        self.tagsModel.appendRow(tagRoot)
+	
+        for tag_struct in self.app.provider.list_tags():
+            tag = Tag.from_tuple(tag_struct)
+            count = self.app.provider.get_tag_notes_count(tag.id)
+            item = QTagItem(tag, count)
+            tagRoot.appendRow(item)
+        
+        self.ui.tagsList.expandAll()
 
 class QNotebookItem(QStandardItem):
     def __init__(self, notebook, count):
         super(QNotebookItem, self).__init__(QIcon.fromTheme('folder'), '%s (%d)' % (notebook.name, count))
         self.notebook = notebook
 
+class QTagItem(QStandardItem):
+    def __init__(self, tag, count):
+        super(QTagItem, self).__init__(QIcon.fromTheme('folder'), '%s (%d)' % (tag.name, count))
+        self.tag = tag
 
 class QNoteItemFactory(object):
     def __init__(self, note):

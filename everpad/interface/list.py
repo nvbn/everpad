@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'list.ui'
 #
-# Created: Fri Jan 11 08:37:50 2013
-#      by: pyside-uic 0.2.13 running on PySide 1.1.1
+# Created: Mon Jan 21 14:33:27 2013
+#      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -48,6 +48,17 @@ class Ui_List(object):
         self.notebooksList.setHeaderHidden(True)
         self.notebooksList.setObjectName("notebooksList")
         self.verticalLayout_2.addWidget(self.notebooksList)
+        self.tagsList = EverpadTreeView(self.layoutWidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tagsList.sizePolicy().hasHeightForWidth())
+        self.tagsList.setSizePolicy(sizePolicy)
+        self.tagsList.setMinimumSize(QtCore.QSize(200, 0))
+        self.tagsList.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tagsList.setHeaderHidden(True)
+        self.tagsList.setObjectName("tagsList")
+        self.verticalLayout_2.addWidget(self.tagsList)
         self.notesList = QtGui.QTreeView(self.splitter)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)

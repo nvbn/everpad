@@ -6,12 +6,12 @@ from everpad.const import HOST
 from everpad.provider.sync import SyncAgent
 from everpad.provider.tools import get_db_session, get_note_store
 from everpad.provider.models import (
-    Note, Notebook, Place, Tag, Resource, ACTION_CREATE, 
+    Note, Notebook, Place, Tag, Resource, ACTION_CREATE,
     ACTION_CHANGE, ACTION_NONE, ACTION_DELETE, ACTION_CONFLICT,
+    SHARE_NONE, SHARE_NEED_SHARE, SHARE_SHARED, SHARE_NEED_STOP,
 )
 from evernote.edam.type import ttypes
 from sqlalchemy.orm.exc import NoResultFound
-from itertools import ifilter
 from datetime import datetime
 import unittest
 import os
@@ -84,6 +84,15 @@ class SyncTestCase(unittest.TestCase):
             **params
         ))
 
+    def _get_default_notebook(self):
+        """Get default notebook"""
+        remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
+        notebook = Notebook(guid=remote_notebook.guid)
+        notebook.from_api(remote_notebook)
+        self.session.add(notebook)
+        self.session.commit()
+        return notebook
+
     def test_local_notebooks(self):
         """Test sync local notebooks"""
         name = str(datetime.now())
@@ -124,11 +133,7 @@ class SyncTestCase(unittest.TestCase):
 
     def test_local_notes(self):
         """Test local notes sync"""
-        remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
-        notebook = Notebook(guid=remote_notebook.guid)
-        notebook.from_api(remote_notebook)
-        self.session.add(notebook)
-        self.session.commit()
+        notebook = self._get_default_notebook()
         note = Note(
             title='67890', action=ACTION_CREATE,
             notebook=notebook, content='12345',
@@ -319,7 +324,7 @@ class SyncTestCase(unittest.TestCase):
     def test_sync_with_unicode_place(self):
         """Test sync with unicode place from #186"""
         place_name = u"rasserie André"
-        note = self._create_remote_note(
+        self._create_remote_note(
             attributes=ttypes.NoteAttributes(
                 placeName=place_name.encode('utf8'),
             )
@@ -347,6 +352,58 @@ class SyncTestCase(unittest.TestCase):
         self.sync.tags_local()
         self.assertNotIn('skipped', self.sync.logs[-1])
         self.assertNotIn('Tag.name', self.sync.logs[-1])
+
+    def test_share_note(self):
+        """Test sharing note"""
+        notebook = self._get_default_notebook()
+        note = Note(
+            title='67890', action=ACTION_CREATE,
+            notebook=notebook, content='12345',
+            share_status=SHARE_NEED_SHARE,
+        )
+        self.session.add(note)
+        self.session.commit()
+        self.sync.notes_local()
+        self.sync.notes_sharing()
+        share_url = self.note_store.shareNote(self.auth_token, note.guid)
+        self.assertEqual(note.share_url, share_url)
+        self.assertEqual(note.share_status, SHARE_SHARED)
+
+    def test_stop_sharing(self):
+        """Test stop sharing"""
+        notebook = self._get_default_notebook()
+        note = Note(
+            title='67890', action=ACTION_CREATE,
+            notebook=notebook, content='12345',
+            share_status=SHARE_NEED_SHARE,
+        )
+        self.session.add(note)
+        self.session.commit()
+        self.sync.notes_local()
+        self.sync.notes_sharing()
+        note.share_status = SHARE_NEED_STOP
+        self.session.commit()
+        self.sync.notes_stop_sharing()
+        self.assertEqual(note.share_status, SHARE_NONE)
+
+    def test_change_sharing(self):
+        """Test change sharing"""
+        notebook = self._get_default_notebook()
+        note = Note(
+            title='67890', action=ACTION_CREATE,
+            notebook=notebook, content='12345',
+            share_status=SHARE_NEED_SHARE,
+        )
+        self.session.add(note)
+        self.session.commit()
+        self.sync.notes_local()
+        share_url = self.note_store.shareNote(self.auth_token, note.guid)
+        self.sync.notes_remote()
+        self.assertEqual(note.share_url, share_url)
+        self.assertEqual(note.share_status, SHARE_SHARED)
+        self.note_store.stopSharingNote(self.auth_token, note.guid)
+        self.sync.notes_remote()
+        self.assertEqual(note.share_status, SHARE_NONE)
 
 
 if __name__ == '__main__':

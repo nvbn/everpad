@@ -31,6 +31,7 @@ from everpad.const import (
     SYNC_STATE_TAGS_LOCAL, SYNC_STATE_NOTES_LOCAL,
     SYNC_STATE_NOTEBOOKS_REMOTE, SYNC_STATE_TAGS_REMOTE,
     SYNC_STATE_NOTES_REMOTE, SYNC_STATE_FINISH,
+    SYNC_STATE_SHARE, SYNC_STATE_STOP_SHARE,
 )
 from BeautifulSoup import BeautifulStoneSoup
 from datetime import datetime
@@ -152,7 +153,7 @@ class SyncAgent(object):
         )))
 
     def notes_local(self):
-        """Send loacl notes changes to server"""
+        """Send local notes changes to server"""
         for note in self.sq(models.Note).filter(and_(
             models.Note.action != ACTION_NONE,
             models.Note.action != ACTION_NOEXSIST,
@@ -294,6 +295,16 @@ class SyncAgent(object):
                 self.session.commit()
                 notes_ids.append(nt.id)
                 self.note_resources_remote(note, nt)
+            if not note.attributes.shareDate and nt.share_status not in (
+                    models.SHARE_NONE, models.SHARE_NEED_SHARE,
+                ):
+                nt.share_status = models.SHARE_NONE
+                nt.share_date = None
+                nt.share_url = None
+                self.session.commit()
+            elif note.attributes.shareDate != nt.share_date:
+                self._single_note_share(nt, note.attributes.shareDate)
+                self.session.commit()
         ids = filter(lambda id: id not in notes_ids, map(
             lambda note: note.id, self.sq(models.Note).all(),
         ))
@@ -331,6 +342,43 @@ class SyncAgent(object):
             ~models.Resource.id.in_(resources_ids),
             models.Resource.note_id == note_model.id,
         )).delete(synchronize_session='fetch')
+        self.session.commit()
+
+    def _single_note_share(self, note, share_date=None):
+        try:
+            note.share_url = self.note_store.shareNote(self.auth_token, note.guid)
+            note.share_date = share_date or int(time.time() * 1000)
+            note.share_status = models.SHARE_SHARED
+        except EDAMUserException as e:
+            note.share_status = models.SHARE_NONE
+            self.app.log('Sharing note %s failed' % note.title)
+            self.app.log(e)
+
+    def notes_sharing(self):
+        """Notes sharing"""
+        for note in self.sq(models.Note).filter(
+            models.Note.share_status == models.SHARE_NEED_SHARE,
+        ):
+            self._single_note_share(note)
+        self.session.commit()
+
+    def _single_note_stop_sharing(self, note):
+        """Stop sharing single note"""
+        try:
+            note.share_url = None
+            note.share_date = None
+            note.share_status = models.SHARE_NONE
+        except EDAMUserException as e:
+            note.share_status = models.SHARE_SHARED
+            self.app.log('Stop sharing note %s failed' % note.title)
+            self.app.log(e)
+
+    def notes_stop_sharing(self):
+        """Stop sharing otes"""
+        for note in self.sq(models.Note).filter(
+            models.Note.share_status == models.SHARE_NEED_STOP,
+        ):
+            self._single_note_stop_sharing(note)
         self.session.commit()
 
 
@@ -402,6 +450,7 @@ class SyncThread(QThread, SyncAgent):
             if self.need_to_update:
                 self.remote_changes()
             self.local_changes()
+            self.sharing_changes()
         except Exception, e:  # maybe log this
             self.session.rollback()
             self.init_db()
@@ -430,3 +479,10 @@ class SyncThread(QThread, SyncAgent):
         self.tags_remote()
         self.sync_state_changed.emit(SYNC_STATE_NOTES_REMOTE)
         self.notes_remote()
+
+    def sharing_changes(self):
+        """Update sharing information"""
+        self.sync_state_changed.emit(SYNC_STATE_SHARE)
+        self.notes_sharing()
+        self.sync_state_changed.emit(SYNC_STATE_STOP_SHARE)
+        self.notes_stop_sharing()

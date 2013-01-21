@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 sys.path.insert(0, '..')
-import settings
 from dbus.exceptions import DBusException
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
@@ -183,7 +182,7 @@ class ServiceTestCase(unittest.TestCase):
                 mime='image/png',
                 hash='',
             ))
-        self.service.update_note_resources(note.struct, 
+        self.service.update_note_resources(note.struct,
             map(lambda resource: resource.struct, resources),
         )
         received = map(Resource.from_tuple,
@@ -192,7 +191,7 @@ class ServiceTestCase(unittest.TestCase):
             self._file_names(resources), self._file_names(received),
         )
         received = received[:50]
-        self.service.update_note_resources(note.struct, 
+        self.service.update_note_resources(note.struct,
             map(lambda resource: resource.struct, received),
         )
         new_received = map(Resource.from_tuple,
@@ -318,7 +317,7 @@ class FindTestCase(unittest.TestCase):
             100, Note.ORDER_UPDATED_DESC, -1,
         )
         self.assertEqual(
-            set(self._to_ids(all)), 
+            set(self._to_ids(all)),
             set(self._to_ids(self.notes[:-2])),
         )
         two = self._find(
@@ -345,7 +344,7 @@ class FindTestCase(unittest.TestCase):
             [tags[0].id], 0, 100, Note.ORDER_UPDATED_DESC, -1,
         )
         self.assertEqual(
-            set(self._to_ids(first_last)), 
+            set(self._to_ids(first_last)),
             set(self._to_ids([self.notes[0], self.notes[2]])),
         )
         second = self._find(
@@ -411,7 +410,7 @@ class FindTestCase(unittest.TestCase):
             100, Note.ORDER_UPDATED_DESC, -1,
         )
         self.assertEqual(
-            set(self._to_ids(all)), 
+            set(self._to_ids(all)),
             set(self._to_ids(self.notes[-2:])),
         )
 

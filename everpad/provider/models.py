@@ -21,6 +21,12 @@ ACTION_NOEXSIST = 4
 ACTION_CONFLICT = 5
 
 
+SHARE_NONE = 0
+SHARE_NEED_SHARE = 1
+SHARE_SHARED = 2
+SHARE_NEED_STOP = 3
+
+
 notetags_table = Table('notetags', Base.metadata,
     Column('note', Integer, ForeignKey('notes.id')),
     Column('tag', Integer, ForeignKey('tags.id'))
@@ -52,6 +58,11 @@ class Note(Base):
         Integer, ForeignKey('notes.conflict_parent_id'),
         nullable=True,
     )
+
+    # sharing data:
+    share_date = Column(Integer)
+    share_status = Column(Integer, default=SHARE_NONE)
+    share_url = Column(String)
 
     @property
     def tags_dbus(self):

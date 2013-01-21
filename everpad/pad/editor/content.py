@@ -12,7 +12,7 @@ from PySide.QtCore import (
 from PySide.QtWebKit import QWebPage, QWebSettings
 from everpad.pad.editor.actions import ImagePrefs, TableWidget
 from everpad.pad.tools import file_icon_path
-from everpad.tools import sanitize, clean, html_unescape
+from everpad.tools import sanitize, clean, html_unescape, resource_filename
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
 from BeautifulSoup import BeautifulSoup
 from functools import partial
@@ -21,6 +21,7 @@ import os
 import json
 import re
 import cgi
+import sys
 
 
 url = re.compile(r"((https?://|www)[-\w./#?%=&]+)")
@@ -144,7 +145,8 @@ class ContentEdit(QObject):
         os.path.dirname(__file__), 'editor.html',
     )
     if not os.path.exists(_editor_path):
-        _editor_path = '/usr/share/everpad/editor.html'
+        _editor_path = resource_filename('share/everpad/editor.html')
+
     _html = open(_editor_path).read()
 
     copy_available = Signal(bool)

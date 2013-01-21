@@ -11,7 +11,7 @@ from everpad.const import (
     DEFAULT_FONT, DEFAULT_FONT_SIZE,
 )
 from everpad import monkey
-from everpad.tools import get_proxy_config
+from everpad.tools import get_proxy_config, resource_filename
 import urllib
 import urlparse
 import oauth2 as oauth
@@ -172,7 +172,7 @@ class Management(QDialog):
                 pass
         else:
             shutil.copyfile(
-                '/usr/share/applications/everpad.desktop',
+                resource_filename('share/applications/everpad.desktop'),
                 self.startup_file,
             )
 

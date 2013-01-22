@@ -3,7 +3,8 @@ sys.path.append('../..')
 from everpad.provider.models import (
     Note, Notebook, Tag, Resource, Place,
     ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
-    ACTION_NOEXSIST, ACTION_CONFLICT,
+    ACTION_NOEXSIST, ACTION_CONFLICT, SHARE_NEED_SHARE,
+    SHARE_NEED_STOP,
 )
 from everpad.provider.tools import get_db_session, get_auth_token
 from everpad.specific import AppClass
@@ -413,6 +414,36 @@ class ProviderService(dbus.service.Object):
             btype.Place.from_obj(place).struct,
         self.sq(Place).all())
         return place
+
+    @dbus.service.method(
+        "com.everpad.Provider",
+        in_signature='i', out_signature='',
+    )
+    def share_note(self, note_id):
+        try:
+            note = self.sq(Note).filter(
+                and_(Note.id == id, Note.action != ACTION_DELETE),
+            ).one()
+            note.share_status = SHARE_NEED_SHARE
+            self.session.commit()
+            self.sync()
+        except NoResultFound:
+            raise DBusException('Note not found')
+
+    @dbus.service.method(
+        "com.everpad.Provider",
+        in_signature='i', out_signature=''
+    )
+    def stop_sharing_note(self, note_id):
+        try:
+            note = self.sq(Note).filter(
+                and_(Note.id == id, Note.action != ACTION_DELETE),
+            ).one()
+            note.share_status = SHARE_NEED_STOP
+            self.session.commit()
+            self.sync()
+        except NoResultFound:
+            raise DBusException('Note not found')
 
     @dbus.service.method(
         "com.everpad.Provider",

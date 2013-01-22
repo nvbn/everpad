@@ -134,6 +134,22 @@ class Note(Base):
     def conflict_items_dbus(self, val):
         pass
 
+    @property
+    def share_date_dbus(self):
+        return self.share_date or 0
+
+    @share_date_dbus.setter
+    def share_date_dbus(self, val):
+        pass
+
+    @property
+    def share_url_dbus(self):
+        return self.share_url or ''
+
+    @share_url_dbus.setter
+    def share_url_dbus(self, val):
+        pass
+
     def from_api(self, note,session):
         """Fill data from api"""
         soup = BeautifulSoup(note.content.decode('utf8'))

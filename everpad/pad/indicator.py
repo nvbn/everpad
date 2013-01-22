@@ -314,8 +314,9 @@ def main():
             pad.settings()
         if args.attach:
             pad.create_wit_attach(args.attach)
-        if args.all_notes:
+        if args.all_notes or len(sys.argv) <= 1:
             pad.all_notes()
+        
         sys.exit(0)
 
 if __name__ == '__main__':

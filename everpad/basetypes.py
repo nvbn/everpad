@@ -83,7 +83,7 @@ class Note(DbusSendable):
         ('pinnded', 'b'),
         ('conflict_parent', 'i'),
         ('conflict_items', 'ai'),
-        ('share_date', 'i'),
+        ('share_date', 'x'),
         ('share_url', 's'),
     )
 

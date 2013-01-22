@@ -366,7 +366,7 @@ class SyncTestCase(unittest.TestCase):
         self.sync.notes_local()
         self.sync.notes_sharing()
         share_url = self.note_store.shareNote(self.auth_token, note.guid)
-        self.assertEqual(note.share_url, share_url)
+        self.assertIn(share_url, note.share_url)
         self.assertEqual(note.share_status, SHARE_SHARED)
 
     def test_stop_sharing(self):
@@ -383,6 +383,7 @@ class SyncTestCase(unittest.TestCase):
         self.sync.notes_sharing()
         note.share_status = SHARE_NEED_STOP
         self.session.commit()
+        self.sync.notes_remote()
         self.sync.notes_stop_sharing()
         self.assertEqual(note.share_status, SHARE_NONE)
 
@@ -399,13 +400,14 @@ class SyncTestCase(unittest.TestCase):
         self.sync.notes_local()
         share_url = self.note_store.shareNote(self.auth_token, note.guid)
         self.sync.notes_remote()
-        self.assertEqual(note.share_url, share_url)
+        self.sync.notes_sharing()
+        self.assertIn(share_url, note.share_url)
         self.assertEqual(note.share_status, SHARE_SHARED)
         self.note_store.stopSharingNote(self.auth_token, note.guid)
         self.sync.notes_remote()
         self.assertEqual(note.share_status, SHARE_NONE)
 
-    def test_shar_id(self):
+    def test_shard_id(self):
         """Test receiving shard id"""
         self.assertTrue(len(self.sync.shard_id) > 0)
 

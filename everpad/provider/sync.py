@@ -311,7 +311,9 @@ class SyncAgent(object):
                 nt.share_date = None
                 nt.share_url = None
                 self.session.commit()
-            elif note.attributes.shareDate != nt.share_date:
+            elif note.attributes.shareDate != nt.share_date and nt.share_status not in(
+                    models.SHARE_NEED_SHARE, models.SHARE_NEED_STOP,
+                ):
                 self._single_note_share(nt, note.attributes.shareDate)
                 self.session.commit()
         ids = filter(lambda id: id not in notes_ids, map(

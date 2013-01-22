@@ -355,7 +355,10 @@ class SyncAgent(object):
 
     def _single_note_share(self, note, share_date=None):
         try:
-            note.share_url = self.note_store.shareNote(self.auth_token, note.guid)
+            share_key = self.note_store.shareNote(self.auth_token, note.guid)
+            note.share_url = "https://www.evernote.com/shard/%s/sh/%s/%s" % (
+                self.shard_id, note.guid, share_key,
+            )
             note.share_date = share_date or int(time.time() * 1000)
             note.share_status = models.SHARE_SHARED
         except EDAMUserException as e:

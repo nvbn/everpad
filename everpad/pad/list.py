@@ -38,6 +38,8 @@ class List(QMainWindow):
         self.tagsModel = QStandardItemModel()
         self.ui.tagsList.setModel(self.tagsModel)
         self.ui.tagsList.selection.connect(self.tag_selection_changed)
+        self.ui.tagsList.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.tagsList.customContextMenuRequested.connect(self.tag_context_menu)
         
         self.notesModel = QStandardItemModel()
         self.notesModel.setHorizontalHeaderLabels(
@@ -203,6 +205,23 @@ class List(QMainWindow):
             self._reload_notebooks_list()
 
     @Slot()
+    def remove_tag(self):
+        msg = QMessageBox(
+            QMessageBox.Critical,
+            self.tr("You are trying to delete a tag"),
+            self.tr("Are you sure want to delete this tag and untag all notes tagged with it?"),
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if msg.exec_() == QMessageBox.Yes:
+            index = self.ui.tagsList.currentIndex()
+            item = self.tagsModel.itemFromIndex(index)
+            self.app.provider.delete_tag(item.tag.id)
+            self.app.send_notify(self.tr('Tag "%s" deleted!') % item.tag.name)
+            self._reload_tags_list()
+
+
+
+    @Slot()
     def new_note(self):
         index = self.ui.notebooksList.currentIndex()
         notebook_id = NONE_ID
@@ -242,6 +261,15 @@ class List(QMainWindow):
             menu.addAction(QIcon.fromTheme('gtk-edit'), self.tr('Rename'), self.rename_notebook)
             menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_notebook)
             menu.exec_(self.ui.notebooksList.mapToGlobal(pos))
+
+    @Slot(QPoint)
+    def tag_context_menu(self, pos):
+        index = self.ui.tagsList.currentIndex()
+        item = self.tagsModel.itemFromIndex(index)
+        if hasattr(item, 'tag'):
+            menu = QMenu(self.ui.tagsList)
+            menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_tag)
+            menu.exec_(self.ui.tagsList.mapToGlobal(pos))
 
     @Slot(QPoint)
     def note_context_menu(self, pos):

@@ -64,11 +64,13 @@ class List(QMainWindow):
     @Slot(QItemSelection, QItemSelection)
     def selection_changed(self, selected, deselected):
         if len(selected.indexes()):
+            self.ui.tagsList.clearSelection()
             self.notebook_selected(selected.indexes()[-1])
     
     @Slot(QItemSelection, QItemSelection)
     def tag_selection_changed(self, selected, deselected):
         if len(selected.indexes()):
+            self.ui.notebooksList.clearSelection()
             self.tag_selected(selected.indexes()[-1])
 
     def showEvent(self, *args, **kwargs):
@@ -218,8 +220,6 @@ class List(QMainWindow):
             self.app.provider.delete_tag(item.tag.id)
             self.app.send_notify(self.tr('Tag "%s" deleted!') % item.tag.name)
             self._reload_tags_list()
-
-
 
     @Slot()
     def new_note(self):

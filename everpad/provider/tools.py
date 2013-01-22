@@ -46,7 +46,7 @@ def get_db_session(db_path=None):
     return session
 
 
-def get_note_store(auth_token=None):
+def get_user_store(auth_token=None):
     if not auth_token:
         auth_token = get_auth_token()
     user_store_uri = "https://" + HOST + "/edam/user"
@@ -54,7 +54,13 @@ def get_note_store(auth_token=None):
     user_store_http_client = THttpClient.THttpClient(user_store_uri,
             http_proxy=get_proxy_config(urlparse(user_store_uri).scheme))
     user_store_protocol = TBinaryProtocol.TBinaryProtocol(user_store_http_client)
-    user_store = UserStore.Client(user_store_protocol)
+    return UserStore.Client(user_store_protocol)
+
+
+def get_note_store(auth_token=None):
+    if not auth_token:
+        auth_token = get_auth_token()
+    user_store = get_user_store(auth_token)
     note_store_url = user_store.getNoteStoreUrl(auth_token)
     note_store_http_client = THttpClient.THttpClient(note_store_url,
             http_proxy=get_proxy_config(urlparse(note_store_url).scheme))

@@ -20,7 +20,7 @@ from everpad.provider.tools import (
     ACTION_CHANGE, ACTION_DELETE,
     get_db_session, get_note_store,
     ACTION_NOEXSIST, ACTION_CONFLICT,
-    get_auth_token,
+    get_auth_token, get_user_store,
 )
 from everpad.specific import AppClass
 from everpad.tools import sanitize
@@ -44,6 +44,15 @@ SYNC_MANUAL = -1
 
 class SyncAgent(object):
     """Split agent for latest backends support"""
+    @property
+    def shard_id(self):
+        """User sharId"""
+        if not hasattr(self, '_shard_id'):
+            user_store = get_user_store()
+            user = user_store.getUser(self.auth_token)
+            self._shard_id = user.shardId
+        return self._shard_id
+
     def _iter_all_notes(self):
         """Iterate all notes"""
         offset = 0

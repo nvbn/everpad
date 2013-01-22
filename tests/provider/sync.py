@@ -405,6 +405,10 @@ class SyncTestCase(unittest.TestCase):
         self.sync.notes_remote()
         self.assertEqual(note.share_status, SHARE_NONE)
 
+    def test_shar_id(self):
+        """Test receiving shard id"""
+        self.assertTrue(len(self.sync.shard_id) > 0)
+
 
 if __name__ == '__main__':
     unittest.main()

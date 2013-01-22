@@ -4,7 +4,7 @@ from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings, QT_TRAN
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QCursor
 from PySide.QtNetwork import QNetworkProxyFactory
 from everpad.basetypes import Note, NONE_ID, NONE_VAL
-from everpad.tools import get_provider, get_pad, print_version
+from everpad.tools import get_provider, get_pad, print_version, resource_filename
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
 from everpad.pad.list import List
@@ -187,7 +187,7 @@ class PadApp(QApplication):
         self.installTranslator(self.qtTranslator)
         self.appTranslator = QTranslator()
         if not self.appTranslator.load(locale, os.path.join(os.path.dirname(__file__), '../../i18n')):
-            self.appTranslator.load(locale, '/usr/share/everpad/i18n')
+            self.appTranslator.load(locale, resource_filename('share/everpad/i18n'))
         # This application string can be localized to 'RTL' to switch the application layout
         # direction. See for example i18n/ar_EG.ts
         QT_TRANSLATE_NOOP('QApplication', 'QT_LAYOUT_DIRECTION')
@@ -306,24 +306,16 @@ def main():
         app.exec_()
     except IOError:
         pad = get_pad()
-        action_performed = False
         if args.open:
             pad.open(args.open)
-            action_performed = True
         if args.create:
             pad.create()
-            action_performed = True
         if args.settings:
             pad.settings()
-            action_performed = True
         if args.attach:
             pad.create_wit_attach(args.attach)
-            action_performed = True
-        if args.all_notes:
+        if args.all_notes or len(sys.argv) <= 1:
             pad.all_notes()
-            action_performed = True
-        if not action_performed:
-            print 'everpad already runned'
         sys.exit(0)
 
 if __name__ == '__main__':

@@ -422,7 +422,7 @@ class ProviderService(dbus.service.Object):
     def share_note(self, note_id):
         try:
             note = self.sq(Note).filter(
-                and_(Note.id == id, Note.action != ACTION_DELETE),
+                and_(Note.id == note_id, Note.action != ACTION_DELETE),
             ).one()
             note.share_status = SHARE_NEED_SHARE
             self.session.commit()
@@ -437,9 +437,10 @@ class ProviderService(dbus.service.Object):
     def stop_sharing_note(self, note_id):
         try:
             note = self.sq(Note).filter(
-                and_(Note.id == id, Note.action != ACTION_DELETE),
+                and_(Note.id == note_id, Note.action != ACTION_DELETE),
             ).one()
             note.share_status = SHARE_NEED_STOP
+            note.share_url = ''
             self.session.commit()
             self.sync()
         except NoResultFound:

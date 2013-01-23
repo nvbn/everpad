@@ -119,10 +119,19 @@ class List(QMainWindow):
         else:
             notebook_id = 0
         notebook_filter = [notebook_id] if notebook_id > 0 else dbus.Array([], signature='i')
+        
+        if hasattr(item, 'stack'): # stack selected, retrieve all underlying notebooks
+            notebook_filter = []
+            for notebook_struct in self.app.provider.list_notebooks():
+                notebook = Notebook.from_tuple(notebook_struct)
+                if(notebook.stack == item.stack):
+                    notebook_filter.append(notebook.id)
+        
         notes = self.app.provider.find_notes(
             '', notebook_filter, dbus.Array([], signature='i'),
             0, 2 ** 31 - 1, Note.ORDER_TITLE, -1,
         )  # fails with sys.maxint in 64
+
         for note_struct in notes:
             note = Note.from_tuple(note_struct)
             self.notesModel.appendRow(QNoteItemFactory(note).make_items())
@@ -283,19 +292,30 @@ class List(QMainWindow):
         self._reload_tags_list()
 
     def _reload_notebooks_list(self, select_notebook_id=None):
-        # TODO QTree for nested notebooks
+        # TODO could enable selecting an already selected stack
         self.notebooksModel.clear()
         root = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes'))
         self.notebooksModel.appendRow(root)
-
         selected_item = root
+        
+        stacks = {}
         for notebook_struct in self.app.provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             count = self.app.provider.get_notebook_notes_count(notebook.id)
             item = QNotebookItem(notebook, count)
-            root.appendRow(item)
+            
+            if(notebook.stack == ''):
+                root.appendRow(item)
+            else:
+                if(notebook.stack not in stacks.keys()):
+                    stack = QStandardItem(QIcon.fromTheme('user-home'), notebook.stack)
+                    stack.stack = notebook.stack
+                    root.appendRow(stack)
+                    stacks[notebook.stack] = stack
+                
+                stacks[notebook.stack].appendRow(item)
 
-            if select_notebook_id and notebook.id == select_notebook_id:
+            if select_notebook_id and notebook.name == select_notebook_id:
                 selected_item = item
         
         self.ui.notebooksList.expandAll()
@@ -318,7 +338,7 @@ class List(QMainWindow):
         return name, status
 
     def _reload_tags_list(self, select_tag_id=None):
-        # TODO QTree for nested tags
+        # TODO nested tags
         self.tagsModel.clear()
         tagRoot = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Tags'))
         self.tagsModel.appendRow(tagRoot)

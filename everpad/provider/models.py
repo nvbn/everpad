@@ -207,6 +207,7 @@ class Notebook(Base):
     service_created = Column(Integer)
     service_updated = Column(Integer)
     action = Column(Integer)
+    stack = Column(String)
 
     def from_api(self, notebook):
         """Fill data from api"""
@@ -215,6 +216,19 @@ class Notebook(Base):
         self.service_created = notebook.serviceCreated
         self.service_updated = notebook.serviceUpdated
         self.action = ACTION_NONE
+        if(notebook.stack):
+            self.stack = notebook.stack.decode('utf8')
+
+    @property
+    def stack_dbus(self):
+        if self.stack:
+            return self.stack
+        return ''
+
+    @stack_dbus.setter
+    def stack_dbus(self, val):
+        if val:
+            self.stack = val
 
 
 class Tag(Base):

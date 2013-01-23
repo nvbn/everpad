@@ -93,6 +93,7 @@ class Notebook(DbusSendable):
         ('id', 'i'),
         ('name', 's'),
         ('default', 'i'),
+        ('stack', 's')
     )
 
 

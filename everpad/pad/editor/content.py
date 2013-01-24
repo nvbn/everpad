@@ -14,7 +14,7 @@ from everpad.pad.editor.actions import ImagePrefs, TableWidget
 from everpad.pad.tools import file_icon_path
 from everpad.tools import sanitize, clean, html_unescape, resource_filename
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, Tag
 from functools import partial
 import webbrowser
 import os
@@ -266,6 +266,10 @@ class ContentEdit(QObject):
                         media['src'] = file_icon_path
                     media['title'] = res.file_name
                     res.in_content = True
+                    # wrap in link to make clickable
+                    tag = Tag(soup, "a", [("href", 'file://%s' % res.file_path)])
+                    media.replaceWith(tag)
+                    tag.insert(0, media)
                 else:
                     media['src'] = ''
                     media['title'] = ''

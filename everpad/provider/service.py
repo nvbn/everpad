@@ -347,10 +347,10 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider",
-        in_signature='s',
+        in_signature='ss',
         out_signature=btype.Notebook.signature,
     )
-    def create_notebook(self, name):
+    def create_notebook(self, name, stack):
         if self.sq(Note).filter(
             Notebook.name == name,
         ).count():
@@ -359,7 +359,7 @@ class ProviderService(dbus.service.Object):
             )
         notebook = Notebook(
             action=ACTION_CREATE,
-            name=name, default=False,
+            name=name, default=False, stack=stack,
         )
         self.session.add(notebook)
         self.session.commit()

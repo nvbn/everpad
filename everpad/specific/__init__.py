@@ -24,7 +24,7 @@ def get_tray_icon(is_black=False):
         return QIcon.fromTheme('everpad-mono', QIcon('../../data/everpad-mono.png'))
 
 
-if 'kde' in os.environ.get('DESKTOP_SESSION', ''):  # kde init qwidget for wallet access
+if 'kde' in os.environ.get('DESKTOP_SESSION', '') or os.environ.get('KDE_FULL_SESSION') == 'true':  # kde init qwidget for wallet access
     from PySide.QtGui import QApplication
     AppClass = QApplication
 else:

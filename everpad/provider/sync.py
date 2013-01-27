@@ -11,6 +11,7 @@ from sqlalchemy import and_
 from evernote.edam.limits.constants import (
     EDAM_NOTE_TITLE_LEN_MAX, EDAM_NOTE_CONTENT_LEN_MAX,
     EDAM_TAG_NAME_LEN_MAX, EDAM_NOTEBOOK_NAME_LEN_MAX,
+    EDAM_NOTEBOOK_STACK_LEN_MAX,
     EDAM_USER_NOTES_MAX, EDAM_TAG_NAME_REGEX,
     EDAM_NOTEBOOK_NAME_REGEX,
 )
@@ -83,6 +84,7 @@ class SyncAgent(object):
             kwargs = dict(
                 name=notebook.name[:EDAM_NOTEBOOK_NAME_LEN_MAX].strip().encode('utf8'),
                 defaultNotebook=notebook.default,
+                stack=notebook.stack[:EDAM_NOTEBOOK_STACK_LEN_MAX].strip().encode('utf8'),
             )
             if not regex.search(EDAM_NOTEBOOK_NAME_REGEX, notebook.name):
                 self.app.log('notebook %s skipped' % notebook.name)

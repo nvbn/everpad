@@ -227,8 +227,7 @@ class Notebook(Base):
 
     @stack_dbus.setter
     def stack_dbus(self, val):
-        if val:
-            self.stack = val
+        self.stack = val
 
 
 class Tag(Base):

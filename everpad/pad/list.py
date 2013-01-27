@@ -177,12 +177,12 @@ class List(QMainWindow):
         self.app.indicator.open(item.note)
 
     @Slot()
-    def new_notebook(self):
-        name, status = self._notebook_new_name(self.tr('Create new notebook'))
+    def new_notebook(self, oldStack = ''):
+        name, status, stack = self._notebook_new_name(self.tr('Create new notebook'), '', oldStack)
         if status:
-            notebook_struct = self.app.provider.create_notebook(name)
+            notebook_struct = self.app.provider.create_notebook(name, stack)
             notebook = Notebook.from_tuple(notebook_struct)
-
+            
             self.app.send_notify(self.tr('Notebook "%s" created!') % notebook.name)
             self._reload_notebooks_list(notebook.id)
 
@@ -191,11 +191,12 @@ class List(QMainWindow):
         index = self.ui.notebooksList.currentIndex()
         item = self.notebooksModel.itemFromIndex(index)
         notebook = item.notebook
-        name, status = self._notebook_new_name(
-            self.tr('Rename notebook'), notebook.name,
+        name, status, stack = self._notebook_new_name(
+            self.tr('Rename notebook'), notebook.name, notebook.stack
         )
         if status:
             notebook.name = name
+            notebook.stack = stack
             self.app.provider.update_notebook(notebook.struct)
             self.app.send_notify(self.tr('Notebook "%s" renamed!') % notebook.name)
             self._reload_notebooks_list(notebook.id)
@@ -214,7 +215,47 @@ class List(QMainWindow):
             self.app.provider.delete_notebook(item.notebook.id)
             self.app.send_notify(self.tr('Notebook "%s" deleted!') % item.notebook.name)
             self._reload_notebooks_list()
-
+    
+    @Slot()
+    def rename_stack(self):
+        index = self.ui.notebooksList.currentIndex()
+        item = self.notebooksModel.itemFromIndex(index)
+        stack = item.stack
+        name, status = self._stack_new_name(
+            self.tr('Rename stack'), stack,
+        )
+        if status:
+            # loop notebooks and update stack str
+            for notebook_struct in self.app.provider.list_notebooks():
+                notebook = Notebook.from_tuple(notebook_struct)
+                if(notebook.stack == item.stack):
+                    notebook.stack = name
+                    self.app.provider.update_notebook(notebook.struct)
+            
+            self.app.send_notify(self.tr('Stack "%s" renamed!') % name)
+            self._reload_notebooks_list(notebook.id)
+    
+    @Slot()
+    def remove_stack(self):
+        msg = QMessageBox(
+            QMessageBox.Critical,
+            self.tr("You are trying to delete a stack"),
+            self.tr("Are you sure want to delete this stack? Notebooks and notes are preserved."),
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if msg.exec_() == QMessageBox.Yes:
+            index = self.ui.notebooksList.currentIndex()
+            item = self.notebooksModel.itemFromIndex(index)
+            # loop notebooks and remove stack str
+            for notebook_struct in self.app.provider.list_notebooks():
+                notebook = Notebook.from_tuple(notebook_struct)
+                if(notebook.stack == item.stack):
+                    print "Clearing one notebook from its stack."
+                    notebook.stack = ''
+                    self.app.provider.update_notebook(notebook.struct)
+            
+            self._reload_notebooks_list()
+    
     @Slot()
     def remove_tag(self):
         msg = QMessageBox(
@@ -270,6 +311,12 @@ class List(QMainWindow):
             menu.addAction(QIcon.fromTheme('gtk-edit'), self.tr('Rename'), self.rename_notebook)
             menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_notebook)
             menu.exec_(self.ui.notebooksList.mapToGlobal(pos))
+        if hasattr(item, 'stack'):
+            menu = QMenu(self.ui.notebooksList)
+            menu.addAction(QIcon.fromTheme('gtk-edit'), self.tr('Rename'), self.rename_stack)
+            menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_stack)
+            menu.exec_(self.ui.notebooksList.mapToGlobal(pos))
+
 
     @Slot(QPoint)
     def tag_context_menu(self, pos):
@@ -325,7 +372,7 @@ class List(QMainWindow):
             self.ui.notebooksList.setCurrentIndex(index)
             self.notebook_selected(index)
 
-    def _notebook_new_name(self, title, exclude=''):
+    def _notebook_new_name(self, title, exclude='', oldStack=''):
         names = map(lambda nb: Notebook.from_tuple(nb).name, self.app.provider.list_notebooks())
         try:
             names.remove(exclude)
@@ -335,6 +382,14 @@ class List(QMainWindow):
         while name in names and status:
             message = self.tr('Notebook with this name already exist. Enter notebook name')
             name, status = QInputDialog.getText(self, title, message)
+        if status:
+            stack, status = QInputDialog.getText(self, title, self.tr('Enter stack name (empty for no stack):'), text=oldStack)
+        else:
+            stack = oldStack
+        return name, status, stack
+
+    def _stack_new_name(self, title, value=''):
+        name, status = QInputDialog.getText(self, title, self.tr('Enter stack name:'), text=value)
         return name, status
 
     def _reload_tags_list(self, select_tag_id=None):

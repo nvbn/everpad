@@ -194,7 +194,7 @@ class ProviderService(dbus.service.Object):
             btype.Tag.from_obj(tag).struct,
         self.sq(Tag).filter(
             Tag.action != ACTION_DELETE,
-        ))
+        ).order_by(Tag.name))
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',

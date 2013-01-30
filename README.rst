@@ -43,12 +43,12 @@ You can see more about everpad installation, including method for other linux, i
 
 Some errors?
 ============
-For debug output you need:
-``killall everpad everpad-provider everpad-lens``
-``everpad-provider --verbose``
-And in second terminal:
+For debug output you should run these commands in separate terminals:
+
+``killall everpad everpad-provider everpad-lens && everpad-provider --verbose``
+
 ``everpad``
-And in third:
+
 ``everpad-lens``
 
 Want to help?

@@ -146,6 +146,8 @@ class Indicator(QSystemTrayIcon):
             conflict_parent=NONE_VAL,
             conflict_items=dbus.Array([], signature='i'),
             place='',
+            share_date = NONE_VAL,
+            share_url = ''
         ).struct
         note = Note.from_tuple(
             self.app.provider.create_note(note_struct),

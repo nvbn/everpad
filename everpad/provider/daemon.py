@@ -95,7 +95,7 @@ def main():
         app = ProviderApp(args.verbose, sys.argv)
         app.exec_()
     except IOError:
-        print "everpad-provider already runned"
+        print "everpad-provider already ran"
 
 if __name__ == '__main__':
     main()

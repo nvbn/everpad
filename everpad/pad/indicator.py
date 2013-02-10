@@ -154,7 +154,7 @@ class Indicator(QSystemTrayIcon):
         )
         editor = self.open(note)
         if attach:
-            editor.resource_edit.add_attach(attach)
+            editor.resource_edit.add_all_attach(attach)
 
     @Slot()
     def show_all_notes(self):
@@ -238,9 +238,9 @@ class EverpadService(dbus.service.Object):
     def create(self):
         self.app.indicator.create()
 
-    @dbus.service.method("com.everpad.App", in_signature='s', out_signature='')
-    def create_wit_attach(self, name):
-        self.app.indicator.create(name)
+    @dbus.service.method("com.everpad.App", in_signature='as', out_signature='')
+    def create_wit_attach(self, names):
+        self.app.indicator.create(names)
 
     @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
     def settings(self):
@@ -258,12 +258,12 @@ class EverpadService(dbus.service.Object):
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     parser = argparse.ArgumentParser()
-    parser.add_argument('attach', type=str, nargs='?', help='attach file to new note')
+    parser.add_argument('attachments', type=str, nargs='*', help='attach files to new note')
     parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
     parser.add_argument('--all-notes', action='store_true', help='show all notes window')
     parser.add_argument('--settings', action='store_true', help='settings and management')
-    parser.add_argument('--replace', action='store_true', help='replace already runned')
+    parser.add_argument('--replace', action='store_true', help='replace already running instance')
     parser.add_argument('--version', '-v', action='store_true', help='show version')
     args = parser.parse_args(sys.argv[1:])
     if args.version:
@@ -301,8 +301,8 @@ def main():
             app.indicator.create()
         if args.settings:
             app.indicator.show_management()
-        if args.attach:
-            app.indicator.create(args.attach)
+        if args.attachments:
+            app.indicator.create(args.attachments)
         if args.all_notes:
             app.indicator.show_all_notes()
         app.exec_()
@@ -314,8 +314,8 @@ def main():
             pad.create()
         if args.settings:
             pad.settings()
-        if args.attach:
-            pad.create_wit_attach(args.attach)
+        if args.attachments:
+            pad.create_wit_attach(args.attachments)
         if args.all_notes or len(sys.argv) <= 1:
             pad.all_notes()
         sys.exit(0)

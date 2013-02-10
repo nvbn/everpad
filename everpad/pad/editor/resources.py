@@ -177,6 +177,12 @@ class ResourceEdit(object):  # TODO: move event to item
             self.add_attach(name)
 
     def add_attach(self, name):
+        """Add name as an attachment and return the attachment as a Resource
+        
+        name - a string containing a filename or url that will be attached
+
+        return: the resource object corresponding to the attached object
+        """
         dest = os.path.expanduser('~/.everpad/data/%d/' % self.note.id)
         try:
             os.mkdir(dest)
@@ -200,3 +206,15 @@ class ResourceEdit(object):  # TODO: move event to item
         self._put(res)
         self.on_change()
         return res
+
+    def add_all_attach(self, names):
+        """Adds all the entries in names as attachments
+        
+        names - sequence of strings - each string is treated as a filename or url
+
+        No return value
+        """
+        assert not hasattr(names, "strip"); # Ensure that didn't get
+                                            # passed a single string
+        for name in names:
+            self.add_attach(name);

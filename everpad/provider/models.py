@@ -92,7 +92,10 @@ class Note(Base):
     def notebook_dbus(self):
         if self.notebook:
             return self.notebook.id
-        return
+        else:
+            return self.session.query(Notebook).filter(
+                Notebook.default == True,
+            ).one().id
 
     @notebook_dbus.setter
     def notebook_dbus(self, val):

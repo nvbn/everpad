@@ -22,6 +22,7 @@ from everpad.provider.tools import (
     get_db_session, get_note_store,
     ACTION_NOEXSIST, ACTION_CONFLICT,
     get_auth_token, get_user_store,
+    ACTION_DUPLICATE,
 )
 from everpad.specific import AppClass
 from everpad.tools import sanitize
@@ -84,8 +85,9 @@ class SyncAgent(object):
             kwargs = dict(
                 name=notebook.name[:EDAM_NOTEBOOK_NAME_LEN_MAX].strip().encode('utf8'),
                 defaultNotebook=notebook.default,
-                stack=notebook.stack[:EDAM_NOTEBOOK_STACK_LEN_MAX].strip().encode('utf8'),
             )
+            if notebook.stack:
+                kwargs['stack'] = notebook.stack[:EDAM_NOTEBOOK_STACK_LEN_MAX].strip().encode('utf8')
             if not regex.search(EDAM_NOTEBOOK_NAME_REGEX, notebook.name):
                 self.app.log('notebook %s skipped' % notebook.name)
                 notebook.action = ACTION_NONE
@@ -94,20 +96,24 @@ class SyncAgent(object):
                 kwargs['guid'] = notebook.guid
             nb = Notebook(**kwargs)
             if notebook.action == ACTION_CHANGE:
-                while True:
-                    try:
-                        nb = self.note_store.updateNotebook(
-                            self.auth_token, nb,
-                        )
-                        break
-                    except EDAMUserException, e:
-                        notebook.name = notebook.name + '*'  # shit, but work
-                        self.log(e)
+                try:
+                    nb = self.note_store.updateNotebook(
+                        self.auth_token, nb,
+                    )
+                    notebook.action = ACTION_NONE
+                except EDAMUserException:
+                    notebook.action = ACTION_DUPLICATE
+                    self.app.log('Duplicate %s' % nb.name)
             elif notebook.action == ACTION_CREATE:
-                nb = self.note_store.createNotebook(
-                    self.auth_token, nb,
-                )
-                notebook.guid = nb.guid
+                try:
+                    nb = self.note_store.createNotebook(
+                        self.auth_token, nb,
+                    )
+                    notebook.guid = nb.guid
+                    notebook.action = ACTION_NONE
+                except EDAMUserException:
+                    notebook.action = ACTION_DUPLICATE
+                    self.app.log('Duplicate %s' % nb.name)
             elif notebook.action == ACTION_DELETE and False:  # not allowed for app now
                 try:
                     self.note_store.expungeNotebook(
@@ -115,8 +121,29 @@ class SyncAgent(object):
                     )
                     self.session.delete(notebook)
                 except EDAMUserException, e:
-                    self.log(e)
-            notebook.action = ACTION_NONE
+                    self.app.log(e)
+        self.session.commit()
+        self.notebook_duplicates()
+
+    def notebook_duplicates(self):
+        """Merge and remove duplicates"""
+        for notebook in self.sq(models.Notebook).filter(
+            models.Notebook.action == ACTION_DUPLICATE,
+        ):
+            try:
+                original = self.sq(models.Notebook).filter(and_(
+                    models.Notebook.action == ACTION_DUPLICATE,
+                    models.Notebook.name == notebook.name,
+                )).one()
+            except NoResultFound:
+                original = self.sq(models.Notebook).filter(
+                    models.Notebook.default == True,
+                ).one()
+            for note in self.sq(models.Note).filter(
+                models.Note.notebook_id == notebook.id,
+            ):
+                note.notebook_id = original.id
+            self.session.delete(notebook)
         self.session.commit()
 
     def tags_local(self):

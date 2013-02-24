@@ -1,3 +1,15 @@
+everpad (2.5-0~precise) precise; urgency=low
+
+  * Sharing notes
+  * Filter by tags in all notes window
+  * Make search on home lens optional
+  * Basic notebook stacks support
+  * Interface improvments
+  * Basic lxde support
+  * Tons of fixed bugs
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 24 Feb 2013 12:26:01 +0400
+
 everpad (2.4-0~precise) precise; urgency=low
 
   * Conflicts resolving

@@ -22,6 +22,7 @@ ACTION_DELETE = 2
 ACTION_CHANGE = 3
 ACTION_NOEXSIST = 4
 ACTION_CONFLICT = 5
+ACTION_DUPLICATE = 6
 
 
 SHARE_NONE = 0
@@ -91,7 +92,10 @@ class Note(Base):
     def notebook_dbus(self):
         if self.notebook:
             return self.notebook.id
-        return
+        else:
+            return self.session.query(Notebook).filter(
+                Notebook.default == True,
+            ).one().id
 
     @notebook_dbus.setter
     def notebook_dbus(self, val):

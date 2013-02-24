@@ -28,19 +28,19 @@ class List(QMainWindow):
         self.setWindowIcon(get_icon())
         self.setWindowTitle(self.tr("Everpad / All Notes"))
         self.app.data_changed.connect(self._reload_data)
-        
+
         self.notebooksModel = QStandardItemModel()
         self.ui.notebooksList.setModel(self.notebooksModel)
         self.ui.notebooksList.selection.connect(self.selection_changed)
         self.ui.notebooksList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
-	
+
         self.tagsModel = QStandardItemModel()
         self.ui.tagsList.setModel(self.tagsModel)
         self.ui.tagsList.selection.connect(self.tag_selection_changed)
         self.ui.tagsList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.tagsList.customContextMenuRequested.connect(self.tag_context_menu)
-        
+
         self.notesModel = QStandardItemModel()
         self.notesModel.setHorizontalHeaderLabels(
             [self.tr('Title'), self.tr('Last Updated')])
@@ -66,7 +66,7 @@ class List(QMainWindow):
         if len(selected.indexes()):
             self.ui.tagsList.clearSelection()
             self.notebook_selected(selected.indexes()[-1])
-    
+
     @Slot(QItemSelection, QItemSelection)
     def tag_selection_changed(self, selected, deselected):
         if len(selected.indexes()):
@@ -119,14 +119,14 @@ class List(QMainWindow):
         else:
             notebook_id = 0
         notebook_filter = [notebook_id] if notebook_id > 0 else dbus.Array([], signature='i')
-        
-        if hasattr(item, 'stack'): # stack selected, retrieve all underlying notebooks
+
+        if hasattr(item, 'stack'):  # stack selected, retrieve all underlying notebooks
             notebook_filter = []
             for notebook_struct in self.app.provider.list_notebooks():
                 notebook = Notebook.from_tuple(notebook_struct)
                 if(notebook.stack == item.stack):
                     notebook_filter.append(notebook.id)
-        
+
         notes = self.app.provider.find_notes(
             '', notebook_filter, dbus.Array([], signature='i'),
             0, 2 ** 31 - 1, Note.ORDER_TITLE, -1,
@@ -147,7 +147,7 @@ class List(QMainWindow):
 
     def tag_selected(self, index):
         self.notesModel.setRowCount(0)
-        
+
         item = self.tagsModel.itemFromIndex(index)
         if hasattr(item, 'tag'):
             tag_id = item.tag.id
@@ -177,12 +177,12 @@ class List(QMainWindow):
         self.app.indicator.open(item.note)
 
     @Slot()
-    def new_notebook(self, oldStack = ''):
+    def new_notebook(self, oldStack=''):
         name, status, stack = self._notebook_new_name(self.tr('Create new notebook'), '', oldStack)
         if status:
             notebook_struct = self.app.provider.create_notebook(name, stack)
             notebook = Notebook.from_tuple(notebook_struct)
-            
+
             self.app.send_notify(self.tr('Notebook "%s" created!') % notebook.name)
             self._reload_notebooks_list(notebook.id)
 
@@ -215,7 +215,7 @@ class List(QMainWindow):
             self.app.provider.delete_notebook(item.notebook.id)
             self.app.send_notify(self.tr('Notebook "%s" deleted!') % item.notebook.name)
             self._reload_notebooks_list()
-    
+
     @Slot()
     def rename_stack(self):
         index = self.ui.notebooksList.currentIndex()
@@ -231,10 +231,10 @@ class List(QMainWindow):
                 if(notebook.stack == item.stack):
                     notebook.stack = name
                     self.app.provider.update_notebook(notebook.struct)
-            
+
             self.app.send_notify(self.tr('Stack "%s" renamed!') % name)
             self._reload_notebooks_list(notebook.id)
-    
+
     @Slot()
     def remove_stack(self):
         msg = QMessageBox(
@@ -253,9 +253,9 @@ class List(QMainWindow):
                     print "Clearing one notebook from its stack."
                     notebook.stack = ''
                     self.app.provider.update_notebook(notebook.struct)
-            
+
             self._reload_notebooks_list()
-    
+
     @Slot()
     def remove_tag(self):
         msg = QMessageBox(
@@ -317,7 +317,6 @@ class List(QMainWindow):
             menu.addAction(QIcon.fromTheme('gtk-delete'), self.tr('Remove'), self.remove_stack)
             menu.exec_(self.ui.notebooksList.mapToGlobal(pos))
 
-
     @Slot(QPoint)
     def tag_context_menu(self, pos):
         index = self.ui.tagsList.currentIndex()
@@ -344,13 +343,13 @@ class List(QMainWindow):
         root = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Notes'))
         self.notebooksModel.appendRow(root)
         selected_item = root
-        
+
         stacks = {}
         for notebook_struct in self.app.provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             count = self.app.provider.get_notebook_notes_count(notebook.id)
             item = QNotebookItem(notebook, count)
-            
+
             if(notebook.stack == ''):
                 root.appendRow(item)
             else:
@@ -359,14 +358,14 @@ class List(QMainWindow):
                     stack.stack = notebook.stack
                     root.appendRow(stack)
                     stacks[notebook.stack] = stack
-                
+
                 stacks[notebook.stack].appendRow(item)
 
             if select_notebook_id and notebook.name == select_notebook_id:
                 selected_item = item
-        
+
         self.ui.notebooksList.expandAll()
-	
+
         if selected_item:
             index = self.notebooksModel.indexFromItem(selected_item)
             self.ui.notebooksList.setCurrentIndex(index)
@@ -397,24 +396,27 @@ class List(QMainWindow):
         self.tagsModel.clear()
         tagRoot = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Tags'))
         self.tagsModel.appendRow(tagRoot)
-	
+
         for tag_struct in self.app.provider.list_tags():
             tag = Tag.from_tuple(tag_struct)
             count = self.app.provider.get_tag_notes_count(tag.id)
             item = QTagItem(tag, count)
             tagRoot.appendRow(item)
-        
+
         self.ui.tagsList.expandAll()
+
 
 class QNotebookItem(QStandardItem):
     def __init__(self, notebook, count):
         super(QNotebookItem, self).__init__(QIcon.fromTheme('folder'), '%s (%d)' % (notebook.name, count))
         self.notebook = notebook
 
+
 class QTagItem(QStandardItem):
     def __init__(self, tag, count):
         super(QTagItem, self).__init__(QIcon.fromTheme('folder'), '%s (%d)' % (tag.name, count))
         self.tag = tag
+
 
 class QNoteItemFactory(object):
     def __init__(self, note):

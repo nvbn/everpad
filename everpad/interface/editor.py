@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Sun Dec 23 23:38:40 2012
+# Created: Sun Feb 24 18:32:37 2013
 #      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -43,6 +43,7 @@ class Ui_Editor(object):
         self.resourceLabel.setObjectName("resourceLabel")
         self.verticalLayout.addWidget(self.resourceLabel)
         self.alternativeVersions = QtGui.QLabel(self.centralwidget)
+        self.alternativeVersions.setWordWrap(True)
         self.alternativeVersions.setObjectName("alternativeVersions")
         self.verticalLayout.addWidget(self.alternativeVersions)
         self.resourceArea = QtGui.QScrollArea(self.centralwidget)

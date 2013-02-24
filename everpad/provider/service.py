@@ -213,10 +213,15 @@ class ProviderService(dbus.service.Object):
     )
     def delete_tag(self, id):
         try:
-            self.sq(Tag).filter(
-                and_(Tag.id == id,
+            tag = self.sq(Tag).filter(and_(
+                Tag.id == id,
                 Tag.action != ACTION_DELETE,
-            )).one().action = ACTION_DELETE
+            )).one()
+            tag.action = ACTION_DELETE
+            for note in self.sq(Note).filter(
+                Note.tags.contains(tag),
+            ).all():
+                note.tags.remove(tag)
             self.session.commit()
             self.data_changed()
             return True

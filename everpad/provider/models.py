@@ -1,4 +1,7 @@
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean
+from sqlalchemy import (
+    Table, Column, Integer, ForeignKey, String, Boolean,
+    and_,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
@@ -74,9 +77,10 @@ class Note(Base):
         for tag in val:
             if tag and tag != ' ':  # for blank array and other
                 try:
-                    tags.append(self.session.query(Tag).filter(
+                    tags.append(self.session.query(Tag).filter(and_(
                         Tag.name == tag,
-                    ).one())  # shit shit shit
+                        Tag.action != ACTION_DELETE,
+                    )).one())  # shit shit shit
                 except NoResultFound:
                     tg = Tag(name=tag, action=ACTION_CREATE)
                     self.session.add(tg)

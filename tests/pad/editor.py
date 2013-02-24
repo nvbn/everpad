@@ -1,6 +1,8 @@
 import sys
 sys.path.insert(0, '..')
+# patch settings:
 import settings
+
 from PySide.QtGui import QApplication
 from PySide.QtCore import QSettings, Signal
 from dbus.exceptions import DBusException

@@ -15,6 +15,9 @@ import dbus
 import datetime
 
 
+SELECT_NONE = -1
+
+
 class List(QMainWindow):
     """All Notes dialog"""
 
@@ -45,6 +48,7 @@ class List(QMainWindow):
         QShortcut(QKeySequence(self.tr('Ctrl+q')), self, self.close)
 
     def _init_notebooks(self):
+        self._current_notebook = None
         self.notebooksModel = QStandardItemModel()
         self.ui.notebooksList.setModel(self.notebooksModel)
         self.ui.notebooksList.selection.connect(self.selection_changed)
@@ -52,6 +56,7 @@ class List(QMainWindow):
         self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
 
     def _init_tags(self):
+        self._current_tag = None
         self.tagsModel = QStandardItemModel()
         self.ui.tagsList.setModel(self.tagsModel)
         self.ui.tagsList.selection.connect(self.tag_selection_changed)
@@ -126,6 +131,10 @@ class List(QMainWindow):
             notebook_id = item.notebook.id
         else:
             notebook_id = 0
+
+        self._current_notebook = notebook_id
+        self._current_tag = SELECT_NONE
+
         notebook_filter = [notebook_id] if notebook_id > 0 else dbus.Array([], signature='i')
 
         if hasattr(item, 'stack'):  # stack selected, retrieve all underlying notebooks
@@ -161,6 +170,10 @@ class List(QMainWindow):
             tag_id = item.tag.id
         else:
             tag_id = 0
+
+        self._current_notebook = SELECT_NONE
+        self._current_tag = tag_id
+
         tag_filter = [tag_id] if tag_id > 0 else dbus.Array([], signature='i')
         notes = self.app.provider.find_notes(
             '', dbus.Array([], signature='i'), tag_filter,
@@ -342,8 +355,8 @@ class List(QMainWindow):
         menu.exec_(self.ui.notesList.mapToGlobal(pos))
 
     def _reload_data(self):
-        self._reload_notebooks_list()
-        self._reload_tags_list()
+        self._reload_notebooks_list(self._current_notebook)
+        self._reload_tags_list(self._current_tag)
 
     def _reload_notebooks_list(self, select_notebook_id=None):
         # TODO could enable selecting an already selected stack
@@ -369,12 +382,12 @@ class List(QMainWindow):
 
                 stacks[notebook.stack].appendRow(item)
 
-            if select_notebook_id and notebook.name == select_notebook_id:
+            if select_notebook_id and notebook.id == select_notebook_id:
                 selected_item = item
 
         self.ui.notebooksList.expandAll()
 
-        if selected_item:
+        if selected_item and not select_notebook_id == SELECT_NONE:
             index = self.notebooksModel.indexFromItem(selected_item)
             self.ui.notebooksList.setCurrentIndex(index)
             self.notebook_selected(index)
@@ -404,6 +417,7 @@ class List(QMainWindow):
         self.tagsModel.clear()
         tagRoot = QStandardItem(QIcon.fromTheme('user-home'), self.tr('All Tags'))
         self.tagsModel.appendRow(tagRoot)
+        selected_item = tagRoot
 
         for tag_struct in self.app.provider.list_tags():
             tag = Tag.from_tuple(tag_struct)
@@ -411,7 +425,14 @@ class List(QMainWindow):
             item = QTagItem(tag, count)
             tagRoot.appendRow(item)
 
+            if select_tag_id and tag.id == select_tag_id:
+                selected_item = item
+
         self.ui.tagsList.expandAll()
+        if selected_item and not select_tag_id == SELECT_NONE:
+            index = self.tagsModel.indexFromItem(selected_item)
+            self.ui.tagsList.setCurrentIndex(index)
+            self.tag_selected(index)
 
 
 class QNotebookItem(QStandardItem):

@@ -105,6 +105,7 @@ class Management(QDialog):
         self.ui.blackTray.stateChanged.connect(self.tray_changed)
         self.ui.progressCheckBox.stateChanged.connect(self.progress_changed)
         self.ui.searchOnHome.stateChanged.connect(self.search_on_home_changed)
+        self.ui.buttonBox.clicked.connect(self.close_clicked)
         self.update_tabs()
 
     @Slot(str)
@@ -213,6 +214,10 @@ class Management(QDialog):
             )
             self.ui.webView.setPage(page)
             page.mainFrame().load(url)
+
+    @Slot()
+    def close_clicked(self):
+        self.close()
 
     def auth_finished(self, token):
         self.app.provider.authenticate(token)

@@ -20,6 +20,7 @@ import unittest
 
 class FakeApp(QApplication):
     data_changed = Signal()
+
     def update(self, service):
         self.provider = service
         self.settings = QSettings('everpad-test', str(datetime.now()))
@@ -59,7 +60,7 @@ class EditorTestCase(unittest.TestCase):
     def setUp(self):
         self.service = ProviderService()
         self.service._session = get_db_session()
-        models.Note.session = self.service._session 
+        models.Note.session = self.service._session
         self.app = app
         app.update(self.service)
         notebook = Notebook.from_tuple(

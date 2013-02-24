@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../..')
-from PySide.QtGui import QDialog, QFont, QApplication
+from PySide.QtGui import QDialog, QFont, QApplication, QMessageBox
 from PySide.QtWebKit import QWebPage
 from PySide.QtCore import Slot, Qt
 from PySide.QtNetwork import QNetworkAccessManager, QSslConfiguration, QSsl
@@ -185,8 +185,19 @@ class Management(QDialog):
     @Slot()
     def change_auth(self):
         if self.app.provider.is_authenticated():
-            self.app.provider.remove_authentication()
-            self.update_tabs()
+            msgBox = QMessageBox(
+                QMessageBox.Critical,
+                self.tr("You are trying to remove authorisation"),
+                self.tr("""
+                Are you sure want to remove authoristion?
+                It remove all not synced changes!
+                """.strip()),
+                QMessageBox.Yes | QMessageBox.No
+            )
+            ret = msgBox.exec_()
+            if ret == QMessageBox.Yes:
+                self.app.provider.remove_authentication()
+                self.update_tabs()
         else:
             self.ui.tabWidget.hide()
             self.ui.webView.show()

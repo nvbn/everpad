@@ -26,6 +26,8 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.ui = Ui_Editor()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
+        self.alternatives_template =\
+            self.ui.alternativeVersions.text()
         self.init_controls()
         self.load_note(note)
         self.update_title()
@@ -63,15 +65,12 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         try:
             conflict_items = self.app.provider.get_note_alternatives(self.note.id)
             if conflict_items:
-                template = self.ui.alternativeVersions.text()
                 conflicts = map(
                     lambda item: Note.from_tuple(self.app.provider.get_note(
                         item,
                     )), self.note.conflict_items,
                 )
-                for note in conflicts:
-                    print note.title
-                text = template % ', '.join(map(
+                text = self.alternatives_template % ', '.join(map(
                     lambda note: u'<a href="%d">%s</a>' % (
                         note.id, note.title,
                     ), conflicts,

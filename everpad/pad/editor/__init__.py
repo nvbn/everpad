@@ -70,7 +70,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
                     )), self.note.conflict_items,
                 )
                 text = template % ', '.join(map(
-                    lambda note: '<a href="%d">%s</a>' % (
+                    lambda note: u'<a href="%d">%s</a>' % (
                         note.id, note.title,
                     ), conflicts,
                 ))

@@ -123,7 +123,9 @@ class Indicator(QSystemTrayIcon):
         old_note_window = self.opened_notes.get(note.id, None)
         if old_note_window and not getattr(old_note_window, 'closed', True):
             editor = self.opened_notes[note.id]
-            editor.activateWindow()
+            # hide and show for bringing to front
+            editor.hide()
+            editor.show()
         else:
             editor = Editor(note)
             editor.show()
@@ -131,6 +133,8 @@ class Indicator(QSystemTrayIcon):
         if search_term:
             editor.findbar.set_search_term(search_term)
             editor.findbar.show()
+        editor.raise_()
+        editor.activateWindow()
         return editor
 
     @Slot()
@@ -146,8 +150,8 @@ class Indicator(QSystemTrayIcon):
             conflict_parent=NONE_VAL,
             conflict_items=dbus.Array([], signature='i'),
             place='',
-            share_date = NONE_VAL,
-            share_url = ''
+            share_date=NONE_VAL,
+            share_url='',
         ).struct
         note = Note.from_tuple(
             self.app.provider.create_note(note_struct),

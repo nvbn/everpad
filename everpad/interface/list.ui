@@ -101,7 +101,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QTreeView" name="notesList">
+      <widget class="EverpadTreeView" name="notesList">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>1</horstretch>

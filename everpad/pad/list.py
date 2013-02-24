@@ -64,11 +64,13 @@ class List(QMainWindow):
         self.ui.tagsList.customContextMenuRequested.connect(self.tag_context_menu)
 
     def _init_notes(self):
+        self._current_note = None
         self.notesModel = QStandardItemModel()
         self.notesModel.setHorizontalHeaderLabels(
             [self.tr('Title'), self.tr('Last Updated')])
 
         self.ui.notesList.setModel(self.notesModel)
+        self.ui.notesList.selection.connect(self.note_selection_changed)
         self.ui.notesList.doubleClicked.connect(self.note_dblclicked)
         self.ui.notesList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.notesList.customContextMenuRequested.connect(self.note_context_menu)
@@ -85,6 +87,11 @@ class List(QMainWindow):
         if len(selected.indexes()):
             self.ui.notebooksList.clearSelection()
             self.tag_selected(selected.indexes()[-1])
+
+    @Slot(QItemSelection, QItemSelection)
+    def note_selection_changed(self, selected, deselected):
+        if len(selected.indexes()):
+            self.note_selected(selected.indexes()[-1])
 
     def showEvent(self, *args, **kwargs):
         super(List, self).showEvent(*args, **kwargs)
@@ -122,6 +129,9 @@ class List(QMainWindow):
     def sort_order_updated(self, logicalIndex, order):
         self.sort_order = (logicalIndex, order.name)
         self.app.settings.setValue('list-notes-sort-order', self.sort_order)
+
+    def note_selected(self, index):
+        self._current_note = index
 
     def notebook_selected(self, index):
         self.notesModel.setRowCount(0)
@@ -357,6 +367,7 @@ class List(QMainWindow):
     def _reload_data(self):
         self._reload_notebooks_list(self._current_notebook)
         self._reload_tags_list(self._current_tag)
+        self._mark_note_selected(self._current_note)
 
     def _reload_notebooks_list(self, select_notebook_id=None):
         # TODO could enable selecting an already selected stack
@@ -433,6 +444,10 @@ class List(QMainWindow):
             index = self.tagsModel.indexFromItem(selected_item)
             self.ui.tagsList.setCurrentIndex(index)
             self.tag_selected(index)
+
+    def _mark_note_selected(self, index):
+        if index:
+            self.ui.notesList.setCurrentIndex(index)
 
 
 class QNotebookItem(QStandardItem):

@@ -65,7 +65,6 @@ class DbusSendable(object):
         )
 
 
-    
 class Note(DbusSendable):
     ORDER_TITLE = 0
     ORDER_UPDATED = 1
@@ -84,6 +83,8 @@ class Note(DbusSendable):
         ('pinnded', 'b'),
         ('conflict_parent', 'i'),
         ('conflict_items', 'ai'),
+        ('share_date', 'x'),
+        ('share_url', 's'),
     )
 
 
@@ -92,6 +93,7 @@ class Notebook(DbusSendable):
         ('id', 'i'),
         ('name', 's'),
         ('default', 'i'),
+        ('stack', 's')
     )
 
 

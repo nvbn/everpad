@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys
 import os
 
-version = '2.4'
+version = '2.5'
 
 def get_files():
     packages = find_packages(exclude=['tests'])
@@ -95,5 +95,7 @@ setup(name='everpad',
     	('/opt/extras.ubuntu.com/everpad/i18n/zh_CN/LC_MESSAGES', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
     	('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/zh_TW.qm']),
     	('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/ja.qm']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/ja/LC_MESSAGES', ['i18n/ja/LC_MESSAGES/everpad.mo']),
     ] + get_files(),
 )

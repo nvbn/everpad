@@ -1,15 +1,15 @@
 import sys
 sys.path.insert(0, '../..')
-from evernote.edam.error.ttypes import EDAMUserException
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import THttpClient
 from evernote.edam.userstore import UserStore
 from evernote.edam.notestore import NoteStore
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from everpad.provider.models import Base
-from everpad.const import HOST, SCHEMA_VERSION, DB_PATH
-from everpad.tools import get_proxy_config, get_auth_token
+from everpad.const import HOST, DB_PATH
+from everpad.tools import get_proxy_config
+from everpad.specific import get_keyring
 from urlparse import urlparse
 import os
 
@@ -20,14 +20,19 @@ ACTION_DELETE = 2
 ACTION_CHANGE = 3
 ACTION_NOEXSIST = 4
 ACTION_CONFLICT = 5
+ACTION_DUPLICATE = 5
+
 
 def _nocase_lower(item):
     return unicode(item).lower()
 
 
 def set_auth_token(token):
-    import keyring
-    keyring.set_password('everpad', 'oauth_token', token)
+    get_keyring().set_password('everpad', 'oauth_token', token)
+
+
+def get_auth_token():
+    return get_keyring().get_password('everpad', 'oauth_token')
 
 
 def get_db_session(db_path=None):
@@ -42,7 +47,7 @@ def get_db_session(db_path=None):
     return session
 
 
-def get_note_store(auth_token=None):
+def get_user_store(auth_token=None):
     if not auth_token:
         auth_token = get_auth_token()
     user_store_uri = "https://" + HOST + "/edam/user"
@@ -50,17 +55,15 @@ def get_note_store(auth_token=None):
     user_store_http_client = THttpClient.THttpClient(user_store_uri,
             http_proxy=get_proxy_config(urlparse(user_store_uri).scheme))
     user_store_protocol = TBinaryProtocol.TBinaryProtocol(user_store_http_client)
-    user_store = UserStore.Client(user_store_protocol)
+    return UserStore.Client(user_store_protocol)
+
+
+def get_note_store(auth_token=None):
+    if not auth_token:
+        auth_token = get_auth_token()
+    user_store = get_user_store(auth_token)
     note_store_url = user_store.getNoteStoreUrl(auth_token)
     note_store_http_client = THttpClient.THttpClient(note_store_url,
             http_proxy=get_proxy_config(urlparse(note_store_url).scheme))
     note_store_protocol = TBinaryProtocol.TBinaryProtocol(note_store_http_client)
     return NoteStore.Client(note_store_protocol)
-
-
-if 'kde' in os.environ.get('DESKTOP_SESSION', ''):  # kde init qwidget for wallet access
-    from PySide.QtGui import QApplication
-    AppClass = QApplication
-else:
-    from PySide.QtCore import QCoreApplication
-    AppClass = QCoreApplication

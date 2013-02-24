@@ -1,7 +1,7 @@
 from PySide.QtGui import (
     QPixmap, QLabel, QVBoxLayout, QFileDialog,
-    QMenu, QInputDialog, QFileIconProvider,
-    QWidget, QHBoxLayout, QApplication,
+    QMenu, QFileIconProvider, QWidget,
+    QHBoxLayout, QApplication, QMessageBox,
 )
 from PySide.QtCore import Slot, Qt, QUrl, QFileInfo
 from everpad.basetypes import Resource, NONE_ID
@@ -78,7 +78,7 @@ class ResourceEdit(object):  # TODO: move event to item
     @Slot(QUrl)
     def label_uri(self, uri):
         uri = str(uri)
-        if  uri == 'add':
+        if uri == 'add':
             self.add()
         elif uri == 'show':
             if self.widget.isHidden():
@@ -163,6 +163,7 @@ class ResourceEdit(object):  # TODO: move event to item
             self.on_change()
             if not self._resources:
                 self.widget.hide()
+            self.update_label()
 
     def save(self, res):
         """Save resource"""
@@ -176,6 +177,12 @@ class ResourceEdit(object):  # TODO: move event to item
             self.add_attach(name)
 
     def add_attach(self, name):
+        """Add name as an attachment and return the attachment as a Resource
+        
+        name - a string containing a filename or url that will be attached
+
+        return: the resource object corresponding to the attached object
+        """
         dest = os.path.expanduser('~/.everpad/data/%d/' % self.note.id)
         try:
             os.mkdir(dest)
@@ -199,3 +206,15 @@ class ResourceEdit(object):  # TODO: move event to item
         self._put(res)
         self.on_change()
         return res
+
+    def add_all_attach(self, names):
+        """Adds all the entries in names as attachments
+        
+        names - sequence of strings - each string is treated as a filename or url
+
+        No return value
+        """
+        assert not hasattr(names, "strip"); # Ensure that didn't get
+                                            # passed a single string
+        for name in names:
+            self.add_attach(name);

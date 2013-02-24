@@ -1,10 +1,10 @@
 import sys
 sys.path.insert(0, '../..')
-from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings, QT_TRANSLATE_NOOP
-from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QIcon, QCursor
+from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings, QT_TRANSLATE_NOOP, QLibraryInfo
+from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QCursor
 from PySide.QtNetwork import QNetworkProxyFactory
-from everpad.basetypes import Note, Notebook, Tag, NONE_ID, NONE_VAL
-from everpad.tools import get_provider, get_pad, get_auth_token, print_version
+from everpad.basetypes import Note, NONE_ID, NONE_VAL
+from everpad.tools import get_provider, get_pad, print_version, resource_filename
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
 from everpad.pad.list import List
@@ -23,7 +23,6 @@ import argparse
 import fcntl
 import os
 import getpass
-import time
 
 
 class Indicator(QSystemTrayIcon):
@@ -70,7 +69,7 @@ class Indicator(QSystemTrayIcon):
                 self.tr('Restart everpad'), handler,
             )
             return
-        if get_auth_token():
+        if self.app.provider.is_authenticated():
             pin_notes = self.app.provider.find_notes(
                 '', dbus.Array([], signature='i'),
                 dbus.Array([], signature='i'), 0,
@@ -124,7 +123,9 @@ class Indicator(QSystemTrayIcon):
         old_note_window = self.opened_notes.get(note.id, None)
         if old_note_window and not getattr(old_note_window, 'closed', True):
             editor = self.opened_notes[note.id]
-            editor.activateWindow()
+            # hide and show for bringing to front
+            editor.hide()
+            editor.show()
         else:
             editor = Editor(note)
             editor.show()
@@ -132,6 +133,8 @@ class Indicator(QSystemTrayIcon):
         if search_term:
             editor.findbar.set_search_term(search_term)
             editor.findbar.show()
+        editor.raise_()
+        editor.activateWindow()
         return editor
 
     @Slot()
@@ -147,13 +150,15 @@ class Indicator(QSystemTrayIcon):
             conflict_parent=NONE_VAL,
             conflict_items=dbus.Array([], signature='i'),
             place='',
+            share_date=NONE_VAL,
+            share_url='',
         ).struct
         note = Note.from_tuple(
             self.app.provider.create_note(note_struct),
         )
         editor = self.open(note)
         if attach:
-            editor.resource_edit.add_attach(attach)
+            editor.resource_edit.add_all_attach(attach)
 
     @Slot()
     def show_all_notes(self):
@@ -182,13 +187,17 @@ class PadApp(QApplication):
     def __init__(self, *args, **kwargs):
         QApplication.__init__(self, *args, **kwargs)
         self.settings = QSettings('everpad', 'everpad-pad')
-        self.translator = QTranslator()
-        if not self.translator.load('../../i18n/%s' % QLocale.system().name()):
-            self.translator.load('/usr/share/everpad/i18n/%s' % QLocale.system().name())
+        locale = QLocale.system().name()
+        self.qtTranslator = QTranslator()
+        self.qtTranslator.load("qt_" + locale, QLibraryInfo.location(QLibraryInfo.TranslationsPath))
+        self.installTranslator(self.qtTranslator)
+        self.appTranslator = QTranslator()
+        if not self.appTranslator.load(locale, os.path.join(os.path.dirname(__file__), '../../i18n')):
+            self.appTranslator.load(locale, resource_filename('share/everpad/i18n'))
         # This application string can be localized to 'RTL' to switch the application layout
         # direction. See for example i18n/ar_EG.ts
         QT_TRANSLATE_NOOP('QApplication', 'QT_LAYOUT_DIRECTION')
-        self.installTranslator(self.translator)
+        self.installTranslator(self.appTranslator)
         QNetworkProxyFactory.setUseSystemConfiguration(True)
         self.indicator = Indicator()
         self.update_icon()
@@ -233,9 +242,9 @@ class EverpadService(dbus.service.Object):
     def create(self):
         self.app.indicator.create()
 
-    @dbus.service.method("com.everpad.App", in_signature='s', out_signature='')
-    def create_wit_attach(self, name):
-        self.app.indicator.create(name)
+    @dbus.service.method("com.everpad.App", in_signature='as', out_signature='')
+    def create_wit_attach(self, names):
+        self.app.indicator.create(names)
 
     @dbus.service.method("com.everpad.App", in_signature='', out_signature='')
     def settings(self):
@@ -253,12 +262,12 @@ class EverpadService(dbus.service.Object):
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     parser = argparse.ArgumentParser()
-    parser.add_argument('attach', type=str, nargs='?', help='attach file to new note')
+    parser.add_argument('attachments', type=str, nargs='*', help='attach files to new note')
     parser.add_argument('--open', type=int, help='open note')
     parser.add_argument('--create', action='store_true', help='create new note')
     parser.add_argument('--all-notes', action='store_true', help='show all notes window')
     parser.add_argument('--settings', action='store_true', help='settings and management')
-    parser.add_argument('--replace', action='store_true', help='replace already runned')
+    parser.add_argument('--replace', action='store_true', help='replace already running instance')
     parser.add_argument('--version', '-v', action='store_true', help='show version')
     args = parser.parse_args(sys.argv[1:])
     if args.version:
@@ -296,8 +305,8 @@ def main():
             app.indicator.create()
         if args.settings:
             app.indicator.show_management()
-        if args.attach:
-            app.indicator.create(args.attach)
+        if args.attachments:
+            app.indicator.create(args.attachments)
         if args.all_notes:
             app.indicator.show_all_notes()
         app.exec_()
@@ -309,9 +318,9 @@ def main():
             pad.create()
         if args.settings:
             pad.settings()
-        if args.attach:
-            pad.create_wit_attach(args.attach)
-        if args.all_notes:
+        if args.attachments:
+            pad.create_wit_attach(args.attachments)
+        if args.all_notes or len(sys.argv) <= 1:
             pad.all_notes()
         sys.exit(0)
 

@@ -5,10 +5,11 @@ from PySide.QtGui import (
 from PySide.QtCore import Slot
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
-from everpad.pad.editor.actions import ImagePrefs, FindBar
-from everpad.pad.editor.content import Page, ContentEdit
-from everpad.pad.editor.resources import ResourceEdit, ResourceItem
+from everpad.pad.editor.actions import FindBar
+from everpad.pad.editor.content import ContentEdit
+from everpad.pad.editor.resources import ResourceEdit
 from everpad.pad.editor.widgets import TagEdit, NotebookEdit
+from everpad.pad.share_note import ShareNoteDialog
 from everpad.basetypes import Resource, Note
 from dbus.exceptions import DBusException
 import dbus
@@ -69,7 +70,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
                     )), self.note.conflict_items,
                 )
                 text = template % ', '.join(map(
-                    lambda note: '<a href="%d">%s</a>' % (
+                    lambda note: u'<a href="%d">%s</a>' % (
                         note.id, note.title,
                     ), conflicts,
                 ))
@@ -115,6 +116,11 @@ class Editor(QMainWindow):  # TODO: kill this god shit
             QIcon.fromTheme('mail-unread'),
             self.tr('Email note'),
             self.note_edit.email_note,
+        )
+        self.email_btn = self.ui.toolBar.addAction(
+            QIcon.fromTheme('emblem-shared'),
+            self.tr('Share note'),
+            self.share_note,
         )
         self.ui.toolBar.addSeparator()
         for action in self.note_edit.get_format_actions():
@@ -229,3 +235,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.touched = False
         self.ui.actionSave.setEnabled(False)
         self.save_btn.setEnabled(False)
+
+    def share_note(self):
+        dialog = ShareNoteDialog(self.note, parent=self)
+        dialog.exec_()

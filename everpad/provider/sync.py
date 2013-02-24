@@ -11,24 +11,29 @@ from sqlalchemy import and_
 from evernote.edam.limits.constants import (
     EDAM_NOTE_TITLE_LEN_MAX, EDAM_NOTE_CONTENT_LEN_MAX,
     EDAM_TAG_NAME_LEN_MAX, EDAM_NOTEBOOK_NAME_LEN_MAX,
+    EDAM_NOTEBOOK_STACK_LEN_MAX,
     EDAM_USER_NOTES_MAX, EDAM_TAG_NAME_REGEX,
     EDAM_NOTEBOOK_NAME_REGEX,
 )
 from evernote.edam.error.ttypes import EDAMUserException
 from everpad.provider.tools import (
-    ACTION_NONE, ACTION_CREATE, AppClass,
+    ACTION_NONE, ACTION_CREATE,
     ACTION_CHANGE, ACTION_DELETE,
     get_db_session, get_note_store,
     ACTION_NOEXSIST, ACTION_CONFLICT,
+    get_auth_token, get_user_store,
+    ACTION_DUPLICATE,
 )
-from everpad.tools import get_auth_token, sanitize, clean
+from everpad.specific import AppClass
+from everpad.tools import sanitize
 from everpad.provider import models
 from everpad.const import (
     STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY,
     SYNC_STATE_START, SYNC_STATE_NOTEBOOKS_LOCAL,
-    SYNC_STATE_TAGS_LOCAL, SYNC_STATE_NOTES_LOCAL, 
-    SYNC_STATE_NOTEBOOKS_REMOTE, SYNC_STATE_TAGS_REMOTE, 
+    SYNC_STATE_TAGS_LOCAL, SYNC_STATE_NOTES_LOCAL,
+    SYNC_STATE_NOTEBOOKS_REMOTE, SYNC_STATE_TAGS_REMOTE,
     SYNC_STATE_NOTES_REMOTE, SYNC_STATE_FINISH,
+    SYNC_STATE_SHARE, SYNC_STATE_STOP_SHARE,
 )
 from BeautifulSoup import BeautifulStoneSoup
 from datetime import datetime
@@ -41,6 +46,15 @@ SYNC_MANUAL = -1
 
 class SyncAgent(object):
     """Split agent for latest backends support"""
+    @property
+    def shard_id(self):
+        """User sharId"""
+        if not hasattr(self, '_shard_id'):
+            user_store = get_user_store()
+            user = user_store.getUser(self.auth_token)
+            self._shard_id = user.shardId
+        return self._shard_id
+
     def _iter_all_notes(self):
         """Iterate all notes"""
         offset = 0
@@ -72,28 +86,34 @@ class SyncAgent(object):
                 name=notebook.name[:EDAM_NOTEBOOK_NAME_LEN_MAX].strip().encode('utf8'),
                 defaultNotebook=notebook.default,
             )
+            if notebook.stack:
+                kwargs['stack'] = notebook.stack[:EDAM_NOTEBOOK_STACK_LEN_MAX].strip().encode('utf8')
             if not regex.search(EDAM_NOTEBOOK_NAME_REGEX, notebook.name):
                 self.app.log('notebook %s skipped' % notebook.name)
-                tag.action = ACTION_NONE
+                notebook.action = ACTION_NONE
                 continue  # just ignore it
             if notebook.guid:
                 kwargs['guid'] = notebook.guid
             nb = Notebook(**kwargs)
             if notebook.action == ACTION_CHANGE:
-                while True:
-                    try:
-                        nb = self.note_store.updateNotebook(
-                            self.auth_token, nb,
-                        )
-                        break
-                    except EDAMUserException, e:
-                        notebook.name = notebook.name + '*'  # shit, but work
-                        self.log(e)
+                try:
+                    nb = self.note_store.updateNotebook(
+                        self.auth_token, nb,
+                    )
+                    notebook.action = ACTION_NONE
+                except EDAMUserException:
+                    notebook.action = ACTION_DUPLICATE
+                    self.app.log('Duplicate %s' % nb.name)
             elif notebook.action == ACTION_CREATE:
-                nb = self.note_store.createNotebook(
-                    self.auth_token, nb,
-                )
-                notebook.guid = nb.guid
+                try:
+                    nb = self.note_store.createNotebook(
+                        self.auth_token, nb,
+                    )
+                    notebook.guid = nb.guid
+                    notebook.action = ACTION_NONE
+                except EDAMUserException:
+                    notebook.action = ACTION_DUPLICATE
+                    self.app.log('Duplicate %s' % nb.name)
             elif notebook.action == ACTION_DELETE and False:  # not allowed for app now
                 try:
                     self.note_store.expungeNotebook(
@@ -101,8 +121,29 @@ class SyncAgent(object):
                     )
                     self.session.delete(notebook)
                 except EDAMUserException, e:
-                    self.log(e)
-            notebook.action = ACTION_NONE
+                    self.app.log(e)
+        self.session.commit()
+        self.notebook_duplicates()
+
+    def notebook_duplicates(self):
+        """Merge and remove duplicates"""
+        for notebook in self.sq(models.Notebook).filter(
+            models.Notebook.action == ACTION_DUPLICATE,
+        ):
+            try:
+                original = self.sq(models.Notebook).filter(and_(
+                    models.Notebook.action == ACTION_DUPLICATE,
+                    models.Notebook.name == notebook.name,
+                )).one()
+            except NoResultFound:
+                original = self.sq(models.Notebook).filter(
+                    models.Notebook.default == True,
+                ).one()
+            for note in self.sq(models.Note).filter(
+                models.Note.notebook_id == notebook.id,
+            ):
+                note.notebook_id = original.id
+            self.session.delete(notebook)
         self.session.commit()
 
     def tags_local(self):
@@ -145,12 +186,12 @@ class SyncAgent(object):
                 fileName=res.file_name.encode('utf8'),
             ),
         ), self.sq(models.Resource).filter(and_(
-            models.Resource.note_id == note.id, 
+            models.Resource.note_id == note.id,
             models.Resource.action != models.ACTION_DELETE,
         )))
 
     def notes_local(self):
-        """Send loacl notes changes to server"""
+        """Send local notes changes to server"""
         for note in self.sq(models.Note).filter(and_(
             models.Note.action != ACTION_NONE,
             models.Note.action != ACTION_NOEXSIST,
@@ -292,6 +333,18 @@ class SyncAgent(object):
                 self.session.commit()
                 notes_ids.append(nt.id)
                 self.note_resources_remote(note, nt)
+            if not note.attributes.shareDate and nt.share_status not in (
+                    models.SHARE_NONE, models.SHARE_NEED_SHARE,
+                ):
+                nt.share_status = models.SHARE_NONE
+                nt.share_date = None
+                nt.share_url = None
+                self.session.commit()
+            elif note.attributes.shareDate != nt.share_date and nt.share_status not in(
+                    models.SHARE_NEED_SHARE, models.SHARE_NEED_STOP,
+                ):
+                self._single_note_share(nt, note.attributes.shareDate)
+                self.session.commit()
         ids = filter(lambda id: id not in notes_ids, map(
             lambda note: note.id, self.sq(models.Note).all(),
         ))
@@ -303,7 +356,7 @@ class SyncAgent(object):
                 models.Note.action != ACTION_CREATE,
                 models.Note.action != ACTION_CHANGE,
                 models.Note.action != ACTION_CONFLICT,
-            )).delete(synchronize_session='fetch')        
+            )).delete(synchronize_session='fetch')
         self.session.commit()
 
     def note_resources_remote(self, note_api, note_model):
@@ -328,7 +381,47 @@ class SyncAgent(object):
         self.sq(models.Resource).filter(and_(
             ~models.Resource.id.in_(resources_ids),
             models.Resource.note_id == note_model.id,
-        )).delete(synchronize_session='fetch')        
+        )).delete(synchronize_session='fetch')
+        self.session.commit()
+
+    def _single_note_share(self, note, share_date=None):
+        try:
+            share_key = self.note_store.shareNote(self.auth_token, note.guid)
+            note.share_url = "https://www.evernote.com/shard/%s/sh/%s/%s" % (
+                self.shard_id, note.guid, share_key,
+            )
+            note.share_date = share_date or int(time.time() * 1000)
+            note.share_status = models.SHARE_SHARED
+        except EDAMUserException as e:
+            note.share_status = models.SHARE_NONE
+            self.app.log('Sharing note %s failed' % note.title)
+            self.app.log(e)
+
+    def notes_sharing(self):
+        """Notes sharing"""
+        for note in self.sq(models.Note).filter(
+            models.Note.share_status == models.SHARE_NEED_SHARE,
+        ):
+            self._single_note_share(note)
+        self.session.commit()
+
+    def _single_note_stop_sharing(self, note):
+        """Stop sharing single note"""
+        try:
+            note.share_url = None
+            note.share_date = None
+            note.share_status = models.SHARE_NONE
+        except EDAMUserException as e:
+            note.share_status = models.SHARE_SHARED
+            self.app.log('Stop sharing note %s failed' % note.title)
+            self.app.log(e)
+
+    def notes_stop_sharing(self):
+        """Stop sharing otes"""
+        for note in self.sq(models.Note).filter(
+            models.Note.share_status == models.SHARE_NEED_STOP,
+        ):
+            self._single_note_stop_sharing(note)
         self.session.commit()
 
 
@@ -400,6 +493,7 @@ class SyncThread(QThread, SyncAgent):
             if self.need_to_update:
                 self.remote_changes()
             self.local_changes()
+            self.sharing_changes()
         except Exception, e:  # maybe log this
             self.session.rollback()
             self.init_db()
@@ -428,3 +522,10 @@ class SyncThread(QThread, SyncAgent):
         self.tags_remote()
         self.sync_state_changed.emit(SYNC_STATE_NOTES_REMOTE)
         self.notes_remote()
+
+    def sharing_changes(self):
+        """Update sharing information"""
+        self.sync_state_changed.emit(SYNC_STATE_SHARE)
+        self.notes_sharing()
+        self.sync_state_changed.emit(SYNC_STATE_STOP_SHARE)
+        self.notes_stop_sharing()

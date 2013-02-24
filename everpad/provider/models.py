@@ -1,5 +1,8 @@
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, Text, Boolean
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import (
+    Table, Column, Integer, ForeignKey, String, Boolean,
+    and_,
+)
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 from everpad.tools import prepare_file_path
@@ -19,6 +22,13 @@ ACTION_DELETE = 2
 ACTION_CHANGE = 3
 ACTION_NOEXSIST = 4
 ACTION_CONFLICT = 5
+ACTION_DUPLICATE = 6
+
+
+SHARE_NONE = 0
+SHARE_NEED_SHARE = 1
+SHARE_SHARED = 2
+SHARE_NEED_STOP = 3
 
 
 notetags_table = Table('notetags', Base.metadata,
@@ -53,6 +63,11 @@ class Note(Base):
         nullable=True,
     )
 
+    # sharing data:
+    share_date = Column(Integer)
+    share_status = Column(Integer, default=SHARE_NONE)
+    share_url = Column(String)
+
     @property
     def tags_dbus(self):
         return map(lambda tag: tag.name, self.tags)
@@ -63,9 +78,10 @@ class Note(Base):
         for tag in val:
             if tag and tag != ' ':  # for blank array and other
                 try:
-                    tags.append(self.session.query(Tag).filter(
+                    tags.append(self.session.query(Tag).filter(and_(
                         Tag.name == tag,
-                    ).one()) # shit shit shit
+                        Tag.action != ACTION_DELETE,
+                    )).one())  # shit shit shit
                 except NoResultFound:
                     tg = Tag(name=tag, action=ACTION_CREATE)
                     self.session.add(tg)
@@ -76,7 +92,10 @@ class Note(Base):
     def notebook_dbus(self):
         if self.notebook:
             return self.notebook.id
-        return
+        else:
+            return self.session.query(Notebook).filter(
+                Notebook.default == True,
+            ).one().id
 
     @notebook_dbus.setter
     def notebook_dbus(self, val):
@@ -88,7 +107,7 @@ class Note(Base):
             self.notebook = self.session.query(Notebook).filter(
                 Notebook.default == True,
             ).one()
-        
+
     @property
     def place_dbus(self):
         if self.place:
@@ -123,12 +142,28 @@ class Note(Base):
     def conflict_items_dbus(self, val):
         pass
 
+    @property
+    def share_date_dbus(self):
+        return self.share_date or 0
+
+    @share_date_dbus.setter
+    def share_date_dbus(self, val):
+        pass
+
+    @property
+    def share_url_dbus(self):
+        return self.share_url or ''
+
+    @share_url_dbus.setter
+    def share_url_dbus(self, val):
+        pass
+
     def from_api(self, note,session):
         """Fill data from api"""
         soup = BeautifulSoup(note.content.decode('utf8'))
         content = reduce(
             lambda txt, cur: txt + unicode(cur),
-            soup.find('en-note').contents, 
+            soup.find('en-note').contents,
         u'')
         self.title = note.title.decode('utf8')
         self.content = content
@@ -180,6 +215,7 @@ class Notebook(Base):
     service_created = Column(Integer)
     service_updated = Column(Integer)
     action = Column(Integer)
+    stack = Column(String)
 
     def from_api(self, notebook):
         """Fill data from api"""
@@ -188,6 +224,18 @@ class Notebook(Base):
         self.service_created = notebook.serviceCreated
         self.service_updated = notebook.serviceUpdated
         self.action = ACTION_NONE
+        if(notebook.stack):
+            self.stack = notebook.stack.decode('utf8')
+
+    @property
+    def stack_dbus(self):
+        if self.stack:
+            return self.stack
+        return ''
+
+    @stack_dbus.setter
+    def stack_dbus(self, val):
+        self.stack = val
 
 
 class Tag(Base):

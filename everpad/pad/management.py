@@ -1,28 +1,19 @@
 import sys
 sys.path.append('../..')
-from PySide.QtGui import (
-    QDialog, QIcon, QPixmap,
-    QLabel, QVBoxLayout, QFrame, QFont,
-    QMessageBox, QAction, QWidget,
-    QListWidgetItem, QMenu, QInputDialog,
-    QApplication,
-)
-from PySide.QtWebKit import QWebView, QWebPage
-from PySide.QtCore import Slot, Qt, QPoint, QUrl
+from PySide.QtGui import QDialog, QFont, QApplication, QMessageBox
+from PySide.QtWebKit import QWebPage
+from PySide.QtCore import Slot, Qt
 from PySide.QtNetwork import QNetworkAccessManager, QSslConfiguration, QSsl
 from everpad.interface.management import Ui_Dialog
 from everpad.pad.tools import get_icon
-from everpad.tools import get_provider, get_auth_token
 from everpad.const import (
     CONSUMER_KEY, CONSUMER_SECRET, HOST,
     DEFAULT_FONT, DEFAULT_FONT_SIZE,
 )
 from everpad import monkey
-from everpad.tools import get_proxy_config
+from everpad.tools import get_proxy_config, resource_filename
 import urllib
 import urlparse
-import subprocess
-import webbrowser
 import oauth2 as oauth
 import os
 import shutil
@@ -41,7 +32,7 @@ def get_oauth_proxy(scheme):
         proxy_port=proxy.port,
         proxy_user=proxy.username or None,
         proxy_pass=proxy.password or None,
-    )    
+    )
 
 
 class TLSNetworkAccessManager(QNetworkAccessManager):
@@ -113,6 +104,8 @@ class Management(QDialog):
         self.ui.noteSize.valueChanged.connect(self.font_size_changed)
         self.ui.blackTray.stateChanged.connect(self.tray_changed)
         self.ui.progressCheckBox.stateChanged.connect(self.progress_changed)
+        self.ui.searchOnHome.stateChanged.connect(self.search_on_home_changed)
+        self.ui.buttonBox.clicked.connect(self.close_clicked)
         self.update_tabs()
 
     @Slot(str)
@@ -139,8 +132,16 @@ class Management(QDialog):
             self.app.settings.setValue('launcher-progress', 1)
 
     @Slot()
+    def search_on_home_changed(self):
+        if self.ui.searchOnHome.checkState() == Qt.Unchecked:
+            value = '0'
+        else:
+            value = '1'
+        self.app.provider.set_settings_value('search-on-home', value)
+
+    @Slot()
     def update_tabs(self):
-        if get_auth_token():
+        if self.app.provider.is_authenticated():
             self.ui.authBtn.setText(self.tr('Remove Authorisation'))
         else:
             self.ui.authBtn.setText(self.tr('Authorise'))
@@ -159,6 +160,9 @@ class Management(QDialog):
         self.ui.progressCheckBox.setCheckState(Qt.Checked
             if int(self.app.settings.value('launcher-progress', 1))
         else Qt.Unchecked)
+        self.ui.searchOnHome.setCheckState(Qt.Checked
+            if int(self.app.provider.get_settings_value('search-on-home') or 1)
+        else Qt.Unchecked)
 
     @Slot()
     def auto_start_state(self):
@@ -169,7 +173,7 @@ class Management(QDialog):
                 pass
         else:
             shutil.copyfile(
-                '/usr/share/applications/everpad.desktop',
+                resource_filename('share/applications/everpad.desktop'),
                 self.startup_file,
             )
 
@@ -181,9 +185,20 @@ class Management(QDialog):
 
     @Slot()
     def change_auth(self):
-        if get_auth_token():
-            self.app.provider.remove_authentication()
-            self.update_tabs()
+        if self.app.provider.is_authenticated():
+            msgBox = QMessageBox(
+                QMessageBox.Critical,
+                self.tr("You are trying to remove authorisation"),
+                self.tr("""
+                Are you sure want to remove authoristion?
+                It remove all not synced changes!
+                """.strip()),
+                QMessageBox.Yes | QMessageBox.No
+            )
+            ret = msgBox.exec_()
+            if ret == QMessageBox.Yes:
+                self.app.provider.remove_authentication()
+                self.update_tabs()
         else:
             self.ui.tabWidget.hide()
             self.ui.webView.show()
@@ -199,6 +214,10 @@ class Management(QDialog):
             )
             self.ui.webView.setPage(page)
             page.mainFrame().load(url)
+
+    @Slot()
+    def close_clicked(self):
+        self.close()
 
     def auth_finished(self, token):
         self.app.provider.authenticate(token)

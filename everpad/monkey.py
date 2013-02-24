@@ -1,6 +1,7 @@
 import httplib2
 import ssl
 
+
 def _ssl_wrap_socket(sock, key_file, cert_file,
                          disable_validation, ca_certs):
     if disable_validation:

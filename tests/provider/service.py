@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
 sys.path.insert(0, '..')
+# patch settings:
 import settings
+
 from dbus.exceptions import DBusException
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
@@ -29,7 +31,7 @@ class ServiceTestCase(unittest.TestCase):
         notebooks = []
         for i in range(100):
             notebooks.append(Notebook.from_tuple(
-                self.service.create_notebook(str(i)),
+                self.service.create_notebook(str(i), None),
             ))
             self.assertEqual(notebooks[-1].name, str(i))
         for num, notebook in enumerate(notebooks):
@@ -58,7 +60,7 @@ class ServiceTestCase(unittest.TestCase):
     def test_notes_with_notebook_and_places(self):
         """Test notes with notebook and places"""
         notebook = Notebook.from_tuple(
-            self.service.create_notebook('test'),
+            self.service.create_notebook('test', None),
         )
         notes = []
         get_place = lambda num: '123' if num < 50 else '456'
@@ -113,7 +115,7 @@ class ServiceTestCase(unittest.TestCase):
         """Test tags"""
         tags = map(str, range(100))
         notebook = Notebook.from_tuple(
-            self.service.create_notebook('test'),
+            self.service.create_notebook('test', None),
         )
         self.service.create_note(Note(
             id=NONE_ID,
@@ -161,7 +163,7 @@ class ServiceTestCase(unittest.TestCase):
     def test_note_resources(self):
         """Test note resources"""
         notebook = Notebook.from_tuple(
-            self.service.create_notebook('test'),
+            self.service.create_notebook('test', None),
         )
         struct = self.service.create_note(Note(
             id=NONE_ID,
@@ -183,7 +185,7 @@ class ServiceTestCase(unittest.TestCase):
                 mime='image/png',
                 hash='',
             ))
-        self.service.update_note_resources(note.struct, 
+        self.service.update_note_resources(note.struct,
             map(lambda resource: resource.struct, resources),
         )
         received = map(Resource.from_tuple,
@@ -192,7 +194,7 @@ class ServiceTestCase(unittest.TestCase):
             self._file_names(resources), self._file_names(received),
         )
         received = received[:50]
-        self.service.update_note_resources(note.struct, 
+        self.service.update_note_resources(note.struct,
             map(lambda resource: resource.struct, received),
         )
         new_received = map(Resource.from_tuple,
@@ -227,6 +229,28 @@ class ServiceTestCase(unittest.TestCase):
             self.assertEqual(parent.id,
                 conflict.conflict_parent_dbus)
 
+    def test_tag_delete(self):
+        """Test deleting tags"""
+        tag = models.Tag(
+            name='okok',
+            action=models.ACTION_NONE,
+        )
+        deleting_tag = models.Tag(
+            name='deleted',
+            action=models.ACTION_NONE,
+        )
+        self.session.add(tag)
+        self.session.add(deleting_tag)
+        note = models.Note(
+            title='123',
+            content='456',
+            tags=[tag, deleting_tag],
+        )
+        self.session.add(note)
+        self.session.commit()
+        self.service.delete_tag(deleting_tag.id)
+        self.assertItemsEqual(note.tags, [tag])
+
 
 class FindTestCase(unittest.TestCase):
     def setUp(self):
@@ -234,13 +258,13 @@ class FindTestCase(unittest.TestCase):
         self.service._session = get_db_session()
         models.Note.session = self.service._session  # TODO: fix that shit
         self.notebook = Notebook.from_tuple(
-            self.service.create_notebook('test'),
+            self.service.create_notebook('test', None),
         )
         self.notebook2 = Notebook.from_tuple(
-            self.service.create_notebook('test2'),
+            self.service.create_notebook('test2', None),
         )
         self.notebook3 = Notebook.from_tuple(
-            self.service.create_notebook(u'Блокнот'),
+            self.service.create_notebook(u'Блокнот', None),
         )
         notes = [
             self.service.create_note(Note(
@@ -318,7 +342,7 @@ class FindTestCase(unittest.TestCase):
             100, Note.ORDER_UPDATED_DESC, -1,
         )
         self.assertEqual(
-            set(self._to_ids(all)), 
+            set(self._to_ids(all)),
             set(self._to_ids(self.notes[:-2])),
         )
         two = self._find(
@@ -345,7 +369,7 @@ class FindTestCase(unittest.TestCase):
             [tags[0].id], 0, 100, Note.ORDER_UPDATED_DESC, -1,
         )
         self.assertEqual(
-            set(self._to_ids(first_last)), 
+            set(self._to_ids(first_last)),
             set(self._to_ids([self.notes[0], self.notes[2]])),
         )
         second = self._find(
@@ -411,7 +435,7 @@ class FindTestCase(unittest.TestCase):
             100, Note.ORDER_UPDATED_DESC, -1,
         )
         self.assertEqual(
-            set(self._to_ids(all)), 
+            set(self._to_ids(all)),
             set(self._to_ids(self.notes[-2:])),
         )
 

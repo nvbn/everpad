@@ -6,6 +6,7 @@ import dbus
 import re
 import sys
 import os
+import pkg_resources
 
 
 class InterfaceWrapper(object):
@@ -31,6 +32,7 @@ class InterfaceWrapper(object):
                 return getattr(self.__interface, name)(*args, **kwargs)
         return wrapper
 
+
 def wrapper_functor(fnc):
     @wraps(fnc)
     def wrapper(*args, **kwrags):
@@ -40,21 +42,18 @@ def wrapper_functor(fnc):
 
 @wrapper_functor
 def get_provider(bus=None):
-    if not bus: bus = dbus.SessionBus()
+    if not bus:
+        bus = dbus.SessionBus()
     provider = bus.get_object("com.everpad.Provider", '/EverpadProvider')
     return dbus.Interface(provider, "com.everpad.Provider")
 
 
 @wrapper_functor
 def get_pad(bus=None):
-    if not bus: bus = dbus.SessionBus()
+    if not bus:
+        bus = dbus.SessionBus()
     pad = bus.get_object("com.everpad.App", "/EverpadService")
     return dbus.Interface(pad, "com.everpad.App")
-
-
-def get_auth_token():
-    import keyring
-    return keyring.get_password('everpad', 'oauth_token')
 
 
 def clean(text):  # from http://stackoverflow.com/questions/1707890/fast-way-to-filter-illegal-xml-unicode-chars-in-python
@@ -70,8 +69,8 @@ def clean(text):  # from http://stackoverflow.com/questions/1707890/fast-way-to-
     ]
 
     illegal_ranges = [
-        "%s-%s" % (unichr(low), unichr(high)) 
-        for (low, high) in illegal_unichrs 
+        "%s-%s" % (unichr(low), unichr(high))
+        for (low, high) in illegal_unichrs
         if low < sys.maxunicode
     ]
     illegal_xml_re = re.compile(u'[%s]' % u''.join(illegal_ranges))
@@ -109,7 +108,7 @@ def sanitize(soup=None, html=None):
                     pass
             try:
                 if not sum(map(
-                    lambda proto: tag['href'].find(proto + '://') == 0, 
+                    lambda proto: tag['href'].find(proto + '://') == 0,
                 _protocols)):
                     del tag['href']
             except KeyError:
@@ -149,3 +148,8 @@ def prepare_file_path(dest, file_name):
         ))
         iteration += 1
     return file_path
+
+
+def resource_filename(file_name):
+    return pkg_resources.resource_filename(
+        pkg_resources.Requirement.parse("everpad"), file_name)

@@ -1,27 +1,40 @@
 from PySide.QtGui import (
-    QIcon, QPixmap, QAction, QFileDialog,
-    QShortcut, QKeySequence, QInputDialog, 
+    QIcon, QAction, QFileDialog,
+    QShortcut, QKeySequence, QInputDialog,
     QPrintPreviewDialog, QPrinter, QDropEvent,
     QDragEnterEvent, QDragMoveEvent, QApplication,
-    QDesktopServices, QApplication,
+    QDesktopServices,
 )
 from PySide.QtCore import (
     Slot, Qt, QPoint, QObject, Signal, QUrl,
-    QFileInfo,
+    QMimeData,
 )
 from PySide.QtWebKit import QWebPage, QWebSettings
 from everpad.pad.editor.actions import ImagePrefs, TableWidget
 from everpad.pad.tools import file_icon_path
-from everpad.tools import sanitize, clean, html_unescape
+from everpad.tools import sanitize, clean, html_unescape, resource_filename
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, Tag
 from functools import partial
 import webbrowser
-import magic
 import os
 import json
 import re
 import cgi
+import sys
+
+
+url = re.compile(r"((https?://|www)[-\w./#?%=&]+)")
+
+
+def set_links(text):
+    """Insert a href"""
+    soup = BeautifulSoup(text)
+    # don't change if text contains html
+    if len(soup.findAll()):
+        return text
+    else:
+        return url.sub(r'<a href="\1">\1</a>', text)
 
 
 class Page(QWebPage):
@@ -52,6 +65,20 @@ class Page(QWebPage):
         # This allows JavaScript to call back to Slots, connect to Signals
         # and access/modify Qt props
         self.mainFrame().addToJavaScriptWindowObject("qpage", self)
+
+    def triggerAction(self, action, *args, **kwargs):
+        if action == QWebPage.Paste:
+            self._patch_clipboard()
+        return super(Page, self).triggerAction(action, *args, **kwargs)
+
+    def _patch_clipboard(self):
+        clipboard = self.edit.app.clipboard()
+        value = clipboard.mimeData()
+        if value.hasText():
+            data = set_links(value.text())
+            value = QMimeData()
+            value.setHtml(data)
+        clipboard.setMimeData(value)
 
     @Slot()
     def show_findbar(self):
@@ -118,10 +145,12 @@ class ContentEdit(QObject):
         os.path.dirname(__file__), 'editor.html',
     )
     if not os.path.exists(_editor_path):
-        _editor_path = '/usr/share/everpad/editor.html'
+        _editor_path = resource_filename('share/everpad/editor.html')
+
     _html = open(_editor_path).read()
 
     copy_available = Signal(bool)
+
     def __init__(self, parent, widget, on_change):
         QObject.__init__(self)
         self.parent = parent
@@ -237,6 +266,10 @@ class ContentEdit(QObject):
                         media['src'] = file_icon_path
                     media['title'] = res.file_name
                     res.in_content = True
+                    # wrap in link to make clickable
+                    tag = Tag(soup, "a", [("href", 'file://%s' % res.file_path)])
+                    media.replaceWith(tag)
+                    tag.insert(0, media)
                 else:
                     media['src'] = ''
                     media['title'] = ''

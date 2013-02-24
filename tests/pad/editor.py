@@ -1,8 +1,10 @@
 import sys
 sys.path.insert(0, '..')
+# patch settings:
 import settings
+
 from PySide.QtGui import QApplication
-from PySide.QtCore import QSettings
+from PySide.QtCore import QSettings, Signal
 from dbus.exceptions import DBusException
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
@@ -12,12 +14,15 @@ from everpad.basetypes import (
 )
 from everpad.provider import models
 from everpad.pad.editor import Editor
+from everpad.pad.editor.content import set_links
 from datetime import datetime
 import dbus
 import unittest
 
 
 class FakeApp(QApplication):
+    data_changed = Signal()
+
     def update(self, service):
         self.provider = service
         self.settings = QSettings('everpad-test', str(datetime.now()))
@@ -45,12 +50,19 @@ TITLES = [
     u"ok<p asdasd",
 ]
 
+SET_LINKS = [
+    (u"without", u"without"),
+    (u"https://github.com/nvbn/", u'<a href="https://github.com/nvbn/">https://github.com/nvbn/</a>'),
+    (u"https://github.com/nvbn/ http://ya.ru/", u'<a href="https://github.com/nvbn/">https://github.com/nvbn/</a> <a href="http://ya.ru/">http://ya.ru/</a>'),
+    (u"<p>https://github.com/nvbn/</p>", u"<p>https://github.com/nvbn/</p>"),
+]
+
 
 class EditorTestCase(unittest.TestCase):
     def setUp(self):
         self.service = ProviderService()
         self.service._session = get_db_session()
-        models.Note.session = self.service._session 
+        models.Note.session = self.service._session
         self.app = app
         app.update(self.service)
         notebook = Notebook.from_tuple(
@@ -104,6 +116,14 @@ class EditorTestCase(unittest.TestCase):
                 editor.note_edit.title,
                 title,
             )
+
+    def test_set_links(self):
+        """Test set links"""
+        for orig, result in SET_LINKS:
+            self.assertEqual(
+                set_links(orig), result,
+            )
+
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 from PyKDE4 import plasmascript
 from PyKDE4.plasma import Plasma
-from PyKDE4.kdeui import KIcon, KMessageBox
+from PyKDE4.kdeui import KIcon
 from html2text import html2text
 from everpad.basetypes import Note
 from everpad.tools import get_provider, get_pad
@@ -11,9 +11,9 @@ CREATE = -1
 SETTINGS = -2
 provider = get_provider()
 
- 
+
 class EverpadRunner(plasmascript.Runner):
- 
+
     def match(self, context):
         if not context.isValid():
             return
@@ -51,7 +51,6 @@ class EverpadRunner(plasmascript.Runner):
             action.setData(str(note.id))
             context.addMatch(query, action)
 
- 
     def run(self, context, match):
         data = match.data().toInt()[0]
         pad = get_pad()
@@ -61,7 +60,7 @@ class EverpadRunner(plasmascript.Runner):
             pad.settings()
         else:
             pad.open(data)
- 
- 
+
+
 def CreateRunner(parent):
     return EverpadRunner(parent)

@@ -1,9 +1,9 @@
 import sys
 sys.path.insert(0, '..')
-from singlet.lens import SingleScopeLens, IconViewCategory, ListViewCategory
-from gi.repository import Gio, Unity, GObject, Notify
+from singlet.lens import SingleScopeLens, ListViewCategory
+from gi.repository import Gio, Unity, Notify
 from singlet.utils import run_lens
-from everpad.tools import get_provider, get_pad
+from everpad.tools import get_provider, get_pad, resource_filename
 from everpad.basetypes import Note, Tag, Notebook, Place, Resource
 from everpad.const import API_VERSION
 from html2text import html2text
@@ -16,9 +16,9 @@ import gettext
 import json
 
 
-path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'i18n')
+path = os.path.join(os.path.dirname(__file__), '../../../i18n')
 if not os.path.isdir(path):
-    path = '/usr/share/locale/'
+    path =  resource_filename('share/locale/')
 gettext.bindtextdomain('everpad', path)
 gettext.textdomain('everpad')
 _ = gettext.gettext
@@ -35,7 +35,6 @@ class EverpadLens(SingleScopeLens):
         search_hint = _('Search Everpad')
         icon = 'everpad-lens'
         search_on_blank = True
-        search_in_global = True
         bus_name = 'net.launchpad.Unity.Lens.EverpadLens'
         bus_path = '/net/launchpad/unity/lens/everpad'
 
@@ -46,12 +45,20 @@ class EverpadLens(SingleScopeLens):
             self.update_props,
             dbus_interface="com.everpad.provider",
         )
+        provider.connect_to_signal(
+            'settings_changed',
+            self.settings_changed,
+            dbus_interface="com.everpad.provider",
+        )
         self.update_props()
-        self._lens.props.search_in_global = True
         self._scope.connect('preview-uri', self.preview)
 
+    def settings_changed(self, name, value):
+        if name == 'search-on-home':
+            self.update_props()
+
     def update_props(self):
-        icon = Gio.ThemedIcon.new("/usr/share/icons/unity-icon-theme/places/svg/group-recent.svg")
+        icon = Gio.ThemedIcon.new(resource_filename("share/icons/unity-icon-theme/places/svg/group-recent.svg"))
         tags = Unity.CheckOptionFilter.new('tags', _('Tags'), icon, True)
         for tag_struct in provider.list_tags():
             tag = Tag.from_tuple(tag_struct)
@@ -65,6 +72,7 @@ class EverpadLens(SingleScopeLens):
             place = Place.from_tuple(place_struct)
             places.add_option(str(place.id), place.name, icon)
         self._lens.props.filters = [notebooks, tags, places]
+        self._lens.props.search_in_global = bool(int(provider.get_settings_value('search-on-home') or 1))
 
     pin_notes = ListViewCategory(_("Pin Notes"), 'everpad-lens')
     all_notes = ListViewCategory(_("All Notes"), 'everpad-lens')
@@ -104,7 +112,7 @@ class EverpadLens(SingleScopeLens):
         ):
             note = Note.from_tuple(note_struct)
             results.append(json.dumps({'id': note.id, 'search': search}),
-                'everpad-note', self.pin_notes if note.pinnded else self.all_notes, 
+                'everpad-note', self.pin_notes if note.pinnded else self.all_notes,
                 "text/html", note.title, html2text(note.content),
             '')
 
@@ -133,7 +141,7 @@ class EverpadLens(SingleScopeLens):
 
     def on_filtering_changed(self, scope):
         tags = scope.get_filter('tags')
-        self.tag_filter_ids = map(lambda tag: int(tag.props.id), 
+        self.tag_filter_ids = map(lambda tag: int(tag.props.id),
             filter(lambda tag: tag.props.active, tags.options))
         notebook = scope.get_filter('notebooks').get_active_option()
         if notebook:

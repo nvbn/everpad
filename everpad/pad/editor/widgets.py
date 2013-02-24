@@ -1,6 +1,6 @@
 from PySide.QtGui import QCompleter, QStringListModel, QApplication
 from PySide.QtCore import Slot
-from everpad.basetypes import Note, Tag, Notebook
+from everpad.basetypes import Tag, Notebook
 import re
 
 

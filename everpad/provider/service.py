@@ -3,16 +3,16 @@ sys.path.append('../..')
 from everpad.provider.models import (
     Note, Notebook, Tag, Resource, Place,
     ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
-    ACTION_NOEXSIST, ACTION_CONFLICT,
+    ACTION_NOEXSIST, ACTION_CONFLICT, SHARE_NEED_SHARE,
+    SHARE_NEED_STOP,
 )
-from everpad.provider.tools import AppClass, get_db_session
+from everpad.provider.tools import get_db_session, get_auth_token
+from everpad.specific import AppClass
 from sqlalchemy import or_, and_, func
 from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
-from PySide.QtCore import Signal, QObject, Qt
-from everpad.const import (
-    STATUS_NONE, STATUS_SYNC, DEFAULT_SYNC_DELAY, API_VERSION,
-)
+from PySide.QtCore import Signal, QObject
+from everpad.const import STATUS_SYNC, DEFAULT_SYNC_DELAY, API_VERSION
 import everpad.basetypes as btype
 import dbus
 import dbus.service
@@ -194,7 +194,7 @@ class ProviderService(dbus.service.Object):
             btype.Tag.from_obj(tag).struct,
         self.sq(Tag).filter(
             Tag.action != ACTION_DELETE,
-        ))
+        ).order_by(Tag.name))
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
@@ -213,10 +213,15 @@ class ProviderService(dbus.service.Object):
     )
     def delete_tag(self, id):
         try:
-            self.sq(Tag).filter(
-                and_(Tag.id == id,
+            tag = self.sq(Tag).filter(and_(
+                Tag.id == id,
                 Tag.action != ACTION_DELETE,
-            )).one().action = ACTION_DELETE
+            )).one()
+            tag.action = ACTION_DELETE
+            for note in self.sq(Note).filter(
+                Note.tags.contains(tag),
+            ).all():
+                note.tags.remove(tag)
             self.session.commit()
             self.data_changed()
             return True
@@ -347,10 +352,10 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider",
-        in_signature='s',
+        in_signature='ss',
         out_signature=btype.Notebook.signature,
     )
-    def create_notebook(self, name):
+    def create_notebook(self, name, stack):
         if self.sq(Note).filter(
             Notebook.name == name,
         ).count():
@@ -359,7 +364,7 @@ class ProviderService(dbus.service.Object):
             )
         notebook = Notebook(
             action=ACTION_CREATE,
-            name=name, default=False,
+            name=name, default=False, stack=stack,
         )
         self.session.add(notebook)
         self.session.commit()
@@ -387,6 +392,13 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider",
+        in_signature='', out_signature='b',
+    )
+    def is_authenticated(self):
+        return bool(get_auth_token())
+
+    @dbus.service.method(
+        "com.everpad.Provider",
         in_signature='i', out_signature='a' + btype.Resource.signature,
     )
     def get_note_resources(self, note_id):
@@ -407,6 +419,37 @@ class ProviderService(dbus.service.Object):
             btype.Place.from_obj(place).struct,
         self.sq(Place).all())
         return place
+
+    @dbus.service.method(
+        "com.everpad.Provider",
+        in_signature='i', out_signature='',
+    )
+    def share_note(self, note_id):
+        try:
+            note = self.sq(Note).filter(
+                and_(Note.id == note_id, Note.action != ACTION_DELETE),
+            ).one()
+            note.share_status = SHARE_NEED_SHARE
+            self.session.commit()
+            self.sync()
+        except NoResultFound:
+            raise DBusException('Note not found')
+
+    @dbus.service.method(
+        "com.everpad.Provider",
+        in_signature='i', out_signature=''
+    )
+    def stop_sharing_note(self, note_id):
+        try:
+            note = self.sq(Note).filter(
+                and_(Note.id == note_id, Note.action != ACTION_DELETE),
+            ).one()
+            note.share_status = SHARE_NEED_STOP
+            note.share_url = ''
+            self.session.commit()
+            self.sync()
+        except NoResultFound:
+            raise DBusException('Note not found')
 
     @dbus.service.method(
         "com.everpad.Provider",
@@ -464,6 +507,22 @@ class ProviderService(dbus.service.Object):
         return API_VERSION
 
     @dbus.service.method(
+        "com.everpad.Provider", in_signature='s',
+        out_signature='s',
+    )
+    def get_settings_value(self, name):
+        return self.app.settings.value(name, '')
+
+    @dbus.service.method(
+        "com.everpad.Provider", in_signature='ss',
+        out_signature='',
+    )
+    def set_settings_value(self, name, value):
+        self.app.settings.setValue(name, value)
+        self.settings_changed(name, value)
+        return
+
+    @dbus.service.method(
         "com.everpad.Provider", in_signature='',
     )
     def kill(self):
@@ -480,4 +539,10 @@ class ProviderService(dbus.service.Object):
         'com.everpad.provider', signature='',
     )
     def data_changed(self):
+        return
+
+    @dbus.service.signal(
+        'com.everpad.provider', signature='ss',
+    )
+    def settings_changed(self, name, value):
         return

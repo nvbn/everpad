@@ -23,34 +23,17 @@ class List(QMainWindow):
         self.app = QApplication.instance()
         self.closed = False
         self.sort_order = None
+        self._init_interface()
+        self.app.data_changed.connect(self._reload_data)
+        self._init_notebooks()
+        self._init_tags()
+        self._init_notes()
+
+    def _init_interface(self):
         self.ui = Ui_List()
         self.ui.setupUi(self)
         self.setWindowIcon(get_icon())
         self.setWindowTitle(self.tr("Everpad / All Notes"))
-        self.app.data_changed.connect(self._reload_data)
-
-        self.notebooksModel = QStandardItemModel()
-        self.ui.notebooksList.setModel(self.notebooksModel)
-        self.ui.notebooksList.selection.connect(self.selection_changed)
-        self.ui.notebooksList.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
-
-        self.tagsModel = QStandardItemModel()
-        self.ui.tagsList.setModel(self.tagsModel)
-        self.ui.tagsList.selection.connect(self.tag_selection_changed)
-        self.ui.tagsList.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.tagsList.customContextMenuRequested.connect(self.tag_context_menu)
-
-        self.notesModel = QStandardItemModel()
-        self.notesModel.setHorizontalHeaderLabels(
-            [self.tr('Title'), self.tr('Last Updated')])
-
-        self.ui.notesList.setModel(self.notesModel)
-        self.ui.notesList.doubleClicked.connect(self.note_dblclicked)
-        self.ui.notesList.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.notesList.customContextMenuRequested.connect(self.note_context_menu)
-        self.ui.notesList.header().sortIndicatorChanged.connect(self.sort_order_updated)
-
         self.ui.newNotebookBtn.setIcon(QIcon.fromTheme('folder-new'))
         self.ui.newNotebookBtn.clicked.connect(self.new_notebook)
 
@@ -60,6 +43,31 @@ class List(QMainWindow):
         self.ui.newNoteBtn.setShortcut(QKeySequence(self.tr('Ctrl+n')))
         self.ui.newNotebookBtn.setShortcut(QKeySequence(self.tr('Ctrl+Shift+n')))
         QShortcut(QKeySequence(self.tr('Ctrl+q')), self, self.close)
+
+    def _init_notebooks(self):
+        self.notebooksModel = QStandardItemModel()
+        self.ui.notebooksList.setModel(self.notebooksModel)
+        self.ui.notebooksList.selection.connect(self.selection_changed)
+        self.ui.notebooksList.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.notebooksList.customContextMenuRequested.connect(self.notebook_context_menu)
+
+    def _init_tags(self):
+        self.tagsModel = QStandardItemModel()
+        self.ui.tagsList.setModel(self.tagsModel)
+        self.ui.tagsList.selection.connect(self.tag_selection_changed)
+        self.ui.tagsList.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.tagsList.customContextMenuRequested.connect(self.tag_context_menu)
+
+    def _init_notes(self):
+        self.notesModel = QStandardItemModel()
+        self.notesModel.setHorizontalHeaderLabels(
+            [self.tr('Title'), self.tr('Last Updated')])
+
+        self.ui.notesList.setModel(self.notesModel)
+        self.ui.notesList.doubleClicked.connect(self.note_dblclicked)
+        self.ui.notesList.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.notesList.customContextMenuRequested.connect(self.note_context_menu)
+        self.ui.notesList.header().sortIndicatorChanged.connect(self.sort_order_updated)
 
     @Slot(QItemSelection, QItemSelection)
     def selection_changed(self, selected, deselected):

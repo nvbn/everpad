@@ -70,6 +70,9 @@
       <property name="text">
        <string>This note has alternative versions: %s</string>
       </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
      </widget>
     </item>
     <item>

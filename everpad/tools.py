@@ -151,5 +151,16 @@ def prepare_file_path(dest, file_name):
 
 
 def resource_filename(file_name):
+    paths = map(
+        lambda path: os.path.join(path, file_name),
+        (
+            '/opt/extras.ubuntu.com/',
+            '/usr/local/share/',
+            '/usr/share/',
+        ),
+    )
+    for path in paths:
+        if os.path.isfile(path):
+            return path
     return pkg_resources.resource_filename(
         pkg_resources.Requirement.parse("everpad"), file_name)

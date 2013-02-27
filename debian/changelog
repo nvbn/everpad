@@ -1,3 +1,21 @@
+everpad (2.5.3-0~precise) precise; urgency=low
+
+  * Fix editor path in package
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 26 Feb 2013 15:51:01 +0400
+
+everpad (2.5.2-0~precise) precise; urgency=low
+
+  * Fix resources
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 26 Feb 2013 14:03:01 +0400
+
+everpad (2.5.1-0~precise) precise; urgency=low
+
+  * Fix package
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 26 Feb 2013 12:26:01 +0400
+
 everpad (2.5-0~precise) precise; urgency=low
 
   * Sharing notes

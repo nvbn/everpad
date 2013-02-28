@@ -8,3 +8,4 @@ syntax: glob
 *.egg
 *.egg-info
 tests/settings/local.py
+debian/changelog

@@ -1,7 +1,22 @@
 from setuptools import setup, find_packages
-import sys, os
+import sys
+import os
 
 version = '2.5'
+
+def get_files():
+    packages = find_packages(exclude=['tests'])
+    files = []
+    for package in packages:
+        path = package.replace('.', '/')
+        files.append((
+            os.path.join('/opt/extras.ubuntu.com/everpad/', path),
+            filter(lambda name: not (name[-4:] == '.pyc' or os.path.isdir(name)),
+                map(lambda name: os.path.join(path, name), 
+            os.listdir(path))),
+        ))
+    return files
+
 
 setup(name='everpad',
     version=version,
@@ -14,20 +29,13 @@ setup(name='everpad',
     author_email='nvbn.rm@gmail.com',
     url='https://github.com/nvbn/everpad/',
     license='X11',
-    packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    packages=[],
     include_package_data=True,
     zip_safe=True,
     install_requires=[],
-    entry_points={
-        'gui_scripts': [
-            'everpad=everpad.pad.indicator:main'
-        ], 'console_scripts': [
-            'everpad-lens=everpad.specific.unity.lens:main',
-            'everpad-provider=everpad.provider.daemon:main',
-        ]
-    },
+    entry_points={},
     data_files=[
-        ('share/icons/hicolor/24x24/actions', [
+        ('/usr/share/icons/hicolor/24x24/actions', [
             'data/editor-icons/everpad-text-bold.png',
             'data/editor-icons/everpad-list-unordered.png',
             'data/editor-icons/everpad-text-strikethrough.png',
@@ -44,51 +52,50 @@ setup(name='everpad',
             'data/editor-icons/everpad-insert-image.png',
             'data/editor-icons/everpad-pin.png',
         ]),
-        ('share/icons/hicolor/48x48/actions', [
+        ('/usr/share/icons/hicolor/48x48/actions', [
             'data/everpad-file.png',
         ]),
-        ('share/icons/hicolor/64x64/apps', [
+        ('/usr/share/icons/hicolor/64x64/apps', [
             'data/everpad-mono.png', 'data/everpad-lens.png',
             'data/everpad-note.png', 'data/everpad-black.png',
         ]),
-        ('share/icons/hicolor/128x128/apps', [
+        ('/usr/share/icons/hicolor/128x128/apps', [
             'data/everpad.png',
         ]),
-        ('share/pixmaps', [
+        ('/usr/share/pixmaps', [
             'data/everpad.png', 'data/everpad-mono.png',
             'data/everpad-lens.png', 'data/everpad-note.png',
             'data/everpad-black.png',
         ]),
-        ('share/applications', ['data/everpad.desktop']),
-        ('share/everpad/i18n/', [
-            'i18n/ru_RU.qm',
-            'i18n/ar_EG.qm',
-    	    'i18n/zh_CN.qm',
-            'i18n/zh_TW.qm',
-            'i18n/ja.qm',
-        ]),
-        ('share/everpad/', [
-            'everpad/pad/editor/editor.html',
-        ]),
-        ('share/locale/ru/LC_MESSAGES', ['i18n/ru/LC_MESSAGES/everpad.mo']),
-        ('share/locale/ar/LC_MESSAGES', ['i18n/ar/LC_MESSAGES/everpad.mo']),
-        ('share/locale/zh_CN/LC_MESSAGES', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
-    	('share/locale/zh_TW/LC_MESSAGES', ['i18n/zh_TW/LC_MESSAGES/everpad.mo']),
-        ('share/locale/ja/LC_MESSAGES', ['i18n/ja/LC_MESSAGES/everpad.mo']),
-        ('share/unity/lenses/everpad', ['data/everpad.lens']),
-        ('share/dbus-1/services', [
+        ('/usr/share/applications', ['data/everpad.desktop']),
+        ('/usr/share/unity/lenses/everpad', ['data/everpad.lens']),
+        ('/usr/share/dbus-1/services', [
             'data/unity-lens-everpad.service',
             'data/everpad-provider.service',
             'data/everpad-app.service',
         ]),
-        ('share/kde4/services/', [
+        ('/usr/share/kde4/services/', [
             'data/plasma-runner-everpad.desktop',
         ]),
-        ('share/kde4/apps/plasma/runners/everpad/', [
+        ('/usr/share/kde4/apps/plasma/runners/everpad/', [
             'data/metadata.desktop',
         ]),
-        ('share/kde4/apps/plasma/runners/everpad/contents/code/', [
+        ('/usr/share/kde4/apps/plasma/runners/everpad/contents/code/', [
             'everpad/specific/kde/everpad_runner.py',
         ]),
-    ]
+        ('/usr/bin/', [
+            'bin/everpad', 'bin/everpad-lens',
+            'bin/everpad-provider', 
+        ])
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/ru_RU.qm']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/ru/LC_MESSAGES', ['i18n/ru/LC_MESSAGES/everpad.mo']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/ar_EG.qm']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/ar_EG/LC_MESSAGES', ['i18n/ar_EG/LC_MESSAGES/everpad.mo']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/zh_CN.qm']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/zh_CN/LC_MESSAGES', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/zh_TW.qm']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/', ['i18n/ja.qm']),
+        ('/opt/extras.ubuntu.com/everpad/i18n/ja/LC_MESSAGES', ['i18n/ja/LC_MESSAGES/everpad.mo']),
+    ] + get_files(),
 )

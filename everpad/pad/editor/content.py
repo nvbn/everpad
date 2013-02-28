@@ -71,13 +71,19 @@ class Page(QWebPage):
             self._patch_clipboard()
         return super(Page, self).triggerAction(action, *args, **kwargs)
 
+    def _set_links_to_clipboard(self, text):
+        data = set_links(text)
+        value = QMimeData()
+        value.setHtml(data)
+        return value
+
     def _patch_clipboard(self):
         clipboard = self.edit.app.clipboard()
         value = clipboard.mimeData()
-        if value.hasText():
-            data = set_links(value.text())
-            value = QMimeData()
-            value.setHtml(data)
+        if value.hasHtml():
+            value = self._set_links_to_clipboard(value.html())
+        elif value.hasText():
+            value = self._set_links_to_clipboard(value.text())
         clipboard.setMimeData(value)
 
     @Slot()

@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../..')
-from PySide.QtGui import QDialog, QFont, QApplication, QMessageBox
+from PySide.QtGui import QDialog, QFont, QApplication, QMessageBox, QCursor, QListWidgetItem, QMenu
 from PySide.QtWebKit import QWebPage
 from PySide.QtCore import Slot, Qt
 from PySide.QtNetwork import QNetworkAccessManager, QSslConfiguration, QSsl
@@ -9,6 +9,7 @@ from everpad.pad.tools import get_icon
 from everpad.const import (
     CONSUMER_KEY, CONSUMER_SECRET, HOST,
     DEFAULT_FONT, DEFAULT_FONT_SIZE,
+    DEFAULT_INDICATOR_LAYOUT,
 )
 from everpad import monkey
 from everpad.tools import get_proxy_config, resource_filename
@@ -104,9 +105,53 @@ class Management(QDialog):
         self.ui.noteSize.valueChanged.connect(self.font_size_changed)
         self.ui.blackTray.stateChanged.connect(self.tray_changed)
         self.ui.progressCheckBox.stateChanged.connect(self.progress_changed)
+        self.layout_list = self.ui.listWidget_indLayout
+        self.layout_list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.layout_list.customContextMenuRequested.connect(self.layout_list_contextMenu)
+        layout_list_model = self.layout_list.model()
+        layout_list_model.layoutChanged.connect(self.save_layout_list)
+        self.layout_labels = {
+            'create_note': self.tr('Create Note'),
+            'pin_notes' : self.tr('Pinned Notes'),
+            'all_notes' : self.tr('All Notes'),
+            'notes'     : self.tr('Notes'),
+            'sync'      : self.tr('Last Sync'),
+            }
+        self.load_layout_list(self.app.settings.value('menu-order', DEFAULT_INDICATOR_LAYOUT))
         self.ui.searchOnHome.stateChanged.connect(self.search_on_home_changed)
         self.ui.buttonBox.clicked.connect(self.close_clicked)
         self.update_tabs()
+
+    def on_default_layout(self):
+        self.load_layout_list(DEFAULT_INDICATOR_LAYOUT)
+        self.save_layout_list()
+
+    def load_layout_list(self, settings):
+        self.layout_list.clear()
+        for menu_item in settings:
+            font = QFont()
+            if menu_item == 'pin_notes' or menu_item == 'notes':
+                font.setStyle(QFont.StyleItalic)
+            else:
+                font.setWeight(QFont.DemiBold)
+            item = QListWidgetItem(self.layout_labels[menu_item])
+            item.setData(Qt.UserRole, menu_item)
+            item.setTextAlignment(Qt.AlignCenter)
+            item.setFont(font)
+            self.layout_list.addItem(item)
+
+    def layout_list_contextMenu(self, pos):
+        menu = QMenu()
+        default_action = menu.addAction(self.tr("Reset Layout"))
+        default_action.triggered.connect(self.on_default_layout)
+        menu.exec_(QCursor.pos())
+
+    def save_layout_list(self):
+        all_items = self.layout_list.findItems('*', Qt.MatchWildcard)
+        user_settings = []
+        for item in all_items:
+            user_settings.append(item.data(Qt.UserRole))
+        self.app.settings.setValue('menu-order', user_settings)
 
     @Slot(str)
     def font_size_changed(self, size):

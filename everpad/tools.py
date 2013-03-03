@@ -155,8 +155,8 @@ def resource_filename(file_name):
         lambda path: os.path.join(path, file_name),
         (
             '/opt/extras.ubuntu.com/',
-            '/usr/local/share/',
-            '/usr/share/',
+            '/usr/local/',
+            '/usr/',
         ),
     )
     for path in paths:

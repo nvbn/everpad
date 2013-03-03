@@ -39,5 +39,6 @@ TRANSLATIONS = i18n/ru_RU.ts \
                i18n/ar_EG.ts \
                i18n/zh_CN.ts \
                i18n/zh_TW.ts \
-               i18n/ja.ts
+               i18n/ja.ts \
+               i18n/nl.ts
 

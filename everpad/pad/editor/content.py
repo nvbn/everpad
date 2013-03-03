@@ -16,12 +16,12 @@ from everpad.tools import sanitize, clean, html_unescape, resource_filename
 from everpad.const import DEFAULT_FONT, DEFAULT_FONT_SIZE
 from BeautifulSoup import BeautifulSoup, Tag
 from functools import partial
+from copy import copy
 import webbrowser
 import os
 import json
 import re
 import cgi
-import sys
 
 
 url = re.compile(r"((https?://|www)[-\w./#?%=&]+)")
@@ -61,24 +61,13 @@ class Page(QWebPage):
         settings.setFontSize(
             QWebSettings.DefaultFixedFontSize, size,
         )
+        QWebSettings.globalSettings().setAttribute(
+            QWebSettings.DeveloperExtrasEnabled, True,
+        )
 
         # This allows JavaScript to call back to Slots, connect to Signals
         # and access/modify Qt props
         self.mainFrame().addToJavaScriptWindowObject("qpage", self)
-
-    def triggerAction(self, action, *args, **kwargs):
-        if action == QWebPage.Paste:
-            self._patch_clipboard()
-        return super(Page, self).triggerAction(action, *args, **kwargs)
-
-    def _patch_clipboard(self):
-        clipboard = self.edit.app.clipboard()
-        value = clipboard.mimeData()
-        if value.hasText():
-            data = set_links(value.text())
-            value = QMimeData()
-            value.setHtml(data)
-        clipboard.setMimeData(value)
 
     @Slot()
     def show_findbar(self):
@@ -115,7 +104,7 @@ class Page(QWebPage):
         self.active_table = id
 
     def javaScriptConsoleMessage(self, message, lineNumber, sourceID):
-        print message
+        print lineNumber, ':', message
 
     def acceptNavigationRequest(self, frame, request, type):
         modifiers = QApplication.keyboardModifiers()
@@ -288,10 +277,12 @@ class ContentEdit(QObject):
     def apply(self):
         """Apply title and content when filled"""
         if None not in (self._title, self._content):
-            self.page.mainFrame().setHtml(self._html % {
-                'title': cgi.escape(self._title),
-                'content': self._content,
-            })
+            html = self._html.replace(
+                '{{ title }}', cgi.escape(self._title),
+            ).replace(
+                '{{ content }}', self._content,
+            )
+            self.page.mainFrame().setHtml(html)
             self.widget.setPage(self.page)
             self.page.selectionChanged.connect(self.selection_changed)
             self.page.setLinkDelegationPolicy(QWebPage.DelegateAllLinks)

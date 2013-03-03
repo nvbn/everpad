@@ -1,3 +1,10 @@
+everpad (2.5.4-0~%(relese)s) %(relese)s; urgency=low
+
+  * Fix pasting
+  * Add dutch translation
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 3 Mar 2013 05:00:00 +0400
+
 everpad (2.5.3-0~precise) precise; urgency=low
 
   * Fix editor path in package

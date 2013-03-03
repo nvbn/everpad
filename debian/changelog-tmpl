@@ -1,3 +1,9 @@
+everpad (2.5.6-0~{{ release }}) {{ release }}; urgency=low
+
+  * Fix resources path
+
+ -- Vladimir Yakovlev <nvbn.rm@gmail.com>  Sat, 3 Mar 2013 23:32:00 +0400
+
 everpad (2.5.5-0~{{ release }}) {{ release }}; urgency=low
 
   * Fix packaging

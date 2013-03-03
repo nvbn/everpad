@@ -43,13 +43,7 @@ You can see more about everpad installation, including method for other linux, i
 
 Some errors?
 ============
-For debug output you should run these commands in separate terminals:
-
-``killall everpad everpad-provider everpad-lens && everpad-provider --verbose``
-
-``everpad``
-
-``everpad-lens``
+`Get debug information <https://github.com/nvbn/everpad/wiki/Receiving-debug-information>`_, check your distributive name and version, check your DE version and post bug report.
 
 Want to help?
 =============

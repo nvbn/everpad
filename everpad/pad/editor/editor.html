@@ -21,6 +21,7 @@
     var isContent = false;
     var currentLink = undefined;
     var currentTable = undefined;
+    var pasteLock = false;
 
     function insertEl(el) {
         var _this = document.getElementById('content');
@@ -171,6 +172,70 @@
     content.addEventListener('focus', function() {
         window.qpage.set_current_focus("body");
         isContent = true;
+    }, false);
+
+    function saveSelection() {
+        if (window.getSelection) {
+            sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                return sel.getRangeAt(0);
+            }
+        } else if (document.selection && document.selection.createRange) {
+            return document.selection.createRange();
+        }
+        return null;
+    }
+
+    function restoreSelection(range) {
+        if (range) {
+            if (window.getSelection) {
+                sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else if (document.selection && range.select) {
+                range.select();
+            }
+        }
+    }
+
+    function addLinks(element) {
+        var urlpattern= /\bhttps?:\/\/[^\s<>"`{}|\^\[\]\\]+/g;
+        findTextExceptInLinks(element, urlpattern, function(node, match) {
+            node.splitText(match.index+match[0].length);
+            var a= document.createElement('a');
+            a.href= match[0];
+            a.appendChild(node.splitText(match.index));
+            node.parentNode.insertBefore(a, node.nextSibling);
+            a.addEventListener('contextmenu', function(ev) {
+                window.qpage.set_active_link(ev.target.getAttribute('href'));
+                currentLink = a;
+            }, false);
+        });
+    }
+
+    function findTextExceptInLinks(element, pattern, callback) {
+        for (var childi = element.childNodes.length; childi-->0;) {
+            var child= element.childNodes[childi];
+            if (child.nodeType === Node.ELEMENT_NODE) {
+                if (child.tagName.toLowerCase()!=='a')
+                    findTextExceptInLinks(child, pattern, callback);
+            } else if (child.nodeType === Node.TEXT_NODE) {
+                var matches= [];
+                var match;
+                while (match= pattern.exec(child.data))
+                    matches.push(match);
+                for (var i= matches.length; i-->0;)
+                    callback.call(window, child, matches[i]);
+            }
+        }
+    }
+
+    content.addEventListener('paste', function(){
+        setTimeout(function(){
+            var range = saveSelection();
+            addLinks(content);
+            restoreSelection(range);
+        }, 0);
     }, false);
 
     function adjustBulletedList(untab) {

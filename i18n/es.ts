@@ -1,4 +1,6 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0" language="es" sourcelanguage="en">
 <context>
     <name>ContentEdit</name>
     <message>
@@ -62,7 +64,7 @@
     <name>Dialog</name>
     <message>
         <source>Everpad / Settings and Management</source>
-        <translation>Everpad / Configuraciones y Manejo</translation>
+        <translation>Everpad / Configuración y Manejo</translation>
     </message>
     <message>
         <source>Authorisation</source>
@@ -141,7 +143,7 @@
     </message>
     <message>
         <source>Note &quot;%s&quot; saved!</source>
-        <translation>Nota &quot;%s&quot; guardada!</translation>
+        <translation>¡Nota &quot;%s&quot; guardada!</translation>
     </message>
     <message>
         <source>You are trying to delete a note</source>
@@ -149,75 +151,75 @@
     </message>
     <message>
         <source>Are you sure want to delete this note?</source>
-        <translation>Está seguro que quiere eliminar esta nota?</translation>
+        <translation>¿Está seguro que quiere eliminar esta nota?</translation>
     </message>
     <message>
         <source>Note &quot;%s&quot; deleted!</source>
-        <translation></translation>
+        <translation>¡La nota &quot;%s&quot; ha sido borrada!</translation>
     </message>
     <message>
         <source>Close without Saving</source>
-        <translation></translation>
+        <translation>Cerrar sin Guardar</translation>
     </message>
     <message>
         <source>Are you sure want to close this note without saving?</source>
-        <translation></translation>
+        <translation>¿Esta seguro de que quiere cerrar esta nota sin guardarla?</translation>
     </message>
     <message>
         <source>Select notebook</source>
-        <translation></translation>
+        <translation>Selecciona un libro de notas</translation>
     </message>
     <message>
         <source>Note tags</source>
-        <translation>Notitie-sleutelwoorden</translation>
+        <translation>Etiquetas de la nota</translation>
     </message>
     <message>
         <source>Commas separated tags</source>
-        <translation></translation>
+        <translation>Etiquetas separadas por comas</translation>
     </message>
     <message>
         <source>%d attached files, &lt;a href=&apos;#&apos;&gt;show&lt;/a&gt; / &lt;a href=&apos;#&apos;&gt; add another&lt;/a&gt;</source>
-        <translation></translation>
+        <translation>%d archivos adjuntados, &lt;a herf=&apos;#&apos;&gt;mostrar&lt;/a&gt; / &lt;a href=&apos;#&apos;&gt;agregar otro&lt;/a&gt;</translation>
     </message>
     <message>
         <source>This note has alternative versions: %s</source>
-        <translation></translation>
+        <translation>Esta nota tiene versiones alternativas: %s</translation>
     </message>
     <message>
         <source>toolBar</source>
-        <translation></translation>
+        <translation>Barra de herramientas</translation>
     </message>
     <message>
         <source>Note</source>
-        <translation></translation>
+        <translation>Nota</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation></translation>
+        <translation>Editar</translation>
     </message>
     <message>
         <source>Save and close</source>
-        <translation></translation>
+        <translation>Guardar y cerrar</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation></translation>
+        <translation>Eliminar</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation></translation>
+        <translation>Cerrar</translation>
     </message>
     <message>
         <source>Cut</source>
-        <translation></translation>
+        <translation>Cortar</translation>
     </message>
     <message>
         <source>Copy</source>
-        <translation></translation>
+        <translation>Copiar</translation>
     </message>
     <message>
         <source>Paste</source>
-        <translation></translation>
+        <translation>Pegar</translation>
     </message>
     <message>
         <source>Ctrl+p</source>
@@ -229,7 +231,7 @@
     </message>
     <message>
         <source> alternative of: %s</source>
-        <translation></translation>
+        <translation> alternativa de: %s</translation>
     </message>
     <message>
         <source>Everpad / %s</source>
@@ -271,177 +273,177 @@
     <name>ImageDialog</name>
     <message>
         <source>Everpad / Image Preferences</source>
-        <translation></translation>
+        <translation>Everpad / Preferencias de Imágen</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation></translation>
+        <translation>Ancho</translation>
     </message>
     <message>
         <source>Height</source>
-        <translation></translation>
+        <translation>Alto</translation>
     </message>
     <message>
         <source>Discard ratio</source>
-        <translation></translation>
+        <translation>Descartar la proporción</translation>
     </message>
 </context>
 <context>
     <name>Indicator</name>
     <message>
         <source>API version missmatch, please restart</source>
-        <translation></translation>
+        <translation>Version de API incorrecta, por favor reiniciar</translation>
     </message>
     <message>
         <source>Restart everpad</source>
-        <translation></translation>
+        <translation>Reiniciar everpad</translation>
     </message>
     <message>
         <source>All Notes</source>
-        <translation></translation>
+        <translation>Todas las notas</translation>
     </message>
     <message>
         <source>Create Note</source>
-        <translation></translation>
+        <translation>Crear notas</translation>
     </message>
     <message>
         <source>Wait, first sync in progress</source>
-        <translation></translation>
+        <translation>Espere, la primera sincronización esta en proceso</translation>
     </message>
     <message>
         <source>Sync in progress</source>
-        <translation></translation>
+        <translation>Sincronización en proceso</translation>
     </message>
     <message>
         <source>Please perform first sync</source>
-        <translation></translation>
+        <translation>Por favor, haga una primera sincronización</translation>
     </message>
     <message>
         <source>Last Sync: Just now</source>
-        <translation></translation>
+        <translation>Última sincronización: Justo ahora</translation>
     </message>
     <message>
         <source>Last Sync: %s min ago</source>
-        <translation></translation>
+        <translation>Última sincronización: hace %s minuto</translation>
     </message>
     <message>
         <source>Last Sync: %s mins ago</source>
-        <translation></translation>
+        <translation>Última sincronización: hace %s minutos</translation>
     </message>
     <message>
         <source>Settings and Management</source>
-        <translation></translation>
+        <translation>Configuración y Manejo</translation>
     </message>
     <message>
         <source>Exit</source>
-        <translation></translation>
+        <translation>Salir</translation>
     </message>
     <message>
         <source>New note</source>
-        <translation></translation>
+        <translation>Nota nueva</translation>
     </message>
     <message>
         <source>New note content</source>
-        <translation></translation>
+        <translation>Nuevo contenido de la nota</translation>
     </message>
 </context>
 <context>
     <name>List</name>
     <message>
         <source>Title</source>
-        <translation></translation>
+        <translation>Título</translation>
     </message>
     <message>
         <source>Last Updated</source>
-        <translation></translation>
+        <translation>Última actualización</translation>
     </message>
     <message>
         <source>Create new notebook</source>
-        <translation></translation>
+        <translation>Crear un nuevo libro de notas</translation>
     </message>
     <message>
         <source>Notebook &quot;%s&quot; created!</source>
-        <translation></translation>
+        <translation>¡El libro de notas &quot;%s&quot; ha sido creado!</translation>
     </message>
     <message>
         <source>Rename notebook</source>
-        <translation></translation>
+        <translation>Renombrar el libro de notas</translation>
     </message>
     <message>
         <source>Notebook &quot;%s&quot; renamed!</source>
-        <translation></translation>
+        <translation>¡El libro de notas &quot;%s&quot; ha sido renombrado!</translation>
     </message>
     <message>
         <source>You are trying to delete a notebook</source>
-        <translation></translation>
+        <translation>Esta tratando de eliminar un libro de notas</translation>
     </message>
     <message>
         <source>Are you sure want to delete this notebook and its notes?</source>
-        <translation></translation>
+        <translation>¿Esta seguro de que quiere eliminar este libro de notas, y todas las notas contenidas en el mismo?</translation>
     </message>
     <message>
         <source>Notebook &quot;%s&quot; deleted!</source>
-        <translation></translation>
+        <translation>¡El libro de notas &quot;%s&quot; ha sido eliminado!</translation>
     </message>
     <message>
         <source>You are trying to delete a note</source>
-        <translation></translation>
+        <translation>Esta intentando eliminar una nota</translation>
     </message>
     <message>
         <source>Are you sure want to delete note &quot;%s&quot;?</source>
-        <translation></translation>
+        <translation>¿Esta seguro que quiere eliminar la nota &quot;%s&quot;?</translation>
     </message>
     <message>
         <source>Note &quot;%s&quot; deleted!</source>
-        <translation></translation>
+        <translation>¡La nota &quot;%s&quot; ha sido eliminada!</translation>
     </message>
     <message>
         <source>Rename</source>
-        <translation></translation>
+        <translation>Renombrar</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation></translation>
+        <translation>Eliminar</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation></translation>
+        <translation>Editar</translation>
     </message>
     <message>
         <source>All Notes</source>
-        <translation></translation>
+        <translation>Todas las notas</translation>
     </message>
     <message>
         <source>Enter notebook name:</source>
-        <translation></translation>
+        <translation>Ingrese el nombre del libro de notas:</translation>
     </message>
     <message>
         <source>Notebook with this name already exist. Enter notebook name</source>
-        <translation></translation>
+        <translation>Ya existe un libro de notas con ese nombre. Ingrese el nombre del libro de notas</translation>
     </message>
     <message>
         <source>MainWindow</source>
-        <translation></translation>
+        <translation>Ventana principal</translation>
     </message>
     <message>
         <source>Create Notebook</source>
-        <translation></translation>
+        <translation>Crear un libro de notas</translation>
     </message>
     <message>
         <source>Notebook</source>
-        <translation></translation>
+        <translation>Libro de notas</translation>
     </message>
     <message>
         <source>Create Note</source>
-        <translation></translation>
+        <translation>Crear nota</translation>
     </message>
     <message>
         <source>Note</source>
-        <translation></translation>
+        <translation>Nota</translation>
     </message>
     <message>
         <source>Everpad / All Notes</source>
-        <translation></translation>
+        <translation>Evepard / Todas las notas</translation>
     </message>
     <message>
         <source>Ctrl+n</source>
@@ -460,38 +462,38 @@
     <name>Management</name>
     <message>
         <source>%d minutes</source>
-        <translation></translation>
+        <translation>%d minutos</translation>
     </message>
     <message>
         <source>One hour</source>
-        <translation></translation>
+        <translation>Una hora</translation>
     </message>
     <message>
         <source>Manual</source>
-        <translation></translation>
+        <translation>Manual</translation>
     </message>
     <message>
         <source>Remove Authorisation</source>
-        <translation></translation>
+        <translation>Remover Autorización</translation>
     </message>
     <message>
         <source>Authorise</source>
-        <translation></translation>
+        <translation>Autorizar</translation>
     </message>
 </context>
 <context>
     <name>Notebook</name>
     <message>
         <source>Form</source>
-        <translation></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <source>Notebook name</source>
-        <translation></translation>
+        <translation>Nombre del libro de notas</translation>
     </message>
     <message>
         <source>Contains 5 notes</source>
-        <translation></translation>
+        <translation>Contiene 5 notas</translation>
     </message>
 </context>
 <context>
@@ -505,66 +507,66 @@
     <name>ResourceEdit</name>
     <message>
         <source>%d attached files: &lt;a href=&quot;show&quot;&gt;%s&lt;/a&gt; / &lt;a href=&quot;add&quot;&gt;%s&lt;/a&gt;</source>
-        <translation></translation>
+        <translation>%d archivos adjuntados, &lt;a herf=&apos;show&apos;&gt;%s&lt;/a&gt; / &lt;a href=&apos;add&apos;&gt;%s&lt;/a&gt;</translation>
     </message>
     <message>
         <source>show</source>
-        <translation></translation>
+        <translation>mostrar</translation>
     </message>
     <message>
         <source>hide</source>
-        <translation></translation>
+        <translation>ocultar</translation>
     </message>
     <message>
         <source>add another</source>
-        <translation></translation>
+        <translation>agregar otro</translation>
     </message>
     <message>
         <source>Put to Content</source>
-        <translation></translation>
+        <translation>Poner en el contenido</translation>
     </message>
     <message>
         <source>Remove Resource</source>
-        <translation></translation>
+        <translation>Remover recurso</translation>
     </message>
     <message>
         <source>Save As</source>
-        <translation></translation>
+        <translation>Guardar como</translation>
     </message>
     <message>
         <source>Delete Resource</source>
-        <translation></translation>
+        <translation>Eliminar recurso</translation>
     </message>
     <message>
         <source>Are you sure want to delete this resource?</source>
-        <translation></translation>
+        <translation>¿Esta seguro que quiere eliminar este recurso?</translation>
     </message>
 </context>
 <context>
     <name>TableInsertDialog</name>
     <message>
         <source>Everpad / Insert Table</source>
-        <translation></translation>
+        <translation>Everpad / Inserta una Tabla</translation>
     </message>
     <message>
         <source>Columns:</source>
-        <translation></translation>
+        <translation>Columnas:</translation>
     </message>
     <message>
         <source>Rows:</source>
-        <translation></translation>
+        <translation>Filas:</translation>
     </message>
     <message>
         <source>Width:</source>
-        <translation></translation>
+        <translation>Ancho:</translation>
     </message>
     <message>
         <source>% of page</source>
-        <translation></translation>
+        <translation>% de la página</translation>
     </message>
     <message>
         <source>pixels</source>
-        <translation></translation>
+        <translation>pixeles</translation>
     </message>
     <message>
         <source>100</source>

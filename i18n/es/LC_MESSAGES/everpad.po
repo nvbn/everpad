@@ -1,0 +1,50 @@
+# Spanish translation for Everpad (DASH)
+# Copyright (C) 2013
+# This file is distributed under the same license as the Everpad package.
+# Jesus M. Castagnetto <jesus@castagnetto.com>, 2013
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-11-08 18:19+0200\n"
+"PO-Revision-Date: 2013-03-03 09:54-0500\n"
+"Last-Translator: Jesus M. Castagnetto <jesus@castagnetto.com>\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: everpad/specific/unity/lens.py:34
+msgid "Everpad Lens"
+msgstr "Lente de Everpad"
+
+#: everpad/specific/unity/lens.py:35
+msgid "Search Everpad"
+msgstr "Busca en Everpad"
+
+#: everpad/specific/unity/lens.py:55
+msgid "Tags"
+msgstr "Etiquetas"
+
+#: everpad/specific/unity/lens.py:59
+msgid "Notebooks"
+msgstr "Cuadernos de notas"
+
+#: everpad/specific/unity/lens.py:63
+msgid "Places"
+msgstr "Lugares"
+
+#: everpad/specific/unity/lens.py:69
+msgid "Pin Notes"
+msgstr "Fijar Notas"
+
+#: everpad/specific/unity/lens.py:70
+msgid "All Notes"
+msgstr "Todas las Notas"
+
+#: everpad/specific/unity/lens.py:86
+msgid "Please restart everpad via indicator"
+msgstr "Por favor, reiniciar everpad usando el indicador"

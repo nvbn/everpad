@@ -286,7 +286,7 @@
     </message>
     <message>
         <location filename="everpad/pad/editor/__init__.py" line="163"/>
-        <source> altrentive of: %s</source>
+        <source> alternative of: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

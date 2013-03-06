@@ -609,7 +609,7 @@
     </message>
     <message>
         <location filename="everpad/interface/notebook.py" line="48"/>
-        <source>Containts 5 notes</source>
+        <source>Contains 5 notes</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

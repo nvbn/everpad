@@ -45,5 +45,5 @@ class Ui_Notebook(object):
     def retranslateUi(self, Notebook):
         Notebook.setWindowTitle(QtGui.QApplication.translate("Notebook", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.name.setText(QtGui.QApplication.translate("Notebook", "Notebook name", None, QtGui.QApplication.UnicodeUTF8))
-        self.content.setText(QtGui.QApplication.translate("Notebook", "Containts 5 notes", None, QtGui.QApplication.UnicodeUTF8))
+        self.content.setText(QtGui.QApplication.translate("Notebook", "Contains 5 notes", None, QtGui.QApplication.UnicodeUTF8))
 

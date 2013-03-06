@@ -286,7 +286,7 @@
     </message>
     <message>
         <location filename="everpad/pad/editor/__init__.py" line="163"/>
-        <source> altrentive of: %s</source>
+        <source> alternative of: %s</source>
         <translation> alternatief van: %s</translation>
     </message>
     <message>
@@ -609,7 +609,7 @@
     </message>
     <message>
         <location filename="everpad/interface/notebook.py" line="48"/>
-        <source>Containts 5 notes</source>
+        <source>Contains 5 notes</source>
         <translation>Bevat 5 notities</translation>
     </message>
 </context>

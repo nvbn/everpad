@@ -167,7 +167,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
     def update_title(self):
         title = self.note_edit.title
         if self.note.conflict_parent:
-            title += self.tr(' altrentive of: %s') % (
+            title += self.tr(' alternative of: %s') % (
                 Note.from_tuple(self.app.provider.get_note(
                     self.note.conflict_parent,
                 )).title,

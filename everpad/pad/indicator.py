@@ -3,7 +3,7 @@ sys.path.insert(0, '../..')
 from PySide.QtCore import Slot, QTranslator, QLocale, Signal, QSettings, QT_TRANSLATE_NOOP, QLibraryInfo
 from PySide.QtGui import QApplication, QSystemTrayIcon, QMenu, QCursor
 from PySide.QtNetwork import QNetworkProxyFactory
-from everpad.basetypes import Note, NONE_ID, NONE_VAL
+from everpad.basetypes import Note, NONE_ID, NONE_VAL, Notebook
 from everpad.tools import get_provider, get_pad, print_version, resource_filename
 from everpad.pad.editor import Editor
 from everpad.pad.management import Management
@@ -41,10 +41,10 @@ class Indicator(QSystemTrayIcon):
         if reason == QSystemTrayIcon.Trigger:
             self.menu.popup(QCursor().pos())
 
-    def _add_note(self, struct):
+    def _add_note(self, menu, struct):
         note = Note.from_tuple(struct)
         title = note.title[:40].replace('&', '&&')
-        self.menu.addAction(title, Slot()(
+        menu.addAction(title, Slot()(
             partial(self.open, note=note)
         ))
 
@@ -77,13 +77,30 @@ class Indicator(QSystemTrayIcon):
                 dbus.Array([], signature='i'), 0,
                 20, Note.ORDER_UPDATED_DESC, 1,
             )
-            notes = self.app.provider.find_notes(
-                '', dbus.Array([], signature='i'),
-                dbus.Array([], signature='i'), 0,
-                20 - len(pin_notes), Note.ORDER_UPDATED_DESC, 0,
-            )
+            sort_by_notebook = bool(int(
+                self.app.provider.get_settings_value('sort-by-notebook') or 0))
+            has_notes = False
+            if not sort_by_notebook:
+                notes = self.app.provider.find_notes(
+                    '', dbus.Array([], signature='i'),
+                    dbus.Array([], signature='i'), 0,
+                    20 - len(pin_notes), Note.ORDER_UPDATED_DESC, 0,
+                )
+                has_notes = bool(notes)
+            else:
+                notebooks = self.app.provider.list_notebooks()
+                notes = {}
+                for notebook_struct in notebooks:
+                    notebook = Notebook.from_tuple(notebook_struct)
+                    _notes = self.app.provider.find_notes('', [notebook.id],
+                         dbus.Array([], signature='i'), 0,
+                         20 - len(pin_notes), Note.ORDER_UPDATED_DESC, 0,
+                    )
+                    notes[notebook] = _notes
+                    if _notes:
+                        has_notes = True
             first_sync = not (
-                len(notes) + len(pin_notes) or self.app.provider.is_first_synced()
+                has_notes or len(pin_notes) or self.app.provider.is_first_synced()
             )
             status_syncing = self.app.provider.get_status() == STATUS_SYNC
             if status_syncing and first_sync:
@@ -115,8 +132,15 @@ class Indicator(QSystemTrayIcon):
                     if not first_sync:
                         if len(menu_items[item]):
                             self.menu.addSeparator()
+                            if item == 'notes' and sort_by_notebook:
+                                for notebook in menu_items[item]:
+                                    sub_menu = self.menu.addMenu(notebook.name)
+                                    _notes = menu_items[item][notebook]
+                                    for struct in _notes:
+                                        self._add_note(sub_menu, struct)
+                                continue
                             for struct in menu_items[item]:
-                                self._add_note(struct)
+                                self._add_note(self.menu, struct)
                             self.menu.addSeparator()
                 else:
                     action = self.menu.addAction(menu_items[item][0], menu_items[item][1])

@@ -119,6 +119,7 @@ class Management(QDialog):
             }
         self.load_layout_list(self.app.settings.value('menu-order', DEFAULT_INDICATOR_LAYOUT))
         self.ui.searchOnHome.stateChanged.connect(self.search_on_home_changed)
+        self.ui.sortByNotebook.stateChanged.connect(self.sort_by_notebook_changed)
         self.ui.buttonBox.clicked.connect(self.close_clicked)
         self.update_tabs()
 
@@ -185,6 +186,12 @@ class Management(QDialog):
         self.app.provider.set_settings_value('search-on-home', value)
 
     @Slot()
+    def sort_by_notebook_changed(self):
+        value = ('0' if self.ui.sortByNotebook.checkState() == Qt.Unchecked 
+                     else '1')
+        self.app.provider.set_settings_value('sort-by-notebook', value)
+
+    @Slot()
     def update_tabs(self):
         if self.app.provider.is_authenticated():
             self.ui.authBtn.setText(self.tr('Remove Authorisation'))
@@ -207,6 +214,9 @@ class Management(QDialog):
         else Qt.Unchecked)
         self.ui.searchOnHome.setCheckState(Qt.Checked
             if int(self.app.provider.get_settings_value('search-on-home') or 1)
+        else Qt.Unchecked)
+        self.ui.sortByNotebook.setCheckState(Qt.Checked
+            if int(self.app.provider.get_settings_value('sort-by-notebook') or 0)
         else Qt.Unchecked)
 
     @Slot()

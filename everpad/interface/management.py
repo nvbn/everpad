@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Sat Mar  2 22:53:08 2013
-#      by: pyside-uic 0.2.13 running on PySide 1.1.0
+# Created: Sun Mar 10 14:15:51 2013
+#      by: pyside-uic 0.2.13 running on PySide 1.1.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -79,16 +79,23 @@ class Ui_Dialog(object):
         self.searchOnHome.setText("")
         self.searchOnHome.setObjectName("searchOnHome")
         self.gridLayout_2.addWidget(self.searchOnHome, 4, 1, 1, 1)
+        self.label_8 = QtGui.QLabel(self.tab_2)
+        self.label_8.setObjectName("label_8")
+        self.gridLayout_2.addWidget(self.label_8, 5, 0, 1, 1)
+        self.sortByNotebook = QtGui.QCheckBox(self.tab_2)
+        self.sortByNotebook.setText("")
+        self.sortByNotebook.setObjectName("sortByNotebook")
+        self.gridLayout_2.addWidget(self.sortByNotebook, 5, 1, 1, 1)
         self.label_indLayout = QtGui.QLabel(self.tab_2)
         self.label_indLayout.setObjectName("label_indLayout")
-        self.gridLayout_2.addWidget(self.label_indLayout, 5, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.label_indLayout, 6, 0, 1, 1)
         self.listWidget_indLayout = QtGui.QListWidget(self.tab_2)
         self.listWidget_indLayout.setMinimumSize(QtCore.QSize(0, 96))
         self.listWidget_indLayout.setMaximumSize(QtCore.QSize(16777215, 96))
         self.listWidget_indLayout.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.listWidget_indLayout.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
         self.listWidget_indLayout.setObjectName("listWidget_indLayout")
-        self.gridLayout_2.addWidget(self.listWidget_indLayout, 5, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.listWidget_indLayout, 6, 1, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.webView = QtWebKit.QWebView(Dialog)
@@ -117,6 +124,7 @@ class Ui_Dialog(object):
         self.label_6.setText(QtGui.QApplication.translate("Dialog", "Black tray icon", None, QtGui.QApplication.UnicodeUTF8))
         self.progressLabel.setText(QtGui.QApplication.translate("Dialog", "Launcher progress bar", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("Dialog", "Search on the home lens", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_8.setText(QtGui.QApplication.translate("Dialog", "Sort notes by notebook", None, QtGui.QApplication.UnicodeUTF8))
         self.label_indLayout.setText(QtGui.QApplication.translate("Dialog", "Indicator Layout", None, QtGui.QApplication.UnicodeUTF8))
         self.listWidget_indLayout.setToolTip(QtGui.QApplication.translate("Dialog", "<html><head/><body><p>Drag and drop items to change layout.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Appearance", None, QtGui.QApplication.UnicodeUTF8))

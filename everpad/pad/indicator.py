@@ -129,19 +129,18 @@ class Indicator(QSystemTrayIcon):
             }
             for item in self.app.settings.value('menu-order', DEFAULT_INDICATOR_LAYOUT):
                 if item == 'pin_notes' or item == 'notes':
-                    if not first_sync:
-                        if len(menu_items[item]):
-                            self.menu.addSeparator()
-                            if item == 'notes' and sort_by_notebook:
-                                for notebook in menu_items[item]:
-                                    sub_menu = self.menu.addMenu(notebook.name)
-                                    _notes = menu_items[item][notebook]
-                                    for struct in _notes:
-                                        self._add_note(sub_menu, struct)
-                                continue
+                    if not first_sync and len(menu_items[item]):
+                        self.menu.addSeparator()
+                        if item == 'notes' and sort_by_notebook:
+                            for notebook in menu_items[item]:
+                                sub_menu = self.menu.addMenu(notebook.name)
+                                _notes = menu_items[item][notebook]
+                                for struct in _notes:
+                                    self._add_note(sub_menu, struct)
+                        else:
                             for struct in menu_items[item]:
                                 self._add_note(self.menu, struct)
-                            self.menu.addSeparator()
+                        self.menu.addSeparator()
                 else:
                     action = self.menu.addAction(menu_items[item][0], menu_items[item][1])
                     if status_syncing and item == 'sync':

@@ -219,22 +219,30 @@ class SyncAgent(object):
             if note.guid:
                 kwargs['guid'] = note.guid
             nt = Note(**kwargs)
-            try:
-                next_action = ACTION_NONE
-                if note.action == ACTION_CHANGE:
-                    nt.resources = self._resources_for_note(note)
-                    nt = self.note_store.updateNote(self.auth_token, nt)
-                elif note.action == ACTION_CREATE:
-                    nt.resources = self._resources_for_note(note)
-                    nt = self.note_store.createNote(self.auth_token, nt)
-                    note.guid = nt.guid
-                elif note.action == ACTION_DELETE:
+                        
+            next_action = ACTION_NONE
+            
+            if note.action == ACTION_DELETE:
+                try:
                     self.note_store.deleteNote(self.auth_token, nt.guid)
-                    self.session.delete(note)
-            except EDAMUserException as e:
-                next_action = ACTION_NONE
-                self.app.log('Note %s failed' % note.title)
-                self.app.log(e)
+                except EDAMUserException as e:
+                    self.app.log('Note %s already removed' % note.title)
+                    self.app.log(e)
+
+                self.session.delete(note)
+            else:
+                try:
+                    if note.action == ACTION_CHANGE:
+                        nt.resources = self._resources_for_note(note)
+                        nt = self.note_store.updateNote(self.auth_token, nt)
+                    elif note.action == ACTION_CREATE:
+                        nt.resources = self._resources_for_note(note)
+                        nt = self.note_store.createNote(self.auth_token, nt)
+                        note.guid = nt.guid
+                except EDAMUserException as e:
+                    next_action = ACTION_NONE
+                    self.app.log('Note %s failed' % note.title)
+                    self.app.log(e)
             note.action = next_action
         self.session.commit()
 

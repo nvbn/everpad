@@ -1,0 +1,50 @@
+# German translation Everpad (DASH)
+# Copyright (C) 2013
+# This file is distributed under the same license as the Everpad package.
+# Simon Allendörfer <simon@allendoerfer.info>, 2013
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-11-08 18:19+0200\n"
+"PO-Revision-Date: 2013-03-30 15:30+0100\n"
+"Last-Translator: Simon Allendörfer <simon@allendoerfer.info>\n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: everpad/specific/unity/lens.py:34
+msgid "Everpad Lens"
+msgstr "Everpad-Linse"
+
+#: everpad/specific/unity/lens.py:35
+msgid "Search Everpad"
+msgstr "Everpad durchsuchen"
+
+#: everpad/specific/unity/lens.py:55
+msgid "Tags"
+msgstr "Schlagwörter"
+
+#: everpad/specific/unity/lens.py:59
+msgid "Notebooks"
+msgstr "Notizbücher"
+
+#: everpad/specific/unity/lens.py:63
+msgid "Places"
+msgstr "Orte"
+
+#: everpad/specific/unity/lens.py:69
+msgid "Pin Notes"
+msgstr "Notizbuch anpinnen"
+
+#: everpad/specific/unity/lens.py:70
+msgid "All Notes"
+msgstr "Alle Notizen"
+
+#: everpad/specific/unity/lens.py:86
+msgid "Please restart everpad via indicator"
+msgstr "Bitte Everpad mit dem Indikator neustarten"

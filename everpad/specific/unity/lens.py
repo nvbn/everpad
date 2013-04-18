@@ -58,12 +58,16 @@ class EverpadLens(SingleScopeLens):
             self.update_props()
 
     def update_props(self):
-        icon = Gio.ThemedIcon.new(resource_filename("share/icons/unity-icon-theme/places/svg/group-recent.svg"))
+        icon = Gio.ThemedIcon.new(resource_filename(
+            "share/icons/unity-icon-theme/places/svg/group-recent.svg",
+        ))
         tags = Unity.CheckOptionFilter.new('tags', _('Tags'), icon, True)
         for tag_struct in provider.list_tags():
             tag = Tag.from_tuple(tag_struct)
             tags.add_option(str(tag.id), tag.name, icon)
-        notebooks = Unity.RadioOptionFilter.new('notebooks', _('Notebooks'), icon, True)
+        notebooks = Unity.RadioOptionFilter.new(
+            'notebooks', _('Notebooks'), icon, True,
+        )
         for notebook_struct in provider.list_notebooks():
             notebook = Notebook.from_tuple(notebook_struct)
             notebooks.add_option(str(notebook.id), notebook.name, icon)
@@ -72,7 +76,10 @@ class EverpadLens(SingleScopeLens):
             place = Place.from_tuple(place_struct)
             places.add_option(str(place.id), place.name, icon)
         self._lens.props.filters = [notebooks, tags, places]
-        self._lens.props.search_in_global = bool(int(provider.get_settings_value('search-on-home') or 1))
+        self._lens.props.search_in_global = True
+
+    def can_search_on_home_lens(self):
+        return bool(int(provider.get_settings_value('search-on-home') or 1))
 
     pin_notes = ListViewCategory(_("Pin Notes"), 'everpad-lens')
     all_notes = ListViewCategory(_("All Notes"), 'everpad-lens')
@@ -115,6 +122,13 @@ class EverpadLens(SingleScopeLens):
                 'everpad-note', self.pin_notes if note.pinnded else self.all_notes,
                 "text/html", note.title, html2text(note.content),
             '')
+
+    def global_search(self, phrase, results):
+        if self.can_search_on_home_lens():
+            return super(EverpadLens, self).global_search(phrase, results)
+        else:
+            results.clear()
+
 
     def preview(self, scope, uri):
         obj = json.loads(uri)

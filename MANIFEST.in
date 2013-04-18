@@ -1,0 +1,6 @@
+recursive-exclude evernote *.pyc
+recursive-exclude everpad *.pyc
+recursive-exclude thrift *.pyc
+recursive-include everpad *html
+recursive-include data *
+recursive-include i18n *

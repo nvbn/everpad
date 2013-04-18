@@ -141,6 +141,7 @@ class ProviderService(dbus.service.Object):
             and_(Note.notebook_id == id,
             Note.action != ACTION_DELETE,
             Note.action != ACTION_NOEXSIST,
+            Note.action != ACTION_CONFLICT,
         )).count()
 
     @dbus.service.method(

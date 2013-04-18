@@ -251,6 +251,39 @@ class ServiceTestCase(unittest.TestCase):
         self.service.delete_tag(deleting_tag.id)
         self.assertItemsEqual(note.tags, [tag])
 
+    def test_notebook_count_with_conflicts(self):
+        """Test notebook notes count with conflict versions"""
+        notebook = models.Notebook(
+            name='notebook',
+        )
+        self.session.add(notebook)
+        original_note = models.Note(
+            title='123',
+            content='456',
+            notebook=notebook,
+            action=models.ACTION_CREATE,
+        )
+        self.session.add(original_note)
+        self.session.commit()
+
+        self.assertEqual(self.service.get_notebook_notes_count(
+            notebook.id
+        ), 1)
+
+        conflict_note = models.Note(
+            title='123',
+            content='456',
+            notebook=notebook,
+            action=models.ACTION_CONFLICT,
+            conflict_parent=[original_note],
+        )
+        self.session.add(conflict_note)
+        self.session.commit()
+
+        self.assertEqual(self.service.get_notebook_notes_count(
+            notebook.id
+        ), 1)
+
 
 class FindTestCase(unittest.TestCase):
     def setUp(self):

@@ -93,6 +93,36 @@ class SyncTestCase(unittest.TestCase):
         self.session.commit()
         return notebook
 
+    def test_sync_notes_with_lonlat(self):
+        """Test sync notes with lonlat"""
+        remote = self._create_remote_note(
+            attributes=ttypes.NoteAttributes(
+                longitude=80,
+                latitude=60,
+            )
+        )
+        self.sync.notes_remote()
+        note = self.sq(Note).filter(
+            Note.guid == remote.guid,
+        ).one()
+        self.assertIsNotNone(note.place)
+
+    def test_sync_notes_with_place_name(self):
+        """Test sync notes with place"""
+        place_name = 'test place'
+        remote = self._create_remote_note(
+            attributes=ttypes.NoteAttributes(
+                placeName=place_name,
+            )
+        )
+        self.sync.notes_remote()
+        note = self.sq(Note).filter(
+            Note.guid == remote.guid,
+        ).one()
+        self.assertEqual(
+            note.place.name, place_name,
+        )
+
     def test_local_notebooks(self):
         """Test sync local notebooks"""
         name = str(datetime.now())

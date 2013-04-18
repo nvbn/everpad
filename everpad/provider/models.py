@@ -12,6 +12,7 @@ import os
 import urllib
 import json
 import dbus
+import socket
 
 Base = declarative_base()
 
@@ -182,15 +183,18 @@ class Note(Base):
         if note.attributes.placeName:
             place_name = note.attributes.placeName.decode('utf8')
         elif note.attributes.longitude:
-            data = json.loads(urllib.urlopen(
-                'http://maps.googleapis.com/maps/api/geocode/json?latlng=%.4f,%.4f&sensor=false' % (
-                    note.attributes.latitude,
-                    note.attributes.longitude,
-                ),
-            ).read())
             try:
-                place_name = data['results'][0]['formatted_address']
-            except (IndexError, KeyError):
+                data = json.loads(urllib.urlopen(
+                    'http://maps.googleapis.com/maps/api/geocode/json?latlng=%.4f,%.4f&sensor=false' % (
+                        note.attributes.latitude,
+                        note.attributes.longitude,
+                    ),
+                ).read())
+                try:
+                    place_name = data['results'][0]['formatted_address']
+                except (IndexError, KeyError):
+                    pass
+            except socket.error:
                 pass
         if place_name:
             self.set_place(place_name, session)

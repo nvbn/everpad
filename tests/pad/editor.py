@@ -124,7 +124,7 @@ class EditorTestCase(unittest.TestCase):
                 set_links(orig), result,
             )
 
-    def test_bot_broken_note_links(self):
+    def test_not_broken_note_links(self):
         """Test content nochange"""
         content = '<a href="evernote:///view/123/123/123/">note link</a>'
         self.note.content = content

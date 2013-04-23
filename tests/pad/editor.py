@@ -2,9 +2,9 @@ import sys
 sys.path.insert(0, '..')
 # patch settings:
 import settings
-
+from mock import MagicMock
 from PySide.QtGui import QApplication
-from PySide.QtCore import QSettings, Signal
+from PySide.QtCore import QSettings, Signal, QUrl
 from dbus.exceptions import DBusException
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
@@ -66,7 +66,7 @@ class EditorTestCase(unittest.TestCase):
         self.app = app
         app.update(self.service)
         notebook = Notebook.from_tuple(
-            self.service.create_notebook('test'),
+            self.service.create_notebook('test', None),
         )
         self.note = Note.from_tuple(self.service.create_note(Note(
             id=NONE_ID,
@@ -124,6 +124,40 @@ class EditorTestCase(unittest.TestCase):
                 set_links(orig), result,
             )
 
+    def test_not_broken_note_links(self):
+        """Test content nochange"""
+        content = '<a href="evernote:///view/123/123/123/">note link</a>'
+        self.note.content = content
+        editor = Editor(self.note)
+        self.assertEqual(
+            editor.note_edit.content,
+            content,
+        )
+
+    def test_open_note_links(self):
+        """Test open note links"""
+        guid = 'guid'
+        note = Note(
+            id=123,
+        )
+
+        self.app.open = MagicMock()
+        self.service.get_note_by_guid = MagicMock(
+            return_value=note.struct,
+        )
+
+        link = "evernote:///view/123/123/{guid}/123/".format(
+            guid=guid,
+        )
+        editor = Editor(self.note)
+        editor.note_edit.link_clicked(QUrl(link))
+
+        self.assertEqual(
+            self.service.get_note_by_guid.call_args[0][0], guid,
+        )
+        self.assertEqual(
+            self.app.open.call_args[0][0].id, note.id,
+        )
 
 
 if __name__ == '__main__':

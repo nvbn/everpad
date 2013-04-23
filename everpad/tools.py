@@ -95,7 +95,7 @@ def sanitize(soup=None, html=None):
         'property',
     )
     _protocols = (
-        'http', 'https', 'file',
+        'http', 'https', 'file', 'evernote',
     )
     if not soup:
         soup = BeautifulSoup(html)

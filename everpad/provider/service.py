@@ -57,6 +57,20 @@ class ProviderService(dbus.service.Object):
             raise DBusException('Note not found')
 
     @dbus.service.method(
+        "com.everpad.Provider", in_signature='s',
+        out_signature=btype.Note.signature,
+    )
+    def get_note_by_guid(self, guid):
+        try:
+            return btype.Note.from_obj(self.sq(Note).filter(and_(
+                Note.guid == guid,
+                Note.action != ACTION_DELETE,
+                Note.action != ACTION_CONFLICT,
+            )).one()).struct
+        except NoResultFound:
+            raise DBusException('Note not found')
+
+    @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='a%s' % btype.Note.signature,
     )

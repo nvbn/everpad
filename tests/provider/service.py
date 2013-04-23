@@ -284,6 +284,50 @@ class ServiceTestCase(unittest.TestCase):
             notebook.id
         ), 1)
 
+    def test_get_note_by_guid(self):
+        """Test getting note by guid"""
+        title = '123'
+        guid = '456'
+
+        note = models.Note(
+            title=title,
+            content='456',
+            action=models.ACTION_NONE,
+            guid=guid,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        service_note = Note.from_tuple(self.service.get_note_by_guid(guid))
+        self.assertEqual(service_note.title, title)
+
+    def test_get_note_by_guid_with_conflicts(self):
+        """Test getting note by guid with conflicts"""
+        title = '123'
+        guid = '456'
+
+        note = models.Note(
+            title=title,
+            content='456',
+            action=models.ACTION_NONE,
+            guid=guid,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        conflict_note = models.Note(
+            title='asd',
+            content='456',
+            action=models.ACTION_CONFLICT,
+            guid=guid,
+            conflict_parent=[note],
+        )
+        self.session.add(conflict_note)
+        self.session.commit()
+
+        service_note = Note.from_tuple(self.service.get_note_by_guid(guid))
+        self.assertEqual(service_note.title, title)
+
 
 class FindTestCase(unittest.TestCase):
     def setUp(self):

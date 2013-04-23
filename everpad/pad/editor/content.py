@@ -10,6 +10,7 @@ from PySide.QtCore import (
     QMimeData,
 )
 from PySide.QtWebKit import QWebPage, QWebSettings
+from everpad.basetypes import Note
 from everpad.pad.editor.actions import ImagePrefs, TableWidget
 from everpad.pad.tools import file_icon_path
 from everpad.tools import sanitize, clean, html_unescape, resource_filename
@@ -298,7 +299,14 @@ class ContentEdit(QObject):
 
     @Slot(QUrl)
     def link_clicked(self, url):
-        webbrowser.open(url.toString())
+        if url.scheme() == 'evernote':
+            note_guid = url.toString().split('/')[6]
+            note = Note.from_tuple(
+                self.app.provider.get_note_by_guid(note_guid),
+            )
+            self.app.open(note)
+        else:
+            webbrowser.open(url.toString())
 
     @Slot(QPoint)
     def context_menu(self, pos, image_hash=None):

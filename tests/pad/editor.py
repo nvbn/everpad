@@ -66,7 +66,7 @@ class EditorTestCase(unittest.TestCase):
         self.app = app
         app.update(self.service)
         notebook = Notebook.from_tuple(
-            self.service.create_notebook('test'),
+            self.service.create_notebook('test', None),
         )
         self.note = Note.from_tuple(self.service.create_note(Note(
             id=NONE_ID,
@@ -124,6 +124,17 @@ class EditorTestCase(unittest.TestCase):
                 set_links(orig), result,
             )
 
+    def test_bot_broken_note_links(self):
+        """Test content nochange"""
+        content = """
+            <a href='evernote:///view/123/123/123/'>note link</a>
+        """
+        self.note.content = content
+        editor = Editor(self.note)
+        self.assertEqual(
+            editor.note_edit.content,
+            content,
+        )
 
 
 if __name__ == '__main__':

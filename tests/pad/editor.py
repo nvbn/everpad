@@ -2,9 +2,9 @@ import sys
 sys.path.insert(0, '..')
 # patch settings:
 import settings
-
+from mock import MagicMock
 from PySide.QtGui import QApplication
-from PySide.QtCore import QSettings, Signal
+from PySide.QtCore import QSettings, Signal, QUrl
 from dbus.exceptions import DBusException
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
@@ -132,6 +132,31 @@ class EditorTestCase(unittest.TestCase):
         self.assertEqual(
             editor.note_edit.content,
             content,
+        )
+
+    def test_open_note_links(self):
+        """Test open note links"""
+        guid = 'guid'
+        note = Note(
+            id=123,
+        )
+
+        self.app.open = MagicMock()
+        self.service.get_note_by_guid = MagicMock(
+            return_value=note.struct,
+        )
+
+        link = "evernote:///view/123/123/{guid}/123/".format(
+            guid=guid,
+        )
+        editor = Editor(self.note)
+        editor.note_edit.link_clicked(QUrl(link))
+
+        self.assertEqual(
+            self.service.get_note_by_guid.call_args[0][0], guid,
+        )
+        self.assertEqual(
+            self.app.open.call_args[0][0].id, note.id,
         )
 
 

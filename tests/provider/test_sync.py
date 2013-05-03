@@ -174,15 +174,29 @@ class SyncTestCase(unittest.TestCase):
         )
         self.session.add(notebook)
         self.session.commit()
+
+        self.sync.note_store.createNotebook = MagicMock()
+        self.sync.note_store.createNotebook.return_value.guid = 'guid'
+
         self.sync.notebooks_local()
+
         self.assertEqual(notebook.action, ACTION_NONE)
-        notebook_remote = self.note_store.getNotebook(self.auth_token, notebook.guid)
+
+        notebook_remote = self.sync.note_store.createNotebook.call_args_list[0][0][1]
+
         self.assertEqual(notebook.name, notebook_remote.name)
+
         notebook.name += '*'
         notebook.action = ACTION_CHANGE
+
+        self.sync.note_store.updateNotebook = MagicMock()
+        self.sync.note_store.updateNotebook.return_value.guid = 'guid'
+
         self.sync.notebooks_local()
         self.assertEqual(notebook.action, ACTION_NONE)
-        notebook_remote = self.note_store.getNotebook(self.auth_token, notebook.guid)
+
+        notebook_remote = self.sync.note_store.updateNotebook.call_args_list[0][0][1]
+
         self.assertEqual(notebook.name, notebook_remote.name)
 
     def test_local_tags(self):

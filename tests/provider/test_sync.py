@@ -273,17 +273,14 @@ class SyncTestCase(unittest.TestCase):
 
     def test_local_resources(self):
         """Test local resources"""
-        remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
-        notebook = Notebook(guid=remote_notebook.guid)
-        notebook.from_api(remote_notebook)
-        self.session.add(notebook)
-        self.session.commit()
+        notebook = self._default_notebook()
         note = Note(
             title='67890', action=ACTION_CREATE,
             notebook=notebook, content='12345',
         )
         self.session.add(note)
         self.session.commit()
+
         res = Resource(
             note_id=note.id, file_name='test.png',
             file_path=resource_path, mime='image/png',
@@ -291,19 +288,23 @@ class SyncTestCase(unittest.TestCase):
         )
         self.session.add(res)
         self.session.commit()
+
+        self.sync.note_store.createNote = MagicMock()
+        self.sync.note_store.createNote.return_value.guid = 'guid'
+
         self.sync.notes_local()
-        note_remote = self.note_store.getNote(
-            self.auth_token, note.guid, True, True, False, False,
-        )
+        note_remote = self.sync.note_store.createNote.call_args_list[0][0][1]
+
         self.assertEqual('test.png', note_remote.resources[0].attributes.fileName)
         self.session.delete(res)
         self.session.commit()
         note.action = ACTION_CHANGE
+
+        self.sync.note_store.updateNote = MagicMock()
+
         self.sync.notes_local()
-        note_remote = self.note_store.getNote(
-            self.auth_token, note.guid, True, True, False, False,
-        )
-        self.assertIsNone(note_remote.resources)
+        note_remote = self.sync.note_store.updateNote.call_args_list[0][0][1]
+        self.assertEqual(note_remote.resources, [])
 
     def test_remote_notebooks(self):
         """Test syncing remote notebooks"""

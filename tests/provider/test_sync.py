@@ -20,7 +20,6 @@ import os
 import time
 
 
-note_store = get_note_store(TOKEN)  # prevent reconecting
 resource_path = os.path.join(os.path.dirname(__file__), '../test.png')
 
 
@@ -34,11 +33,19 @@ class FakeSyncThread(SyncAgent):
         self.session = get_db_session()
         self.sq = self.session.query
         self.auth_token = TOKEN
-        self.note_store = note_store
         if self._need_to_update():
             self.need_to_update = True
         else:
             self.need_to_update = False
+
+    @property
+    def note_store(self):
+        if not hasattr(self, '_note_store'):
+            if getattr(self, 'real_store', False):
+                self._note_store = get_note_store(TOKEN)
+            else:
+                self._note_store = MagicMock()
+        return self._note_store
 
     @property
     def all_notes(self):
@@ -88,6 +95,10 @@ class SyncTestCase(unittest.TestCase):
 
     def _create_note(self, **params):
         remote_notebook = self._default_notebook()
+        if not 'attributes' in params:
+            params['attributes'] = MagicMock()
+            params['attributes'].placeName = None
+            params['attributes'].shareDate = None
         return ttypes.Note(
             title='test',
             content=u"""
@@ -406,15 +417,16 @@ class SyncTestCase(unittest.TestCase):
         """Test syncing remote resources"""
         remote = self._create_note(
             resources=[ttypes.Resource(
-                data=ttypes.Data(body=open(resource_path).read()),
+                data=ttypes.Data(
+                    body=open(resource_path).read(),
+                    bodyHash='',
+                ),
                 mime='image/png',
                 attributes=ttypes.ResourceAttributes(
                     fileName='test.png',
-                )
+                ),
             )],
         )
-        remote.attributes = MagicMock()
-        remote.attributes.placeName = None
 
         self._mock_return_one_note(remote)
 
@@ -443,8 +455,6 @@ class SyncTestCase(unittest.TestCase):
         self.sync.note_store.updateNote = MagicMock()
 
         remote = self._create_note()
-        remote.attributes = MagicMock()
-        remote.attributes.placeName = None
 
         self._mock_return_one_note(remote)
 
@@ -478,11 +488,14 @@ class SyncTestCase(unittest.TestCase):
     def test_sync_with_unicode_place(self):
         """Test sync with unicode place from #186"""
         place_name = u"rasserie André"
-        self._create_remote_note(
+        remote = self._create_note(
             attributes=ttypes.NoteAttributes(
                 placeName=place_name.encode('utf8'),
             )
         )
+
+        self._mock_return_one_note(remote)
+
         self.sync.notes_remote()
         self.assertTrue(
             self.sq(Place).filter(Place.name == place_name).count(),

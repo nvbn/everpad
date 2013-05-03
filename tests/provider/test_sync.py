@@ -230,36 +230,45 @@ class SyncTestCase(unittest.TestCase):
 
     def test_local_notes(self):
         """Test local notes sync"""
-        notebook = self._get_default_notebook()
+        notebook = self._default_notebook()
         note = Note(
             title='67890', action=ACTION_CREATE,
             notebook=notebook, content='12345',
         )
         self.session.add(note)
         self.session.commit()
+
+        self.sync.note_store.createNote = MagicMock()
+        self.sync.note_store.createNote.return_value.guid = 'guid'
+
         self.sync.notes_local()
         self.assertEqual(note.action, ACTION_NONE)
-        note_remote = self.note_store.getNote(
-            self.auth_token, note.guid, True, False, False, False,
-        )
+
+        note_remote = self.sync.note_store.createNote.call_args_list[0][0][1]
+
         self.assertEqual(notebook.guid, note_remote.notebookGuid)
+
         note.title += '*'
         note.action = ACTION_CHANGE
+
+        self.sync.note_store.updateNote = MagicMock()
+
         self.sync.notes_local()
         self.assertEqual(note.action, ACTION_NONE)
-        note_remote = self.note_store.getNote(
-            self.auth_token, note.guid, True, False, False, False,
-        )
+
+        note_remote = self.sync.note_store.updateNote.call_args_list[0][0][1]
+
         self.assertEqual(note.title, note_remote.title)
         note.action = ACTION_DELETE
+
+        self.sync.note_store.deleteNote = MagicMock()
+
         self.sync.notes_local()
-        note_remote = self.note_store.getNote(
-            self.auth_token, note.guid, True, False, False, False,
-        )
-        self.assertFalse(note_remote.active)
+        self.assertEqual(note.guid, self.sync.note_store.deleteNote.call_args_list[0][0][1])
+
         with self.assertRaises(NoResultFound):
             self.sq(Note).filter(
-                Note.guid == note_remote.guid,
+                Note.guid == note.guid,
             ).one()
 
     def test_local_resources(self):

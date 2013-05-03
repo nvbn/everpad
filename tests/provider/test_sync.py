@@ -207,15 +207,25 @@ class SyncTestCase(unittest.TestCase):
         )
         self.session.add(tag)
         self.session.commit()
+
+        self.sync.note_store.createTag = MagicMock()
+        self.sync.note_store.createTag.return_value.guid = 'guid'
+
         self.sync.tags_local()
         self.assertEqual(tag.action, ACTION_NONE)
-        tag_remote = self.note_store.getTag(self.auth_token, tag.guid)
+
+        tag_remote = self.sync.note_store.createTag.call_args_list[0][0][1]
         self.assertEqual(tag.name, tag_remote.name)
         tag.name += '*'
         tag.action = ACTION_CHANGE
+
+        self.sync.note_store.updateTag = MagicMock()
+
         self.sync.tags_local()
         self.assertEqual(tag.action, ACTION_NONE)
-        tag_remote = self.note_store.getTag(self.auth_token, tag.guid)
+
+        tag_remote = self.sync.note_store.updateTag.call_args_list[0][0][1]
+
         self.assertEqual(tag.name, tag_remote.name)
 
     def test_local_notes(self):

@@ -536,7 +536,7 @@ class SyncTestCase(unittest.TestCase):
 
     def test_share_note(self):
         """Test sharing note"""
-        notebook = self._get_default_notebook()
+        notebook = self._default_notebook()
         note = Note(
             title='67890', action=ACTION_CREATE,
             notebook=notebook, content='12345',
@@ -544,10 +544,19 @@ class SyncTestCase(unittest.TestCase):
         )
         self.session.add(note)
         self.session.commit()
+
+        self.sync.note_store.createNote = MagicMock()
+        self.sync.note_store.createNote.return_value.guid = 'guid'
+
+        self.note_store.shareNote = MagicMock()
+        self.note_store.shareNote.return_value = '123'
+
         self.sync.notes_local()
         self.sync.notes_sharing()
-        share_url = self.note_store.shareNote(self.auth_token, note.guid)
-        self.assertIn(share_url, note.share_url)
+
+        self.assertEqual(
+            self.note_store.shareNote.call_args_list[0][0][1], 'guid',
+        )
         self.assertEqual(note.share_status, SHARE_SHARED)
 
     def test_stop_sharing(self):

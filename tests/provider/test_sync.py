@@ -41,11 +41,12 @@ class FakeSyncThread(SyncAgent):
     @property
     def note_store(self):
         if not hasattr(self, '_note_store'):
-            if getattr(self, 'real_store', False):
-                self._note_store = get_note_store(TOKEN)
-            else:
-                self._note_store = MagicMock()
+            self._note_store = MagicMock()
         return self._note_store
+
+    @note_store.setter
+    def note_store(self, store):
+        self._note_store = store
 
     @property
     def all_notes(self):
@@ -514,7 +515,7 @@ class SyncTestCase(unittest.TestCase):
 
     def test_tag_notebook_validation(self):
         """Test tags and notebooks names validation for #201"""
-        self.sync.real_store = True
+        self.sync.note_store = get_note_store(TOKEN)
 
         notebook = Notebook(
             name="Blog posts%s" % str(datetime.now()), action=ACTION_CREATE,

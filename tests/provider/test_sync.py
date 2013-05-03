@@ -404,7 +404,7 @@ class SyncTestCase(unittest.TestCase):
 
     def test_remote_resources(self):
         """Test syncing remote resources"""
-        remote = self._create_remote_note(
+        remote = self._create_note(
             resources=[ttypes.Resource(
                 data=ttypes.Data(body=open(resource_path).read()),
                 mime='image/png',
@@ -413,6 +413,11 @@ class SyncTestCase(unittest.TestCase):
                 )
             )],
         )
+        remote.attributes = MagicMock()
+        remote.attributes.placeName = None
+
+        self._mock_return_one_note(remote)
+
         self.sync.notes_remote()
         resource = self.sq(Note).filter(
             Note.guid == remote.guid,
@@ -421,7 +426,9 @@ class SyncTestCase(unittest.TestCase):
             'test.png', resource.file_name,
         )
         remote.resources = None
-        self.note_store.updateNote(self.auth_token, remote)
+
+        self._mock_return_one_note(remote)
+
         self.sync.notes_remote()
         with self.assertRaises(NoResultFound):
             # fetch synchronized not very genius, but we don't need that
@@ -431,19 +438,33 @@ class SyncTestCase(unittest.TestCase):
 
     def test_conflicts(self):
         """Test conflict situation syncing"""
-        remote = self._create_remote_note()
+        self.sync.note_store.createNote = MagicMock()
+        self.sync.note_store.createNote.return_value.guid = 'guid'
+        self.sync.note_store.updateNote = MagicMock()
+
+        remote = self._create_note()
+        remote.attributes = MagicMock()
+        remote.attributes.placeName = None
+
+        self._mock_return_one_note(remote)
+
         self.sync.notes_remote()
         note = self.sq(Note).filter(
             Note.guid == remote.guid,
         ).one()
+
         remote.updated = int(time.time() * 1000)
         remote.title += '*'
-        self.note_store.updateNote(self.auth_token, remote)
+
+        self._mock_return_one_note(remote)
+
         note.title += '!'
         note.action = ACTION_CHANGE
         self.session.commit()
+
         self.sync.notes_remote()
         self.sync.notes_local()
+
         note = self.sq(Note).filter(
             Note.guid == remote.guid,
         ).one()

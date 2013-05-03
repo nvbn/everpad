@@ -120,6 +120,10 @@ class SyncTestCase(unittest.TestCase):
         notebook.from_api(remote_notebook)
         self.session.add(notebook)
         self.session.commit()
+
+        self.sync._note_store.getDefaultNotebook = MagicMock()
+        self.sync._note_store.getDefaultNotebook.return_value = remote_notebook
+
         return notebook
 
     def _get_default_notebook(self):
@@ -380,8 +384,15 @@ class SyncTestCase(unittest.TestCase):
     def test_remote_notes(self):
         """Test syncing remote notes"""
         remote = self._create_note()
-        remote.attributes = MagicMock()
-        remote.attributes.placeName = None
+
+        remote_notebook = ttypes.Notebook(
+            name='default',
+            defaultNotebook=True,
+            guid='guid',
+        )
+
+        self.sync._note_store.getDefaultNotebook = MagicMock()
+        self.sync._note_store.getDefaultNotebook.return_value = remote_notebook
 
         self._mock_return_one_note(remote)
 
@@ -503,6 +514,8 @@ class SyncTestCase(unittest.TestCase):
 
     def test_tag_notebook_validation(self):
         """Test tags and notebooks names validation for #201"""
+        self.sync.real_store = True
+
         notebook = Notebook(
             name="Blog posts%s" % str(datetime.now()), action=ACTION_CREATE,
         )

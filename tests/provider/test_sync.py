@@ -368,21 +368,33 @@ class SyncTestCase(unittest.TestCase):
 
     def test_remote_notes(self):
         """Test syncing remote notes"""
-        remote = self._create_remote_note()
+        remote = self._create_note()
+        remote.attributes = MagicMock()
+        remote.attributes.placeName = None
+
+        self._mock_return_one_note(remote)
+
         self.sync.notes_remote()
         note = self.sq(Note).filter(
             Note.guid == remote.guid,
         ).one()
+
         self.assertEqual(note.title, remote.title)
+
         remote.title += '*'
         remote.updated = int(time.time() * 1000)
-        self.note_store.updateNote(self.auth_token, remote)
+
+        self._mock_return_one_note(remote)
+
         self.sync.notes_remote()
         note = self.sq(Note).filter(
             Note.guid == remote.guid,
         ).one()
         self.assertEqual(note.title, remote.title)
-        self.note_store.deleteNote(self.auth_token, note.guid)
+
+        self.sync._iter_all_notes = MagicMock()
+        self.sync._iter_all_notes.return_value = []
+
         self.sync.notes_remote()
         with self.assertRaises(NoResultFound):
             # fetch synchronized not very genius, but we don't need that

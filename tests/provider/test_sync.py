@@ -341,23 +341,28 @@ class SyncTestCase(unittest.TestCase):
     def test_remote_tags(self):
         """Test syncing remote tags"""
         name = str(datetime.now())
-        remote = self.note_store.createTag(
-            self.auth_token, ttypes.Tag(
-                name=name,
-            ),
-        )
+        guid = 'guid'
+
+        self.note_store.listTags = MagicMock()
+        self.note_store.listTags.return_value = [ttypes.Tag(
+            name=name,
+            guid=guid,
+        )]
+
         self.sync.tags_remote()
         tag = self.sq(Tag).filter(
-            Tag.guid == remote.guid,
+            Tag.guid == guid,
         ).one()
         self.assertEqual(tag.name, name)
-        remote.name += '*'
-        self.note_store.updateTag(
-            self.auth_token, remote,
-        )
+
+        self.note_store.listTags.return_value = [ttypes.Tag(
+            name=name + '*',
+            guid=guid,
+        )]
+
         self.sync.tags_remote()
         tag = self.sq(Tag).filter(
-            Tag.guid == remote.guid,
+            Tag.guid == guid,
         ).one()
         self.assertEqual(tag.name, name + '*')
 

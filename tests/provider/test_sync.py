@@ -11,8 +11,10 @@ from everpad.provider.models import (
     SHARE_NONE, SHARE_NEED_SHARE, SHARE_SHARED, SHARE_NEED_STOP,
 )
 from evernote.edam.type import ttypes
+from evernote import edam
 from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime
+from mock import MagicMock
 import unittest
 import os
 import time
@@ -84,6 +86,31 @@ class SyncTestCase(unittest.TestCase):
             **params
         ))
 
+    def _create_note(self, **params):
+        remote_notebook = self._default_notebook()
+        return ttypes.Note(
+            title='test',
+            content=u"""
+                <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+                <en-note>test</en-note>
+            """,
+            notebookGuid=remote_notebook.guid,
+            created=int(time.time() * 1000),
+            updated=int(time.time() * 1000),
+            **params
+        )
+
+    def _default_notebook(self):
+        """Get default notebook"""
+        remote_notebook = ttypes.Notebook(
+            name='default',
+        )
+        notebook = Notebook(guid='guid')
+        notebook.from_api(remote_notebook)
+        self.session.add(notebook)
+        self.session.commit()
+        return notebook
+
     def _get_default_notebook(self):
         """Get default notebook"""
         remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
@@ -95,12 +122,20 @@ class SyncTestCase(unittest.TestCase):
 
     def test_sync_notes_with_lonlat(self):
         """Test sync notes with lonlat"""
-        remote = self._create_remote_note(
+        remote = self._create_note(
             attributes=ttypes.NoteAttributes(
                 longitude=80,
                 latitude=60,
-            )
+            ),
+            guid='79a423bd-0b44-4925-97c8-b3e2c225dac6',
         )
+
+        self.sync._iter_all_notes = MagicMock()
+        self.sync._iter_all_notes.return_value = [remote]
+
+        self.sync.note_store.getNote = MagicMock()
+        self.sync.note_store.getNote.return_value = remote
+
         self.sync.notes_remote()
         note = self.sq(Note).filter(
             Note.guid == remote.guid,

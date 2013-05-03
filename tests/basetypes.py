@@ -48,7 +48,3 @@ class TestBaseTypes(unittest.TestCase):
             obj.id, 12,
             'give data to object',
         )
-
-
-if __name__ == '__main__':
-    unittest.main()

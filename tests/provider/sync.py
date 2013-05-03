@@ -440,7 +440,3 @@ class SyncTestCase(unittest.TestCase):
     def test_shard_id(self):
         """Test receiving shard id"""
         self.assertTrue(len(self.sync.shard_id) > 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

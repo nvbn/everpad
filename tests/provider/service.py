@@ -515,7 +515,3 @@ class FindTestCase(unittest.TestCase):
             set(self._to_ids(all)),
             set(self._to_ids(self.notes[-2:])),
         )
-
-
-if __name__ == '__main__':
-    unittest.main()

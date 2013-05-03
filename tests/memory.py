@@ -56,7 +56,3 @@ class TestMemoryConsumption(unittest.TestCase):
     test_2 = lambda self: self._perform_basetyp(1000)
     test_3 = lambda self: self._perform_basetyp(5000)
     test_4 = lambda self: self._perform_basetyp(10000)
-
-
-if __name__ == '__main__':
-    unittest.main()

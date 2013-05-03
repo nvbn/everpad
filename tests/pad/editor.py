@@ -158,7 +158,3 @@ class EditorTestCase(unittest.TestCase):
         self.assertEqual(
             self.app.open.call_args[0][0].id, note.id,
         )
-
-
-if __name__ == '__main__':
-    unittest.main()

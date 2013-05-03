@@ -120,6 +120,14 @@ class SyncTestCase(unittest.TestCase):
         self.session.commit()
         return notebook
 
+    def _mock_return_one_note(self, remote):
+        """Mock return just one note"""
+        self.sync._iter_all_notes = MagicMock()
+        self.sync._iter_all_notes.return_value = [remote]
+
+        self.sync.note_store.getNote = MagicMock()
+        self.sync.note_store.getNote.return_value = remote
+
     def test_sync_notes_with_lonlat(self):
         """Test sync notes with lonlat"""
         remote = self._create_note(
@@ -130,11 +138,7 @@ class SyncTestCase(unittest.TestCase):
             guid='79a423bd-0b44-4925-97c8-b3e2c225dac6',
         )
 
-        self.sync._iter_all_notes = MagicMock()
-        self.sync._iter_all_notes.return_value = [remote]
-
-        self.sync.note_store.getNote = MagicMock()
-        self.sync.note_store.getNote.return_value = remote
+        self._mock_return_one_note(remote)
 
         self.sync.notes_remote()
         note = self.sq(Note).filter(
@@ -145,11 +149,15 @@ class SyncTestCase(unittest.TestCase):
     def test_sync_notes_with_place_name(self):
         """Test sync notes with place"""
         place_name = 'test place'
-        remote = self._create_remote_note(
+        remote = self._create_note(
             attributes=ttypes.NoteAttributes(
                 placeName=place_name,
-            )
+            ),
+            guid='79a423bd-0b44-4925-97c8-b3e2c225dac6',
         )
+
+        self._mock_return_one_note(remote)
+
         self.sync.notes_remote()
         note = self.sq(Note).filter(
             Note.guid == remote.guid,

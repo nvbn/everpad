@@ -309,23 +309,32 @@ class SyncTestCase(unittest.TestCase):
     def test_remote_notebooks(self):
         """Test syncing remote notebooks"""
         name = str(datetime.now())
-        remote = self.note_store.createNotebook(
-            self.auth_token, ttypes.Notebook(
-                name=name,
-            ),
-        )
+        guid = 'guid'
+
+        self.note_store.listNotebooks = MagicMock()
+        self.note_store.listNotebooks.return_value = [ttypes.Notebook(
+            name=name,
+            guid=guid,
+            serviceUpdated=0,
+        )]
+
         self.sync.notebooks_remote()
         notebook = self.sq(Notebook).filter(
-            Notebook.guid == remote.guid,
+            Notebook.guid == guid,
         ).one()
+
         self.assertEqual(notebook.name, name)
-        remote.name += '*'
-        self.note_store.updateNotebook(
-            self.auth_token, remote,
-        )
+
+        self.note_store.listNotebooks.return_value = [ttypes.Notebook(
+            name=name + '*',
+            guid=guid,
+            serviceUpdated=1,
+        )]
+
         self.sync.notebooks_remote()
+
         notebook = self.sq(Notebook).filter(
-            Notebook.guid == remote.guid,
+            Notebook.guid == guid,
         ).one()
         self.assertEqual(notebook.name, name + '*')
 

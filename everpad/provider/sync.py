@@ -154,6 +154,20 @@ class PushNotebook(BaseSync):
 class PullNotebook(BaseSync):
     """Pull notebook from server"""
 
+    def pull(self):
+        """Receive notebooks from server"""
+        for notebook in self.note_store.listNotebooks(self.auth_token):
+            self.app.log('Notebook %s remote' % notebook.name)
+            self._create_notebook(notebook)
+        self.session.commit()
+
+    def _create_notebook(self, notebook_ttype):
+        """Create notebook from ttype"""
+        notebook = models.Notebook(guid=notebook_ttype.guid)
+        notebook.from_api(notebook_ttype)
+        self.session.add(notebook)
+        self.session.commit()
+
 
 class SyncAgent(object):
     """Split agent for latest backends support"""

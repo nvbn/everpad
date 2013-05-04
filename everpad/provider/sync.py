@@ -260,6 +260,19 @@ class PushTag(BaseSync):
 class PullTag(BaseSync):
     """Pull tags from server"""
 
+    def pull(self):
+        """Pull tags from server"""
+        for tag_ttype in self.note_store.listTags(self.auth_token):
+            self.app.log('Tag %s remote' % tag_ttype.name)
+            self._create_tag(tag_ttype)
+
+    def _create_tag(self, tag_ttype):
+        """Create notebook from server"""
+        tag = models.Tag(guid=tag_ttype.guid)
+        tag.from_api(tag_ttype)
+        self.session.add(tag)
+        self.session.commit()
+
 
 class SyncAgent(object):
     """Split agent for latest backends support"""

@@ -787,3 +787,19 @@ class PullNotebookCase(BaseSyncCase):
         self.sync.pull()
 
         self.assertNotEqual(notebook.name, notebook_name)
+
+    def test_delete_after_pull(self):
+        """Test delete notebooks after pull"""
+        notebook = Notebook(
+            name='name',
+            guid='guid',
+            action=ACTION_NONE,
+        )
+        self.session.add(notebook)
+        self.session.commit()
+
+        self.note_store.listNotebooks.return_value = []
+
+        self.sync.pull()
+
+        self.assertEqual(self.session.query(Notebook).count(), 0)

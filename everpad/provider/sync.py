@@ -154,15 +154,22 @@ class PushNotebook(BaseSync):
 class PullNotebook(BaseSync):
     """Pull notebook from server"""
 
+    def __init__(self, *args, **kwargs):
+        super(PullNotebook, self).__init__(*args, **kwargs)
+        self._exists = []
+
     def pull(self):
         """Receive notebooks from server"""
-        for notebook in self.note_store.listNotebooks(self.auth_token):
-            self.app.log('Notebook %s remote' % notebook.name)
+        for notebook_ttype in self.note_store.listNotebooks(self.auth_token):
+            self.app.log('Notebook %s remote' % notebook_ttype.name)
             try:
-                self._update_notebook(notebook)
+                notebook = self._update_notebook(notebook_ttype)
             except NoResultFound:
-                self._create_notebook(notebook)
+                notebook = self._create_notebook(notebook_ttype)
+            self._exists.append(notebook.id)
+
         self.session.commit()
+        self._remove_notebooks()
 
     def _create_notebook(self, notebook_ttype):
         """Create notebook from ttype"""
@@ -170,6 +177,7 @@ class PullNotebook(BaseSync):
         notebook.from_api(notebook_ttype)
         self.session.add(notebook)
         self.session.commit()
+        return notebook
 
     def _update_notebook(self, notebook_ttype):
         """Try to update notebook from ttype"""
@@ -178,6 +186,15 @@ class PullNotebook(BaseSync):
         ).one()
         if notebook.service_updated < notebook_ttype.serviceUpdated:
             notebook.from_api(notebook_ttype)
+        return notebook
+
+    def _remove_notebooks(self):
+        """Remove not received notebooks"""
+        self.session.query(models.Notebook).filter(
+            ~models.Notebook.id.in_(self._exists)
+            & (models.Notebook.action != ACTION_CREATE)
+            & (models.Notebook.action != ACTION_CHANGE)
+        ).delete(synchronize_session='fetch')
 
 
 class SyncAgent(object):

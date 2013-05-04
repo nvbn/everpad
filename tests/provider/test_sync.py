@@ -129,7 +129,7 @@ class SyncTestCase(unittest.TestCase):
 
     def _get_default_notebook(self):
         """Get default notebook"""
-        remote_notebook = self.note_store.getDefaultNotebook(self.auth_token)
+        remote_notebook = self.sync._note_store.getDefaultNotebook(self.auth_token)
         notebook = Notebook(guid=remote_notebook.guid)
         notebook.from_api(remote_notebook)
         self.session.add(notebook)
@@ -561,6 +561,8 @@ class SyncTestCase(unittest.TestCase):
 
     def test_stop_sharing(self):
         """Test stop sharing"""
+        self.sync.note_store = get_note_store(TOKEN)
+
         notebook = self._get_default_notebook()
         note = Note(
             title='67890', action=ACTION_CREATE,
@@ -579,6 +581,8 @@ class SyncTestCase(unittest.TestCase):
 
     def test_change_sharing(self):
         """Test change sharing"""
+        self.sync.note_store = get_note_store(TOKEN)
+
         notebook = self._get_default_notebook()
         note = Note(
             title='67890', action=ACTION_CREATE,
@@ -588,7 +592,7 @@ class SyncTestCase(unittest.TestCase):
         self.session.add(note)
         self.session.commit()
         self.sync.notes_local()
-        share_url = self.note_store.shareNote(self.auth_token, note.guid)
+        share_url = self.sync._note_store.shareNote(self.auth_token, note.guid)
         self.sync.notes_remote()
         self.sync.notes_sharing()
         self.assertIn(share_url, note.share_url)

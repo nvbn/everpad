@@ -675,11 +675,11 @@ class NotebookSyncCase(unittest.TestCase):
         self.assertEqual(pushed.name, notebook.name)
         self.assertEqual(pushed.stack, notebook.stack)
 
-    def test_push_notebook_duplicate(self):
-        """Test push notebook duplicate"""
+    def _base_test_push_notebook_duplicates(self, action):
+        """Base test push notebook duplicates"""
         notebook = Notebook(
             name='name',
-            action=ACTION_CREATE,
+            action=action,
         )
         self.session.add(notebook)
 
@@ -701,9 +701,6 @@ class NotebookSyncCase(unittest.TestCase):
         self.session.add(note1)
         self.session.add(note2)
 
-        self.note_store.createNotebook.side_effect =\
-            edam.error.ttypes.EDAMUserException
-
         self.sync.push()
 
         self.assertItemsEqual(
@@ -712,3 +709,15 @@ class NotebookSyncCase(unittest.TestCase):
         self.assertEqual(self.session.query(Note).filter(
             Note.notebook == original
         ).count(), 2)
+
+    def test_duplicates_on_push_new(self):
+        """Test duplicates on pushing new notebook"""
+        self.note_store.createNotebook.side_effect =\
+            edam.error.ttypes.EDAMUserException
+        self._base_test_push_notebook_duplicates(ACTION_CREATE)
+
+    def test_duplicates_on_push_changed(self):
+        """Test duplicates on pushing changed notebook"""
+        self.note_store.updateNotebook.side_effect =\
+            edam.error.ttypes.EDAMUserException
+        self._base_test_push_notebook_duplicates(ACTION_CHANGE)

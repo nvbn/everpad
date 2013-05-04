@@ -260,15 +260,22 @@ class PushTag(BaseSync):
 class PullTag(BaseSync):
     """Pull tags from server"""
 
+    def __init__(self, *args, **kwargs):
+        super(PullTag, self).__init__(*args, **kwargs)
+        self._exists = []
+
     def pull(self):
         """Pull tags from server"""
         for tag_ttype in self.note_store.listTags(self.auth_token):
             self.app.log('Tag %s remote' % tag_ttype.name)
             try:
-                self._update_tag(tag_ttype)
+                tag = self._update_tag(tag_ttype)
             except NoResultFound:
-                self._create_tag(tag_ttype)
+                tag = self._create_tag(tag_ttype)
+            self._exists.append(tag.id)
+
         self.session.commit()
+        self._remove_tags()
 
     def _create_tag(self, tag_ttype):
         """Create notebook from server"""
@@ -276,6 +283,7 @@ class PullTag(BaseSync):
         tag.from_api(tag_ttype)
         self.session.add(tag)
         self.session.commit()
+        return tag
 
     def _update_tag(self, tag_ttype):
         """Update tag if exists"""
@@ -284,6 +292,14 @@ class PullTag(BaseSync):
         ).one()
         if tag.name != tag_ttype.name.decode('utf8'):
             tag.from_api(tag_ttype)
+        return tag
+
+    def _remove_tags(self):
+        """Remove not exist tags"""
+        self.session.query(models.Tag).filter(
+            ~models.Tag.id.in_(self._exists)
+            & (models.Tag.action != ACTION_CREATE)
+        ).delete(synchronize_session='fetch')
 
 
 class SyncAgent(object):

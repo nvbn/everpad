@@ -864,10 +864,11 @@ class PullTagCase(BaseSyncCase):
         self.assertEqual(tag.guid, guid)
 
     def test_pull_changed_tag(self):
-        """Pull changed tags"""
+        """Test pull changed tags"""
         tag = Tag(
             name='name',
             guid='guid',
+            action=ACTION_NONE,
         )
         self.session.add(tag)
         self.session.commit()
@@ -879,3 +880,18 @@ class PullTagCase(BaseSyncCase):
 
         self.sync.pull()
         self.assertEqual(tag.name, tag_name)
+
+    def test_delete_after_pull(self):
+        """Test delete non exists after pull"""
+        tag = Tag(
+            name='name',
+            guid='guid',
+            action=ACTION_NONE,
+        )
+        self.session.add(tag)
+        self.session.commit()
+
+        self.note_store.listTags.return_value = []
+        self.sync.pull()
+
+        self.assertEqual(self.session.query(Tag).count(), 0)

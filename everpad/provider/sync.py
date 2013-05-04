@@ -257,6 +257,10 @@ class PushTag(BaseSync):
             self.app.log(e)
 
 
+class PullTag(BaseSync):
+    """Pull tags from server"""
+
+
 class SyncAgent(object):
     """Split agent for latest backends support"""
     @property

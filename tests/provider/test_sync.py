@@ -659,6 +659,22 @@ class NotebookSyncCase(unittest.TestCase):
 
         self.assertEqual(notebook.guid, guid)
 
+    def test_push_changed_notebook(self):
+        """Test push changed notebook"""
+        notebook = Notebook(
+            name='name',
+            action=ACTION_CHANGE,
+            guid='guid',
+        )
+        self.session.add(notebook)
+        self.session.commit()
+
+        self.sync.push()
+        pushed = self.note_store.updateNotebook.call_args_list[0][0][1]
+
+        self.assertEqual(pushed.name, notebook.name)
+        self.assertEqual(pushed.stack, notebook.stack)
+
     def test_push_notebook_duplicate(self):
         """Test push notebook duplicate"""
         notebook = Notebook(

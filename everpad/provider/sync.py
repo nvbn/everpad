@@ -68,10 +68,6 @@ class BaseSync(object):
 class NotebookSync(BaseSync):
     """Notebook sync"""
 
-    def __init__(self, *args, **kwargs):
-        super(NotebookSync, self).__init__(*args, **kwargs)
-        self.duplicates = []
-
     def push(self):
         """Push notebook changes to server"""
         for notebook in self.session.query(models.Notebook).filter(
@@ -88,6 +84,8 @@ class NotebookSync(BaseSync):
 
             if notebook.action == ACTION_CREATE:
                 self._push_new_notebook(notebook, notebook_ttype)
+            elif notebook.action == ACTION_CHANGE:
+                self._push_changed_notebook(notebook, notebook_ttype)
 
         self.session.commit()
         self._merge_duplicates()
@@ -121,6 +119,17 @@ class NotebookSync(BaseSync):
                 self.auth_token, notebook_ttype,
             )
             notebook.guid = notebook_ttype.guid
+            notebook.action = ACTION_NONE
+        except EDAMUserException:
+            notebook.action = ACTION_DUPLICATE
+            self.app.log('Duplicate %s' % notebook_ttype.name)
+
+    def _push_changed_notebook(self, notebook, notebook_ttype):
+        """Push changed notebook"""
+        try:
+            notebook_ttype = self.note_store.updateNotebook(
+                self.auth_token, notebook_ttype,
+            )
             notebook.action = ACTION_NONE
         except EDAMUserException:
             notebook.action = ACTION_DUPLICATE

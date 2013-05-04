@@ -829,3 +829,17 @@ class PushTagCase(BaseSyncCase):
             self.note_store.createTag.call_args_list[0][0][1].name,
             tag.name,
         )
+
+    def test_push_changed_tag(self):
+        """Test push changed tag"""
+        tag = Tag(
+            name='tag',
+            guid=ACTION_CHANGE,
+        )
+        self.session.add(tag)
+        self.session.commit()
+
+        self.sync.push()
+        pushed = self.note_store.updateTag.call_args_list[0][0][1]
+
+        self.assertEqual(pushed.name, tag.name)

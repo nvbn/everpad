@@ -44,6 +44,29 @@ import regex
 SYNC_MANUAL = -1
 
 
+class BaseSync(object):
+    """Base class for sync"""
+
+    def __init__(self, auth_token, session, note_store, user_store):
+        """Set shortcuts"""
+        self._auth_token = auth_token
+        self._session = session
+        self._note_store = note_store
+        self._user_store = user_store
+
+    def push(self):
+        """Push changes to server"""
+        raise NotImplementedError
+
+    def pull(self):
+        """Pull changes from server"""
+        raise NotImplementedError
+
+
+class NotebookSync(BaseSync):
+    """Notebook sync"""
+
+
 class SyncAgent(object):
     """Split agent for latest backends support"""
     @property

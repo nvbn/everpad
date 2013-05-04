@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, '..')
 from settings import TOKEN
 from everpad.const import HOST
-from everpad.provider.sync import SyncAgent
+from everpad.provider.sync import SyncAgent, NotebookSync
 from everpad.provider.tools import get_db_session, get_note_store
 from everpad.provider.models import (
     Note, Notebook, Place, Tag, Resource, ACTION_CREATE,
@@ -604,3 +604,56 @@ class SyncTestCase(unittest.TestCase):
     def test_shard_id(self):
         """Test receiving shard id"""
         self.assertTrue(len(self.sync.shard_id) > 0)
+
+
+class NotebookSyncCase(unittest.TestCase):
+    """Test notebook sync"""
+
+    def setUp(self):
+        self._create_db_session()
+        self._create_note_store()
+        self._create_user_store()
+        self._create_sync()
+
+    def _create_db_session(self):
+        """Create database session"""
+        self.session = get_db_session()
+
+    def _create_note_store(self):
+        """Create note store mock"""
+        self.note_store = MagicMock()
+
+    def _create_user_store(self):
+        """Create user store mock"""
+        self.user_store = MagicMock()
+
+    def _create_sync(self):
+        """Create sync object"""
+        self.token = 'token'
+        self.sync = NotebookSync(
+            self.token,
+            self.session,
+            self.note_store,
+            self.user_store,
+        )
+
+    def test_push_new_notebook(self):
+        """Test push new notebook"""
+        notebook = Notebook(
+            name='name',
+            action=ACTION_CREATE,
+            stack='stack',
+        )
+        self.session.add(notebook)
+        self.session.commit()
+
+        guid = 'guid'
+        self.note_store.createNotebook.return_value.guid = guid
+
+        self.sync.push()
+        pushed = self.note_store.createNotebook.call_args_list[0][0][1]
+
+        self.assertEqual(pushed.name, notebook.name)
+        self.assertEqual(pushed.stack, notebook.stack)
+
+        self.assertEqual(notebook.guid, guid)

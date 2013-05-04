@@ -197,6 +197,13 @@ class PullNotebook(BaseSync):
         ).delete(synchronize_session='fetch')
 
 
+class PushTag(BaseSync):
+    """Push tags to server"""
+
+    def push(self):
+        """Push tags"""
+
+
 class SyncAgent(object):
     """Split agent for latest backends support"""
     @property

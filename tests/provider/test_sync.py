@@ -3,7 +3,9 @@ import sys
 sys.path.insert(0, '..')
 from settings import TOKEN
 from everpad.const import HOST
-from everpad.provider.sync import SyncAgent, PushNotebook, PullNotebook
+from everpad.provider.sync import (
+    SyncAgent, PushNotebook, PullNotebook, PushTag,
+)
 from everpad.provider.tools import get_db_session, get_note_store
 from everpad.provider.models import (
     Note, Notebook, Place, Tag, Resource, ACTION_CREATE,
@@ -803,3 +805,27 @@ class PullNotebookCase(BaseSyncCase):
         self.sync.pull()
 
         self.assertEqual(self.session.query(Notebook).count(), 0)
+
+
+class PushTagCase(BaseSyncCase):
+    """Test tag sync"""
+    sync_cls = PushTag
+
+    def test_push_new_tag(self):
+        """Test push new tag"""
+        guid = 'guid'
+        tag = Tag(
+            name='tag',
+            action=ACTION_CREATE,
+        )
+        self.session.add(tag)
+        self.session.commit()
+
+        self.note_store.createTag.return_value = guid
+        self.sync.push()
+
+        self.assertEqual(tag.guid, guid)
+        self.assertEqual(
+            self.note_store.createTag.call_args_list[0][0][1].name,
+            tag.name,
+        )

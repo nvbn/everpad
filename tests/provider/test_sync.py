@@ -763,7 +763,8 @@ class PullNotebookCase(BaseSyncCase):
             name=notebook_name, guid=guid, serviceUpdated=1,
         )]
 
-        notebook = self.session.query(Notebook).one()
+        self.sync.pull()
+
         self.assertEqual(notebook.name, notebook_name)
 
     def test_pull_not_updated_notebook(self):
@@ -783,5 +784,6 @@ class PullNotebookCase(BaseSyncCase):
             name=notebook_name, guid=guid, serviceUpdated=1,
         )]
 
-        notebook = self.session.query(Notebook).one()
+        self.sync.pull()
+
         self.assertNotEqual(notebook.name, notebook_name)

@@ -158,7 +158,10 @@ class PullNotebook(BaseSync):
         """Receive notebooks from server"""
         for notebook in self.note_store.listNotebooks(self.auth_token):
             self.app.log('Notebook %s remote' % notebook.name)
-            self._create_notebook(notebook)
+            try:
+                self._update_notebook(notebook)
+            except NoResultFound:
+                self._create_notebook(notebook)
         self.session.commit()
 
     def _create_notebook(self, notebook_ttype):
@@ -167,6 +170,14 @@ class PullNotebook(BaseSync):
         notebook.from_api(notebook_ttype)
         self.session.add(notebook)
         self.session.commit()
+
+    def _update_notebook(self, notebook_ttype):
+        """Try to update notebook from ttype"""
+        notebook = self.session.query(models.Notebook).filter(
+            models.Notebook.guid == notebook_ttype.guid,
+        ).one()
+        if notebook.service_updated < notebook_ttype.serviceUpdated:
+            notebook.from_api(notebook_ttype)
 
 
 class SyncAgent(object):

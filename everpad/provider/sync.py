@@ -216,6 +216,8 @@ class PushTag(BaseSync):
 
             if tag.action == ACTION_CREATE:
                 self._push_new_tag(tag, tag_ttype)
+            elif tag.action == ACTION_CHANGE:
+                self._push_changed_tag(tag, tag_ttype)
 
         self.session.commit()
 
@@ -240,6 +242,16 @@ class PushTag(BaseSync):
                 self.auth_token, tag_ttype,
             )
             tag.guid = tag_ttype.guid
+            tag.action = ACTION_NONE
+        except EDAMUserException as e:
+            self.app.log(e)
+
+    def _push_changed_tag(self, tag, tag_ttype):
+        """Push changed tag"""
+        try:
+            self.note_store.updateTag(
+                self.auth_token, tag_ttype,
+            )
             tag.action = ACTION_NONE
         except EDAMUserException as e:
             self.app.log(e)

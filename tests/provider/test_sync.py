@@ -834,7 +834,7 @@ class PushTagCase(BaseSyncCase):
         """Test push changed tag"""
         tag = Tag(
             name='tag',
-            guid=ACTION_CHANGE,
+            action=ACTION_CHANGE,
         )
         self.session.add(tag)
         self.session.commit()

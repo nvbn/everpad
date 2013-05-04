@@ -745,3 +745,43 @@ class PullNotebookCase(BaseSyncCase):
 
         notebook = self.session.query(Notebook).one()
         self.assertEqual(notebook.name, notebook_name)
+
+    def test_pull_updated_notebook(self):
+        """Test pull updated notebook"""
+        guid = 'guid'
+        notebook = Notebook(
+            name='name',
+            service_updated=0,
+            guid=guid,
+        )
+        self.session.add(notebook)
+        self.session.commit()
+
+        notebook_name = 'name*'
+
+        self.note_store.listNotebooks.return_value = [ttypes.Notebook(
+            name=notebook_name, guid=guid, serviceUpdated=1,
+        )]
+
+        notebook = self.session.query(Notebook).one()
+        self.assertEqual(notebook.name, notebook_name)
+
+    def test_pull_not_updated_notebook(self):
+        """Test pull not updated notebook"""
+        guid = 'guid'
+        notebook = Notebook(
+            name='name',
+            service_updated=2,
+            guid=guid,
+        )
+        self.session.add(notebook)
+        self.session.commit()
+
+        notebook_name = 'name*'
+
+        self.note_store.listNotebooks.return_value = [ttypes.Notebook(
+            name=notebook_name, guid=guid, serviceUpdated=1,
+        )]
+
+        notebook = self.session.query(Notebook).one()
+        self.assertNotEqual(notebook.name, notebook_name)

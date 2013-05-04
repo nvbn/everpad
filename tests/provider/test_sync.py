@@ -693,6 +693,6 @@ class NotebookSyncCase(unittest.TestCase):
         self.assertItemsEqual(
             self.session.query(Notebook).all(), [original],
         )
-        self.assertEqual(
-            self.session.query(Note).filter(notebook=original).count(), 2,
-        )
+        self.assertEqual(self.session.query(Note).filter(
+            Note.notebook == original
+        ).count(), 2)

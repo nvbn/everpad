@@ -68,6 +68,10 @@ class BaseSync(object):
 class NotebookSync(BaseSync):
     """Notebook sync"""
 
+    def __init__(self, *args, **kwargs):
+        super(NotebookSync, self).__init__(*args, **kwargs)
+        self.duplicates = []
+
     def push(self):
         """Push notebook changes to server"""
         for notebook in self.session.query(models.Notebook).filter(
@@ -86,6 +90,7 @@ class NotebookSync(BaseSync):
                 self._push_new_notebook(notebook, notebook_ttype)
 
         self.session.commit()
+        self._merge_duplicates()
 
     def _create_ttype(self, notebook):
         """Create notebook ttype"""
@@ -120,6 +125,29 @@ class NotebookSync(BaseSync):
         except EDAMUserException:
             notebook.action = ACTION_DUPLICATE
             self.app.log('Duplicate %s' % notebook_ttype.name)
+
+    def _merge_duplicates(self):
+        """Merge and remove duplicates"""
+        for notebook in self.session.query(models.Notebook).filter(
+            models.Notebook.action == ACTION_DUPLICATE,
+        ):
+            try:
+                original = self.session.query(models.Notebook).filter(
+                    (models.Notebook.action != ACTION_DUPLICATE)
+                    & (models.Notebook.name == notebook.name)
+                ).one()
+            except NoResultFound:
+                original = self.session.query(models.Notebook).filter(
+                    models.Notebook.default == True,
+                ).one()
+
+            for note in self.session.query(models.Note).filter(
+                models.Note.notebook_id == notebook.id,
+            ):
+                note.notebook = original
+
+            self.session.delete(notebook)
+        self.session.commit()
 
 
 class SyncAgent(object):

@@ -202,6 +202,47 @@ class PushTag(BaseSync):
 
     def push(self):
         """Push tags"""
+        for tag in self.session.query(models.Tag).filter(
+            models.Tag.action != ACTION_NONE,
+        ):
+            self.app.log('Tag %s local' % tag.name)
+
+            try:
+                tag_ttype = self._create_ttype(tag)
+            except TTypeValidationFailed:
+                tag.action = ACTION_NONE
+                self.app.log('tag %s skipped' % tag.name)
+                continue
+
+            if tag.action == ACTION_CREATE:
+                self._push_new_tag(tag, tag_ttype)
+
+        self.session.commit()
+
+    def _create_ttype(self, tag):
+        """Create tag ttype"""
+        if not regex.search(EDAM_TAG_NAME_REGEX, tag.name):
+            raise TTypeValidationFailed()
+
+        kwargs = dict(
+            name=tag.name[:EDAM_TAG_NAME_LEN_MAX].strip().encode('utf8'),
+        )
+
+        if tag.guid:
+            kwargs['guid'] = tag.guid
+
+        return Tag(**kwargs)
+
+    def _push_new_tag(self, tag, tag_ttype):
+        """Push new tag"""
+        try:
+            tag_ttype = self.note_store.createTag(
+                self.auth_token, tag_ttype,
+            )
+            tag.guid = tag_ttype.guid
+            tag.action = ACTION_NONE
+        except EDAMUserException as e:
+            self.app.log(e)
 
 
 class SyncAgent(object):

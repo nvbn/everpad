@@ -821,7 +821,7 @@ class PushTagCase(BaseSyncCase):
         self.session.add(tag)
         self.session.commit()
 
-        self.note_store.createTag.return_value = guid
+        self.note_store.createTag.return_value.guid = guid
         self.sync.push()
 
         self.assertEqual(tag.guid, guid)

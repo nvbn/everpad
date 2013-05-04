@@ -636,6 +636,7 @@ class NotebookSyncCase(unittest.TestCase):
             self.note_store,
             self.user_store,
         )
+        self.sync.app = MagicMock()
 
     def test_push_new_notebook(self):
         """Test push new notebook"""

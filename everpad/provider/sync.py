@@ -24,6 +24,7 @@ from everpad.provider.tools import (
     get_auth_token, get_user_store,
     ACTION_DUPLICATE,
 )
+from everpad.provider.exceptions import TTypeValidationFailed
 from everpad.specific import AppClass
 from everpad.tools import sanitize
 from everpad.provider import models
@@ -49,10 +50,11 @@ class BaseSync(object):
 
     def __init__(self, auth_token, session, note_store, user_store):
         """Set shortcuts"""
-        self._auth_token = auth_token
-        self._session = session
-        self._note_store = note_store
-        self._user_store = user_store
+        self.auth_token = auth_token
+        self.session = session
+        self.note_store = note_store
+        self.user_store = user_store
+        self.app = AppClass.instance()
 
     def push(self):
         """Push changes to server"""
@@ -65,6 +67,59 @@ class BaseSync(object):
 
 class NotebookSync(BaseSync):
     """Notebook sync"""
+
+    def push(self):
+        """Push notebook changes to server"""
+        for notebook in self.session.query(models.Notebook).filter(
+            models.Notebook.action != ACTION_NONE,
+        ):
+            self.app.log('Notebook %s local' % notebook.name)
+
+            try:
+                notebook_ttype = self._create_ttype(notebook)
+            except TTypeValidationFailed:
+                self.app.log('notebook %s skipped' % notebook.name)
+                notebook.action = ACTION_NONE
+                continue
+
+            if notebook.action == ACTION_CREATE:
+                self._push_new_notebook(notebook, notebook_ttype)
+
+        self.session.commit()
+
+    def _create_ttype(self, notebook):
+        """Create notebook ttype"""
+        kwargs = dict(
+            name=notebook.name[
+                :EDAM_NOTEBOOK_NAME_LEN_MAX
+            ].strip().encode('utf8'),
+            defaultNotebook=notebook.default,
+        )
+
+        if notebook.stack:
+            kwargs['stack'] = notebook.stack[
+                :EDAM_NOTEBOOK_STACK_LEN_MAX
+            ].strip().encode('utf8')
+
+        if not regex.search(EDAM_NOTEBOOK_NAME_REGEX, notebook.name):
+            raise TTypeValidationFailed()
+
+        if notebook.guid:
+            kwargs['guid'] = notebook.guid
+
+        return Notebook(**kwargs)
+
+    def _push_new_notebook(self, notebook, notebook_ttype):
+        """Push new notebook to server"""
+        try:
+            notebook_ttype = self.note_store.createNotebook(
+                self.auth_token, notebook_ttype,
+            )
+            notebook.guid = notebook_ttype.guid
+            notebook.action = ACTION_NONE
+        except EDAMUserException:
+            notebook.action = ACTION_DUPLICATE
+            self.app.log('Duplicate %s' % notebook_ttype.name)
 
 
 class SyncAgent(object):

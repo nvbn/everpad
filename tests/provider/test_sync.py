@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, '..')
 from settings import TOKEN
 from everpad.const import HOST
-from everpad.provider.sync import SyncAgent, NotebookSync
+from everpad.provider.sync import SyncAgent, PushNotebook, PullNotebook
 from everpad.provider.tools import get_db_session, get_note_store
 from everpad.provider.models import (
     Note, Notebook, Place, Tag, Resource, ACTION_CREATE,
@@ -606,8 +606,9 @@ class SyncTestCase(unittest.TestCase):
         self.assertTrue(len(self.sync.shard_id) > 0)
 
 
-class NotebookSyncCase(unittest.TestCase):
-    """Test notebook sync"""
+class BaseSyncCase(unittest.TestCase):
+    """Base sync case"""
+    sync_cls = None
 
     def setUp(self):
         self._create_db_session()
@@ -630,13 +631,18 @@ class NotebookSyncCase(unittest.TestCase):
     def _create_sync(self):
         """Create sync object"""
         self.token = 'token'
-        self.sync = NotebookSync(
+        self.sync = self.sync_cls(
             self.token,
             self.session,
             self.note_store,
             self.user_store,
         )
         self.sync.app = MagicMock()
+
+
+class PushNotebookCase(BaseSyncCase):
+    """Test notebook sync"""
+    sync_cls = PushNotebook
 
     def test_push_new_notebook(self):
         """Test push new notebook"""
@@ -721,3 +727,21 @@ class NotebookSyncCase(unittest.TestCase):
         self.note_store.updateNotebook.side_effect =\
             edam.error.ttypes.EDAMUserException
         self._base_test_push_notebook_duplicates(ACTION_CHANGE)
+
+
+class PullNotebookCase(BaseSyncCase):
+    """Test notebook sync"""
+    sync_cls = PullNotebook
+
+    def test_pull_new_notebook(self):
+        """Test pull new notebook"""
+        notebook_name = 'name'
+
+        self.note_store.listNotebooks.return_value = [
+            ttypes.Notebook(name=notebook_name),
+        ]
+
+        self.sync.pull()
+
+        notebook = self.session.query(Notebook).one()
+        self.assertEqual(notebook.name, notebook_name)

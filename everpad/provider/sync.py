@@ -56,16 +56,8 @@ class BaseSync(object):
         self.user_store = user_store
         self.app = AppClass.instance()
 
-    def push(self):
-        """Push changes to server"""
-        raise NotImplementedError
 
-    def pull(self):
-        """Pull changes from server"""
-        raise NotImplementedError
-
-
-class NotebookSync(BaseSync):
+class PushNotebook(BaseSync):
     """Notebook sync"""
 
     def push(self):
@@ -157,6 +149,10 @@ class NotebookSync(BaseSync):
 
             self.session.delete(notebook)
         self.session.commit()
+
+
+class PullNotebook(BaseSync):
+    """Pull notebook from server"""
 
 
 class SyncAgent(object):

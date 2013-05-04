@@ -862,3 +862,20 @@ class PullTagCase(BaseSyncCase):
 
         self.assertEqual(tag.name, tag_name)
         self.assertEqual(tag.guid, guid)
+
+    def test_pull_changed_tag(self):
+        """Pull changed tags"""
+        tag = Tag(
+            name='name',
+            guid='guid',
+        )
+        self.session.add(tag)
+        self.session.commit()
+
+        tag_name = 'name*'
+        self.note_store.listTags.return_value = [Tag(
+            name=tag_name, guid=tag.guid,
+        )]
+
+        self.sync.pull()
+        self.assertEqual(tag.name, tag_name)

@@ -938,3 +938,21 @@ class PushNoteCase(BaseSyncCase):
             self.note_store.updateNote.call_args_list[0][0][1].title,
             note.title,
         )
+
+    def test_delete_note(self):
+        """Test delete note"""
+        note = Note(
+            title='note',
+            content='content',
+            guid='guid',
+            action=ACTION_DELETE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self.sync.push()
+
+        self.assertEqual(
+            self.note_store.deleteNote.call_args_list[0][0][1],
+            note.guid,
+        )

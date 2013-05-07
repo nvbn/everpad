@@ -332,6 +332,7 @@ class PushNote(BaseSync):
             tagGuids=map(
                 lambda tag: tag.guid, note.tags,
             ),
+            resources=self._prepare_resources(note),
         )
 
         if note.notebook:
@@ -341,6 +342,22 @@ class PushNote(BaseSync):
             kwargs['guid'] = note.guid
 
         return Note(**kwargs)
+
+    def _prepare_resources(self, note):
+        """Prepare note resources"""
+        return map(
+            lambda resource: Resource(
+                noteGuid=note.guid,
+                data=Data(body=open(resource.file_path).read()),
+                mime=resource.mime,
+                attributes=ResourceAttributes(
+                    fileName=resource.file_name.encode('utf8'),
+                ),
+            ), self.session.query(models.Resource).filter(
+                (models.Resource.note_id == note.id)
+                & (models.Resource.action != models.ACTION_DELETE)
+            ),
+        )
 
     def _prepare_content(self, content):
         """Prepare content"""

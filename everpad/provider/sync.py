@@ -319,6 +319,8 @@ class PushNote(BaseSync):
                 self._push_new_note(note, note_ttype)
             elif note.action == ACTION_CHANGE:
                 self._push_changed_note(note, note_ttype)
+            elif note.action == ACTION_DELETE:
+                self._delete_note(note, note_ttype)
 
         self.session.commit()
 
@@ -376,6 +378,16 @@ class PushNote(BaseSync):
             self.app.log(e)
         finally:
             note.action = ACTION_NONE
+
+    def _delete_note(self, note, note_ttype):
+        """Delete note"""
+        try:
+            self.note_store.deleteNote(self.auth_token, note_ttype.guid)
+        except EDAMUserException as e:
+            self.app.log('Note %s already removed' % note.title)
+            self.app.log(e)
+        finally:
+            self.session.delete(note)
 
 
 class SyncAgent(object):

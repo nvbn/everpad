@@ -315,7 +315,11 @@ class PushNote(BaseSync):
             self.app.log('Note %s local' % note.title)
             note_ttype = self._create_ttype(note)
 
-            self._push_new_note(note, note_ttype)
+            if note.action == ACTION_CREATE:
+                self._push_new_note(note, note_ttype)
+            elif note.action == ACTION_CHANGE:
+                self._push_changed_note(note, note_ttype)
+
         self.session.commit()
 
     def _create_ttype(self, note):
@@ -360,6 +364,18 @@ class PushNote(BaseSync):
             note.action = ACTION_NONE
             self.app.log('Note %s failed' % note.title)
             self.app.log(e)
+        finally:
+            note.action = ACTION_NONE
+
+    def _push_changed_note(self, note, note_ttype):
+        """Push changed note to remote"""
+        try:
+            self.note_store.updateNote(self.auth_token, note_ttype)
+        except EDAMUserException as e:
+            self.app.log('Note %s failed' % note.title)
+            self.app.log(e)
+        finally:
+            note.action = ACTION_NONE
 
 
 class SyncAgent(object):

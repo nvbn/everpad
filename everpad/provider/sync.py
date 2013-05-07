@@ -407,6 +407,14 @@ class PushNote(BaseSync):
             self.session.delete(note)
 
 
+class PullNote(BaseSync):
+    """Pull notes"""
+
+    def __init__(self, *args, **kwargs):
+        super(PullNote, self).__init__(*args, **kwargs)
+        self._exists = []
+
+
 class SyncAgent(object):
     """Split agent for latest backends support"""
     @property

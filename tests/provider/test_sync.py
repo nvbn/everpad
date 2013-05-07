@@ -5,6 +5,7 @@ from settings import TOKEN
 from everpad.const import HOST
 from everpad.provider.sync import (
     SyncAgent, PushNotebook, PullNotebook, PushTag, PullTag, PushNote,
+    PullNote,
 )
 from everpad.provider.tools import get_db_session, get_note_store
 from everpad.provider.models import (
@@ -981,3 +982,31 @@ class PushNoteCase(BaseSyncCase):
             self.note_store.deleteNote.call_args_list[0][0][1],
             note.guid,
         )
+
+
+class PullNoteCase(BaseSyncCase):
+    """Pull note case"""
+    sync_cls = PullNote
+
+    def test_pull_new_note(self):
+        """Test pull new note"""
+        note_title = 'title'
+        note_guid = 'guid'
+        remote_note = Note(
+            title=note_title,
+            guid=note_guid,
+        )
+
+        search_result = MagicMock()
+        search_result.totalNotes = 1
+        search_result.startIndex = 0
+        search_result.notes = [remote_note]
+        self.note_store.findNotes.return_value = search_result
+        self.note_store.getNote.return_value = remote_note
+
+        self.sync.pull()
+
+        note = self.session.query(Note).one()
+
+        self.assertEqual(note.guid, note_guid)
+        self.assertEqual(note.title, note_title)

@@ -920,3 +920,21 @@ class PushNoteCase(BaseSyncCase):
             self.note_store.createNote.call_args_list[0][0][1].title,
             note.title,
         )
+
+    def test_push_changed_note(self):
+        """Test push changed note"""
+        note = Note(
+            title='note',
+            content='content',
+            guid='guid',
+            action=ACTION_CHANGE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self.sync.push()
+
+        self.assertEqual(
+            self.note_store.updateNote.call_args_list[0][0][1].title,
+            note.title,
+        )

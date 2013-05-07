@@ -302,6 +302,13 @@ class PullTag(BaseSync):
         ).delete(synchronize_session='fetch')
 
 
+class PushNote(BaseSync):
+    """Push note to remote server"""
+
+    def push(self):
+        """Push note to remote server"""
+
+
 class SyncAgent(object):
     """Split agent for latest backends support"""
     @property
@@ -458,7 +465,7 @@ class SyncAgent(object):
             self.app.log('Note %s local' % note.title)
             content = (u"""
                     <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-                    <en-note>%s</en-note>
+                    <en-note>%s</en-note>d
                 """ % sanitize(
                         html=note.content[:EDAM_NOTE_CONTENT_LEN_MAX]
                     )).strip().encode('utf8')

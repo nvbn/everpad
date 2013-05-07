@@ -901,6 +901,26 @@ class PushNoteCase(BaseSyncCase):
     """Push note case"""
     sync_cls = PushNote
 
+    def _create_resources(self, note):
+        """Create resources"""
+        resource_path = '/tmp/resource'
+        with open(resource_path, 'w') as resource_file:
+            resource_file.write('test')
+
+        file_name = 'resource'
+
+        resource = Resource(
+            note_id=note.id,
+            file_name=file_name,
+            mime='plain/text',
+            file_path=resource_path,
+            action=ACTION_NONE,
+        )
+        self.session.add(resource)
+        self.session.commit()
+
+        return file_name
+
     def test_push_new_note(self):
         """Test push new note"""
         guid = 'guid'
@@ -912,14 +932,17 @@ class PushNoteCase(BaseSyncCase):
         self.session.add(note)
         self.session.commit()
 
+        file_name = self._create_resources(note)
+
         self.note_store.createNote.return_value.guid = guid
         self.sync.push()
 
         self.assertEqual(note.guid, guid)
-        self.assertEqual(
-            self.note_store.createNote.call_args_list[0][0][1].title,
-            note.title,
-        )
+
+        pushed = self.note_store.createNote.call_args_list[0][0][1]
+
+        self.assertEqual(pushed.title, note.title)
+        self.assertEqual(pushed.resources[0].attributes.fileName, file_name)
 
     def test_push_changed_note(self):
         """Test push changed note"""
@@ -932,12 +955,14 @@ class PushNoteCase(BaseSyncCase):
         self.session.add(note)
         self.session.commit()
 
+        file_name = self._create_resources(note)
+
         self.sync.push()
 
-        self.assertEqual(
-            self.note_store.updateNote.call_args_list[0][0][1].title,
-            note.title,
-        )
+        pushed = self.note_store.updateNote.call_args_list[0][0][1]
+
+        self.assertEqual(pushed.title, note.title)
+        self.assertEqual(pushed.resources[0].attributes.fileName, file_name)
 
     def test_delete_note(self):
         """Test delete note"""

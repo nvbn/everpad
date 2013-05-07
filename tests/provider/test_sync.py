@@ -907,6 +907,7 @@ class PushNoteCase(BaseSyncCase):
         note = Note(
             title='note',
             content='content',
+            action=ACTION_CREATE,
         )
         self.session.add(note)
         self.session.commit()
@@ -916,5 +917,6 @@ class PushNoteCase(BaseSyncCase):
 
         self.assertEqual(note.guid, guid)
         self.assertEqual(
-            self.note_store.createNote.call_args_list[0][0][1], note.title,
+            self.note_store.createNote.call_args_list[0][0][1].title,
+            note.title,
         )

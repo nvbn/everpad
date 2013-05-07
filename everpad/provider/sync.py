@@ -307,6 +307,59 @@ class PushNote(BaseSync):
 
     def push(self):
         """Push note to remote server"""
+        for note in self.session.query(models.Note).filter(
+            ~models.Note.action.in_((
+                ACTION_NONE, ACTION_NOEXSIST, ACTION_CONFLICT,
+            ))
+        ):
+            self.app.log('Note %s local' % note.title)
+            note_ttype = self._create_ttype(note)
+
+            self._push_new_note(note, note_ttype)
+        self.session.commit()
+
+    def _create_ttype(self, note):
+        """Create ttype for note"""
+        kwargs = dict(
+            title=note.title[:EDAM_NOTE_TITLE_LEN_MAX].strip().encode('utf8'),
+            content=self._prepare_content(note.content),
+            tagGuids=map(
+                lambda tag: tag.guid, note.tags,
+            ),
+        )
+
+        if note.notebook:
+            kwargs['notebookGuid'] = note.notebook.guid
+
+        if note.guid:
+            kwargs['guid'] = note.guid
+
+        return Note(**kwargs)
+
+    def _prepare_content(self, content):
+        """Prepare content"""
+        enml_content = (u"""
+            <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+            <en-note>%s</en-note>d
+        """ % sanitize(
+            html=content[:EDAM_NOTE_CONTENT_LEN_MAX]
+        )).strip().encode('utf8')
+
+        soup = BeautifulStoneSoup(enml_content, selfClosingTags=[
+            'img', 'en-todo', 'en-media', 'br', 'hr',
+        ])
+
+        return soup.prettify()
+
+    def _push_new_note(self, note, note_ttype):
+        """Push new note to remote"""
+        try:
+            note_ttype = self.note_store.createNote(self.auth_token, note_ttype)
+            note.guid = note_ttype.guid
+        except EDAMUserException as e:
+            note.action = ACTION_NONE
+            self.app.log('Note %s failed' % note.title)
+            self.app.log(e)
 
 
 class SyncAgent(object):

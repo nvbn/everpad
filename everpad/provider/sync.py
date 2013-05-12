@@ -434,7 +434,7 @@ class PullNote(BaseSync):
             ), offset, EDAM_USER_NOTES_MAX)
 
             for note in note_list.notes:
-                yield self._get_full_note(note)
+                yield note
 
             offset = note_list.startIndex + len(note_list.notes)
             if note_list.totalNotes - offset <= 0:
@@ -449,6 +449,8 @@ class PullNote(BaseSync):
 
     def _create_note(self, note_ttype):
         """Create new note"""
+        note_ttype = self._get_full_note(note_ttype)
+
         note = models.Note(guid=note_ttype.guid)
         note.from_api(note_ttype, self.session)
         self.session.add(note)
@@ -460,6 +462,8 @@ class PullNote(BaseSync):
         note = self.session.query(models.Note).filter(
             models.Note.guid == note_ttype.guid,
         ).one()
+
+        note_ttype = self._get_full_note(note_ttype)
 
         if note.updated < note_ttype.updated:
             note.from_api(note_ttype, self.session)

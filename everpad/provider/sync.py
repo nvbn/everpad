@@ -414,6 +414,44 @@ class PullNote(BaseSync):
         super(PullNote, self).__init__(*args, **kwargs)
         self._exists = []
 
+    def pull(self):
+        """Pull notes from remote server"""
+        for note_ttype in self._get_all_notes():
+            self.app.log('Note %s remote' % note_ttype.title)
+            self._create_note(note_ttype)
+
+    def _get_all_notes(self):
+        """Iterate all notes"""
+        offset = 0
+
+        while True:
+            note_list = self.note_store.findNotes(self.auth_token, NoteFilter(
+                order=NoteSortOrder.UPDATED,
+                ascending=False,
+            ), offset, EDAM_USER_NOTES_MAX)
+
+            for note in note_list.notes:
+                yield self._get_full_note(note)
+
+            offset = note_list.startIndex + len(note_list.notes)
+            if note_list.totalNotes - offset <= 0:
+                break
+
+    def _get_full_note(self, note_ttype):
+        """Get full note"""
+        return self.note_store.getNote(
+            self.auth_token, note_ttype.guid,
+            True, True, True, True,
+        )
+
+    def _create_note(self, note_ttype):
+        """Create new note"""
+        note = models.Note(guid=note_ttype.guid)
+        note.from_api(note_ttype, self.session)
+        self.session.add(note)
+        self.session.commit()
+        return note
+
 
 class SyncAgent(object):
     """Split agent for latest backends support"""

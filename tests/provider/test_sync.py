@@ -988,13 +988,30 @@ class PullNoteCase(BaseSyncCase):
     """Pull note case"""
     sync_cls = PullNote
 
+    def setUp(self):
+        super(PullNoteCase, self).setUp()
+        self._create_default_notebook()
+
+    def _create_default_notebook(self):
+        """Create default notebook"""
+        self.notebook = Notebook(
+            guid='guid',
+            name='name',
+            default=True,
+        )
+        self.session.add(self.notebook)
+        self.session.commit()
+
     def test_pull_new_note(self):
         """Test pull new note"""
         note_title = 'title'
         note_guid = 'guid'
-        remote_note = Note(
+        remote_note = ttypes.Note(
             title=note_title,
             guid=note_guid,
+            content='<en-note></en-note>',
+            notebookGuid=self.notebook.guid,
+            attributes=ttypes.NoteAttributes(),
         )
 
         search_result = MagicMock()

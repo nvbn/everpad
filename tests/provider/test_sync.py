@@ -1002,10 +1002,8 @@ class PullNoteCase(BaseSyncCase):
         self.session.add(self.notebook)
         self.session.commit()
 
-    def test_pull_new_note(self):
-        """Test pull new note"""
-        note_title = 'title'
-        note_guid = 'guid'
+    def _create_remote_note(self, note_title, note_guid):
+        """Create remote note"""
         remote_note = ttypes.Note(
             title=note_title,
             guid=note_guid,
@@ -1021,9 +1019,34 @@ class PullNoteCase(BaseSyncCase):
         self.note_store.findNotes.return_value = search_result
         self.note_store.getNote.return_value = remote_note
 
+        return remote_note
+
+    def test_pull_new_note(self):
+        """Test pull new note"""
+        note_title = 'title'
+        note_guid = 'guid'
+        self._create_remote_note(note_title, note_guid)
+
         self.sync.pull()
 
         note = self.session.query(Note).one()
 
         self.assertEqual(note.guid, note_guid)
+        self.assertEqual(note.title, note_title)
+
+    def test_pull_changed_note(self):
+        """Test pull changed note"""
+        note_guid = 'guid'
+        note_title = 'title'
+        note = Note(
+            title='note',
+            guid=note_guid,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self._create_remote_note(note_title, note_guid)
+
+        self.sync.pull()
+
         self.assertEqual(note.title, note_title)

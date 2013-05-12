@@ -418,7 +418,10 @@ class PullNote(BaseSync):
         """Pull notes from remote server"""
         for note_ttype in self._get_all_notes():
             self.app.log('Note %s remote' % note_ttype.title)
-            self._create_note(note_ttype)
+            try:
+                self._update_note(note_ttype)
+            except NoResultFound:
+                self._create_note(note_ttype)
 
     def _get_all_notes(self):
         """Iterate all notes"""
@@ -451,6 +454,15 @@ class PullNote(BaseSync):
         self.session.add(note)
         self.session.commit()
         return note
+
+    def _update_note(self, note_ttype):
+        """Update changed note"""
+        note = self.session.query(models.Note).filter(
+            models.Note.guid == note_ttype.guid,
+        ).one()
+
+        if note.updated < note_ttype.updated:
+            note.from_api(note_ttype, self.session)
 
 
 class SyncAgent(object):

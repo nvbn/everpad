@@ -1010,6 +1010,7 @@ class PullNoteCase(BaseSyncCase):
             content='<en-note></en-note>',
             notebookGuid=self.notebook.guid,
             attributes=ttypes.NoteAttributes(),
+            updated=1,
         )
 
         search_result = MagicMock()
@@ -1041,6 +1042,7 @@ class PullNoteCase(BaseSyncCase):
         note = Note(
             title='note',
             guid=note_guid,
+            updated=0,
         )
         self.session.add(note)
         self.session.commit()

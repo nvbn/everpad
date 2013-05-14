@@ -424,6 +424,9 @@ class PullNote(BaseSync):
                 note = self._create_note(note_ttype)
             self._exists.append(note.id)
 
+            resource_ids = self._receive_resources(note, note_ttype)
+            self._remove_resources(note, resource_ids)
+
         self.session.commit()
         self._remove_notes()
 
@@ -482,6 +485,40 @@ class PullNote(BaseSync):
             ACTION_NOEXSIST, ACTION_CREATE,
             ACTION_CHANGE, ACTION_CONFLICT,
         ))).delete(synchronize_session='fetch')
+        self.session.commit()
+
+    def _receive_resources(self, note, note_ttype):
+        """Receive note resources"""
+        resources_ids = []
+
+        for resource_ttype in note_ttype.resources or []:
+            try:
+                resource = self.session.query(models.Resource).filter(
+                    models.Resource.guid == resource_ttype.guid,
+                ).one()
+                resources_ids.append(resource.id)
+                if resource.hash != binascii.b2a_hex(
+                    resource_ttype.data.bodyHash,
+                ):
+                    resource.from_api(resource_ttype)
+            except NoResultFound:
+                resource = models.Resource(
+                    guid=resource_ttype.guid,
+                    note_id=note.id,
+                )
+                resource.from_api(resource_ttype)
+                self.session.add(resource)
+                self.session.commit()
+                resources_ids.append(resource.id)
+
+        return resources_ids
+
+    def _remove_resources(self, note, resources_ids):
+        """Remove non exists resources"""
+        self.session.query(models.Resource).filter(
+            ~models.Resource.id.in_(resources_ids)
+            & (models.Resource.note_id == note.id)
+        ).delete(synchronize_session='fetch')
         self.session.commit()
 
 

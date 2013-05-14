@@ -1019,6 +1019,7 @@ class PullNoteCase(BaseSyncCase):
                 ),
                 data=ttypes.Data(
                     body='',
+                    bodyHash='',
                 ),
             )],
         )

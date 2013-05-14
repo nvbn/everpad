@@ -1084,3 +1084,22 @@ class PullNoteCase(BaseSyncCase):
         self.sync.pull()
 
         self.assertEqual(self.session.query(Note).count(), 0)
+
+    def test_pull_with_conflict(self):
+        """Test pull with conflict"""
+        note_guid = 'guid'
+        note_title = 'title'
+        note = Note(
+            title='note',
+            guid=note_guid,
+            updated=0,
+            action=ACTION_CHANGE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self._create_remote_note(note_title, note_guid)
+
+        self.sync.pull()
+
+        self.assertEqual(self.session.query(Note).count(), 2)

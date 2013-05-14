@@ -473,8 +473,21 @@ class PullNote(BaseSync):
         note_ttype = self._get_full_note(note_ttype)
 
         if note.updated < note_ttype.updated:
-            note.from_api(note_ttype, self.session)
+            if note.action == ACTION_CHANGE:
+                self._create_conflict(note, note_ttype)
+            else:
+                note.from_api(note_ttype, self.session)
         return note
+
+    def _create_conflict(self, note, note_ttype):
+        """Create conflict note"""
+        conflict_note = models.Note()
+        conflict_note.from_api(note_ttype, self.session)
+        conflict_note.guid = ''
+        conflict_note.action = ACTION_CONFLICT
+        conflict_note.conflict_parent_id = note.id
+        self.session.add(conflict_note)
+        self.session.commit()
 
     def _remove_notes(self):
         """Remove not exists notes"""

@@ -1102,4 +1102,6 @@ class PullNoteCase(BaseSyncCase):
 
         self.sync.pull()
 
-        self.assertEqual(self.session.query(Note).count(), 2)
+        self.assertEqual(self.session.query(Note).filter(
+            Note.action == ACTION_CONFLICT
+        ).count(), 1)

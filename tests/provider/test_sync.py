@@ -1057,6 +1057,7 @@ class PullNoteCase(BaseSyncCase):
         """Test delete non exists note after pull"""
         note = Note(
             title='note',
+            action=ACTION_NONE,
         )
         self.session.add(note)
         self.session.commit()

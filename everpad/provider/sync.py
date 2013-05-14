@@ -419,9 +419,13 @@ class PullNote(BaseSync):
         for note_ttype in self._get_all_notes():
             self.app.log('Note %s remote' % note_ttype.title)
             try:
-                self._update_note(note_ttype)
+                note = self._update_note(note_ttype)
             except NoResultFound:
-                self._create_note(note_ttype)
+                note = self._create_note(note_ttype)
+            self._exists.append(note.id)
+
+        self.session.commit()
+        self._remove_notes()
 
     def _get_all_notes(self):
         """Iterate all notes"""
@@ -467,6 +471,18 @@ class PullNote(BaseSync):
 
         if note.updated < note_ttype.updated:
             note.from_api(note_ttype, self.session)
+        return note
+
+    def _remove_notes(self):
+        """Remove not exists notes"""
+        self.session.query(models.Note).filter((
+            ~models.Note.id.in_(self._exists)
+            | ~models.Note.conflict_parent_id.in_(self._exists)
+        ) & ~models.Note.action.in_((
+            ACTION_NOEXSIST, ACTION_CREATE,
+            ACTION_CHANGE, ACTION_CONFLICT,
+        ))).delete(synchronize_session='fetch')
+        self.session.commit()
 
 
 class SyncAgent(object):

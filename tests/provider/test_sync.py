@@ -1052,3 +1052,21 @@ class PullNoteCase(BaseSyncCase):
         self.sync.pull()
 
         self.assertEqual(note.title, note_title)
+
+    def test_delete_after_pull(self):
+        """Test delete non exists note after pull"""
+        note = Note(
+            title='note',
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        search_result = MagicMock()
+        search_result.totalNotes = 0
+        search_result.startIndex = 0
+        search_result.notes = []
+        self.note_store.findNotes.return_value = search_result
+
+        self.sync.pull()
+
+        self.assertEqual(self.session.query(Note).count(), 0)

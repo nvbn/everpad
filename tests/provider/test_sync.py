@@ -1011,6 +1011,16 @@ class PullNoteCase(BaseSyncCase):
             notebookGuid=self.notebook.guid,
             attributes=ttypes.NoteAttributes(),
             updated=1,
+            resources=[ttypes.Resource(
+                guid='file',
+                mime='text',
+                attributes=ttypes.ResourceAttributes(
+                    fileName='file',
+                ),
+                data=ttypes.Data(
+                    body='',
+                ),
+            )],
         )
 
         search_result = MagicMock()
@@ -1034,6 +1044,7 @@ class PullNoteCase(BaseSyncCase):
 
         self.assertEqual(note.guid, note_guid)
         self.assertEqual(note.title, note_title)
+        self.assertEqual(self.session.query(Resource).count(), 1)
 
     def test_pull_changed_note(self):
         """Test pull changed note"""
@@ -1052,6 +1063,7 @@ class PullNoteCase(BaseSyncCase):
         self.sync.pull()
 
         self.assertEqual(note.title, note_title)
+        self.assertEqual(self.session.query(Resource).count(), 1)
 
     def test_delete_after_pull(self):
         """Test delete non exists note after pull"""

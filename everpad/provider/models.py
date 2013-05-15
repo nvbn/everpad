@@ -1,11 +1,9 @@
-from sqlalchemy import (
-    Table, Column, Integer, ForeignKey, String, Boolean,
-    and_,
-)
+from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
-from everpad.tools import prepare_file_path
+from ..tools import prepare_file_path
+from .. import const
 from BeautifulSoup import BeautifulSoup
 import binascii
 import os
@@ -14,22 +12,8 @@ import json
 import dbus
 import socket
 
+
 Base = declarative_base()
-
-
-ACTION_NONE = 0
-ACTION_CREATE = 1
-ACTION_DELETE = 2
-ACTION_CHANGE = 3
-ACTION_NOEXSIST = 4
-ACTION_CONFLICT = 5
-ACTION_DUPLICATE = 6
-
-
-SHARE_NONE = 0
-SHARE_NEED_SHARE = 1
-SHARE_SHARED = 2
-SHARE_NEED_STOP = 3
 
 
 notetags_table = Table('notetags', Base.metadata,
@@ -66,7 +50,7 @@ class Note(Base):
 
     # sharing data:
     share_date = Column(Integer)
-    share_status = Column(Integer, default=SHARE_NONE)
+    share_status = Column(Integer, default=const.SHARE_NONE)
     share_url = Column(String)
 
     @property
@@ -79,12 +63,12 @@ class Note(Base):
         for tag in val:
             if tag and tag != ' ':  # for blank array and other
                 try:
-                    tags.append(self.session.query(Tag).filter(and_(
-                        Tag.name == tag,
-                        Tag.action != ACTION_DELETE,
-                    )).one())  # shit shit shit
+                    tags.append(self.session.query(Tag).filter(
+                        (Tag.name == tag)
+                        & (Tag.action != const.ACTION_DELETE)
+                    ).one())
                 except NoResultFound:
-                    tg = Tag(name=tag, action=ACTION_CREATE)
+                    tg = Tag(name=tag, action=const.ACTION_CREATE)
                     self.session.add(tg)
                     tags.append(tg)
         self.tags = tags
@@ -170,7 +154,7 @@ class Note(Base):
         self.content = content
         self.created = note.created
         self.updated = note.updated
-        self.action = ACTION_NONE
+        self.action = const.ACTION_NONE
         if note.notebookGuid:
             self.notebook = session.query(Notebook).filter(
                 Notebook.guid == note.notebookGuid,
@@ -227,7 +211,7 @@ class Notebook(Base):
         self.default = notebook.defaultNotebook
         self.service_created = notebook.serviceCreated
         self.service_updated = notebook.serviceUpdated
-        self.action = ACTION_NONE
+        self.action = const.ACTION_NONE
         if(notebook.stack):
             self.stack = notebook.stack.decode('utf8')
 
@@ -252,7 +236,7 @@ class Tag(Base):
     def from_api(self, tag):
         """Fill data from api"""
         self.name = tag.name.decode('utf8')
-        self.action = ACTION_NONE
+        self.action = const.ACTION_NONE
 
 
 class Resource(Base):
@@ -273,7 +257,7 @@ class Resource(Base):
         else:
             self.file_name = resource.guid.decode('utf8')
         self.hash = binascii.b2a_hex(resource.data.bodyHash)
-        self.action = ACTION_NONE
+        self.action = const.ACTION_NONE
         self.mime = resource.mime.decode('utf8')
         path = os.path.expanduser('~/.everpad/data/%s/' % self.note_id)
         try:

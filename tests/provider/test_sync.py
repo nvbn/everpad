@@ -1122,3 +1122,27 @@ class PullNoteCase(BaseSyncCase):
         local_note = self.session.query(Note).one()
 
         self.assertEqual(local_note.share_status, SHARE_SHARED)
+
+    def test_pull_not_shared(self):
+        """Test pull not shared note"""
+        note_guid = 'guid'
+        note_title = 'title'
+
+        note = Note(
+            title=note_title,
+            guid=note_guid,
+            updated=0,
+            action=ACTION_NONE,
+            share_status=SHARE_SHARED,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        note = self._create_remote_note(note_title, note_guid)
+        note.attributes.shareDate = None
+
+        self.sync.pull()
+
+        local_note = self.session.query(Note).one()
+
+        self.assertEqual(local_note.share_status, SHARE_NONE)

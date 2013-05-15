@@ -1000,6 +1000,22 @@ class PushNoteCase(BaseSyncCase):
         self.assertEqual(note.share_status, SHARE_SHARED)
         self.assertIsNotNone(note.share_url)
 
+    def test_push_for_non_sharing(self):
+        """Test push for non sharing"""
+        note = Note(
+            title='note',
+            content='content',
+            action=ACTION_CREATE,
+            share_status=SHARE_NEED_STOP,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self.note_store.createNote.return_value.guid = 'guid'
+        self.sync.push()
+
+        self.assertEqual(note.share_status, SHARE_NONE)
+
 
 class PullNoteCase(BaseSyncCase):
     """Pull note case"""

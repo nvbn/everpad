@@ -1,10 +1,10 @@
+from BeautifulSoup import BeautifulSoup
 from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 from ..tools import prepare_file_path
 from .. import const
-from BeautifulSoup import BeautifulSoup
 import binascii
 import os
 import urllib

@@ -1,19 +1,11 @@
-import sys
-sys.path.append('../..')
-from everpad.provider.models import (
-    Note, Notebook, Tag, Resource, Place,
-    ACTION_CHANGE, ACTION_CREATE, ACTION_DELETE,
-    ACTION_NOEXSIST, ACTION_CONFLICT, SHARE_NEED_SHARE,
-    SHARE_NEED_STOP,
-)
-from everpad.provider.tools import get_db_session, get_auth_token
-from everpad.specific import AppClass
 from sqlalchemy import or_, and_, func
 from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
 from PySide.QtCore import Signal, QObject
-from everpad.const import STATUS_SYNC, DEFAULT_SYNC_DELAY, API_VERSION
-import everpad.basetypes as btype
+from .. import const, basetypes as btype
+from ..specific import AppClass
+from . import models
+from .tools import get_db_session, get_auth_token
 import dbus
 import dbus.service
 import time
@@ -35,7 +27,7 @@ class ProviderService(dbus.service.Object):
     def session(self):
         if not hasattr(self, '_session'):
             self._session = get_db_session()
-            Note.session = self._session   # shit shit
+            models.Note.session = self._session   # shit shit
         return self._session
 
     @property
@@ -50,11 +42,11 @@ class ProviderService(dbus.service.Object):
     )
     def get_note(self, id):
         try:
-            return btype.Note.from_obj(self.sq(Note).filter(
-                and_(Note.id == id, Note.action != ACTION_DELETE),
+            return btype.Note.from_obj(self.sq(models.Note).filter(
+                and_(models.Note.id == id, models.Note.action != const.ACTION_DELETE),
             ).one()).struct
         except NoResultFound:
-            raise DBusException('Note not found')
+            raise DBusException('models.Note not found')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='s',
@@ -62,21 +54,21 @@ class ProviderService(dbus.service.Object):
     )
     def get_note_by_guid(self, guid):
         try:
-            return btype.Note.from_obj(self.sq(Note).filter(and_(
-                Note.guid == guid,
-                Note.action != ACTION_DELETE,
-                Note.action != ACTION_CONFLICT,
+            return btype.Note.from_obj(self.sq(models.Note).filter(and_(
+                models.Note.guid == guid,
+                models.Note.action != const.ACTION_DELETE,
+                models.Note.action != const.ACTION_CONFLICT,
             )).one()).struct
         except NoResultFound:
-            raise DBusException('Note not found')
+            raise DBusException('models.Note not found')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='a%s' % btype.Note.signature,
     )
     def get_note_alternatives(self, id):
-        qs = self.sq(Note).filter(
-            Note.conflict_parent_id == id,
+        qs = self.sq(models.Note).filter(
+            models.Note.conflict_parent_id == id,
         )
         return map(lambda note: btype.Note.from_obj(note).struct, qs.all())
 
@@ -91,36 +83,36 @@ class ProviderService(dbus.service.Object):
         if words:
             words = '%' + words.replace(' ', '%').lower() + '%'
             filters.append(or_(  # TODO: use xapian
-                func.lower(Note.title).like(words),
-                func.lower(Note.content).like(words),
-                Note.tags.any(func.lower(Tag.name).like(words)),
-                Note.notebook.has(func.lower(Notebook.name).like(words)),
+                func.lower(models.Note.title).like(words),
+                func.lower(models.Note.content).like(words),
+                models.Note.tags.any(func.lower(models.Tag.name).like(words)),
+                models.Note.notebook.has(func.lower(models.Notebook.name).like(words)),
             ))
         if notebooks:
             filters.append(
-                Note.notebook_id.in_(notebooks),
+                models.Note.notebook_id.in_(notebooks),
             )
         if tags:
             filters.append(
-                Note.tags.any(Tag.id.in_(tags)),
+                models.Note.tags.any(models.Tag.id.in_(tags)),
             )
         if place:
             filters.append(
-                Note.place_id == place,
+                models.Note.place_id == place,
             )
         if pinnded != -1:
             filters.append(
-                Note.pinnded == pinnded,
+                models.Note.pinnded == pinnded,
             )
-        qs = self.sq(Note).filter(and_(
-            Note.action != ACTION_DELETE,
-            Note.action != ACTION_NOEXSIST,
-            Note.action != ACTION_CONFLICT,
+        qs = self.sq(models.Note).filter(and_(
+            models.Note.action != const.ACTION_DELETE,
+            models.Note.action != const.ACTION_NOEXSIST,
+            models.Note.action != const.ACTION_CONFLICT,
         *filters)).order_by({
-            btype.Note.ORDER_TITLE: Note.title,
-            btype.Note.ORDER_UPDATED: Note.updated,
-            btype.Note.ORDER_TITLE_DESC: Note.title.desc(),
-            btype.Note.ORDER_UPDATED_DESC: Note.updated.desc(),
+            btype.Note.ORDER_TITLE: models.Note.title,
+            btype.Note.ORDER_UPDATED: models.Note.updated,
+            btype.Note.ORDER_TITLE_DESC: models.Note.title.desc(),
+            btype.Note.ORDER_UPDATED_DESC: models.Note.updated.desc(),
         }[order]).limit(limit)
         return map(lambda note: btype.Note.from_obj(note).struct, qs.all())
 
@@ -131,7 +123,7 @@ class ProviderService(dbus.service.Object):
     def list_notebooks(self):
         return map(lambda notebook:
             btype.Notebook.from_obj(notebook).struct,
-        self.sq(Notebook).filter(Notebook.action != ACTION_DELETE).order_by(Notebook.name))
+        self.sq(models.Notebook).filter(models.Notebook.action != const.ACTION_DELETE).order_by(models.Notebook.name))
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
@@ -139,23 +131,23 @@ class ProviderService(dbus.service.Object):
     )
     def get_notebook(self, id):
         try:
-            return btype.Notebook.from_obj(self.sq(Notebook).filter(
-                and_(Notebook.id == id,
-                Notebook.action != ACTION_DELETE,
+            return btype.Notebook.from_obj(self.sq(models.Notebook).filter(
+                and_(models.Notebook.id == id,
+                models.Notebook.action != const.ACTION_DELETE,
             )).one()).struct
         except NoResultFound:
-            raise DBusException('Notebook does not exist')
+            raise DBusException('models.Notebook does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='i',
     )
     def get_notebook_notes_count(self, id):
-        return self.sq(Note).filter(
-            and_(Note.notebook_id == id,
-            Note.action != ACTION_DELETE,
-            Note.action != ACTION_NOEXSIST,
-            Note.action != ACTION_CONFLICT,
+        return self.sq(models.Note).filter(
+            and_(models.Note.notebook_id == id,
+            models.Note.action != const.ACTION_DELETE,
+            models.Note.action != const.ACTION_NOEXSIST,
+            models.Note.action != const.ACTION_CONFLICT,
         )).count()
 
     @dbus.service.method(
@@ -165,24 +157,24 @@ class ProviderService(dbus.service.Object):
     def update_notebook(self, notebook_struct):
         try:
             notebook = btype.Notebook.from_tuple(notebook_struct)
-            nb = self.sq(Notebook).filter(
-                and_(Notebook.id == notebook.id,
-                Notebook.action != ACTION_DELETE,
+            nb = self.sq(models.Notebook).filter(
+                and_(models.Notebook.id == notebook.id,
+                models.Notebook.action != const.ACTION_DELETE,
             )).one()
-            if self.sq(Notebook).filter(and_(
-                Notebook.id != notebook.id,
-                Notebook.name == notebook.name,
+            if self.sq(models.Notebook).filter(and_(
+                models.Notebook.id != notebook.id,
+                models.Notebook.name == notebook.name,
             )).count():
                 raise DBusException(
-                    'Notebook with this name already exist',
+                    'models.Notebook with this name already exist',
                 )
-            nb.action = ACTION_CHANGE
+            nb.action = const.ACTION_CHANGE
             self.session.commit()
             notebook.give_to_obj(nb)
             self.data_changed()
             return btype.Notebook.from_obj(nb).struct
         except NoResultFound:
-            raise DBusException('Notebook does not exist')
+            raise DBusException('models.Notebook does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
@@ -190,15 +182,15 @@ class ProviderService(dbus.service.Object):
     )
     def delete_notebook(self, id):
         try:
-            self.sq(Notebook).filter(
-                and_(Notebook.id == id,
-                Notebook.action != ACTION_DELETE,
-            )).one().action = ACTION_DELETE
+            self.sq(models.Notebook).filter(
+                and_(models.Notebook.id == id,
+                models.Notebook.action != const.ACTION_DELETE,
+            )).one().action = const.ACTION_DELETE
             self.session.commit()
             self.data_changed()
             return True
         except NoResultFound:
-            raise DBusException('Notebook does not exist')
+            raise DBusException('models.Notebook does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
@@ -207,19 +199,19 @@ class ProviderService(dbus.service.Object):
     def list_tags(self):
         return map(lambda tag:
             btype.Tag.from_obj(tag).struct,
-        self.sq(Tag).filter(
-            Tag.action != ACTION_DELETE,
-        ).order_by(Tag.name))
+        self.sq(models.Tag).filter(
+            models.Tag.action != const.ACTION_DELETE,
+        ).order_by(models.Tag.name))
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
         out_signature='i',
     )
     def get_tag_notes_count(self, id):
-        return self.sq(Note).filter(
-            and_(Note.tags.any(Tag.id == id),
-            Note.action != ACTION_DELETE,
-            Note.action != ACTION_NOEXSIST,
+        return self.sq(models.Note).filter(
+            and_(models.Note.tags.any(models.Tag.id == id),
+            models.Note.action != const.ACTION_DELETE,
+            models.Note.action != const.ACTION_NOEXSIST,
         )).count()
 
     @dbus.service.method(
@@ -228,20 +220,20 @@ class ProviderService(dbus.service.Object):
     )
     def delete_tag(self, id):
         try:
-            tag = self.sq(Tag).filter(and_(
-                Tag.id == id,
-                Tag.action != ACTION_DELETE,
+            tag = self.sq(models.Tag).filter(and_(
+                models.Tag.id == id,
+                models.Tag.action != const.ACTION_DELETE,
             )).one()
-            tag.action = ACTION_DELETE
-            for note in self.sq(Note).filter(
-                Note.tags.contains(tag),
+            tag.action = const.ACTION_DELETE
+            for note in self.sq(models.Note).filter(
+                models.Note.tags.contains(tag),
             ).all():
                 note.tags.remove(tag)
             self.session.commit()
             self.data_changed()
             return True
         except NoResultFound:
-            raise DBusException('Tag does not exist')
+            raise DBusException('models.Tag does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature=btype.Tag.signature,
@@ -250,24 +242,24 @@ class ProviderService(dbus.service.Object):
     def update_tag(self, tag_struct):
         try:
             tag = btype.Tag.from_tuple(tag_struct)
-            tg = self.sq(Tag).filter(
-                and_(Tag.id == tag.id,
-                Tag.action != ACTION_DELETE,
+            tg = self.sq(models.Tag).filter(
+                and_(models.Tag.id == tag.id,
+                models.Tag.action != const.ACTION_DELETE,
             )).one()
-            if self.sq(Tag).filter(and_(
-                Tag.id != tag.id,
-                Tag.name == tag.name,
+            if self.sq(models.Tag).filter(and_(
+                models.Tag.id != tag.id,
+                models.Tag.name == tag.name,
             )).count():
                 raise DBusException(
-                    'Tag with this name already exist',
+                    'models.Tag with this name already exist',
                 )
-            tg.action = ACTION_CHANGE
+            tg.action = const.ACTION_CHANGE
             self.session.commit()
             tag.give_to_obj(tg)
             self.data_changed()
             return btype.Tag.from_obj(tg).struct
         except NoResultFound:
-            raise DBusException('Tag does not exist')
+            raise DBusException('models.Tag does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider",
@@ -275,8 +267,8 @@ class ProviderService(dbus.service.Object):
         out_signature=btype.Note.signature,
     )
     def create_note(self, data):
-        note = Note(
-            action=ACTION_NOEXSIST,
+        note = models.Note(
+            action=const.ACTION_NOEXSIST,
         )
         dbus_note = btype.Note.from_tuple(data)
         dbus_note.id = None
@@ -296,17 +288,17 @@ class ProviderService(dbus.service.Object):
     def update_note(self, note):
         received_note = btype.Note.from_tuple(note)
         try:
-            note = self.sq(Note).filter(
-                and_(Note.id == received_note.id,
-                Note.action != ACTION_DELETE,
+            note = self.sq(models.Note).filter(
+                and_(models.Note.id == received_note.id,
+                models.Note.action != const.ACTION_DELETE,
             )).one()
         except NoResultFound:
-            raise DBusException('Note not found')
+            raise DBusException('models.Note not found')
         received_note.give_to_obj(note)
-        if note.action == ACTION_NOEXSIST:
-            note.action = ACTION_CREATE
-        elif note.action != ACTION_CREATE:
-            note.action = ACTION_CHANGE
+        if note.action == const.ACTION_NOEXSIST:
+            note.action = const.ACTION_CREATE
+        elif note.action != const.ACTION_CREATE:
+            note.action = const.ACTION_CHANGE
         note.updated_local = int(time.time() * 1000)
         self.session.commit()
         self.data_changed()
@@ -322,24 +314,24 @@ class ProviderService(dbus.service.Object):
     def update_note_resources(self, note, resources):
         received_note = btype.Note.from_tuple(note)
         try:
-            note = self.sq(Note).filter(
-                Note.id == received_note.id,
+            note = self.sq(models.Note).filter(
+                models.Note.id == received_note.id,
             ).one()
         except NoResultFound:
-            raise DBusException('Note not found')
-        self.sq(Resource).filter(
-            Resource.note_id == note.id,
+            raise DBusException('models.Note not found')
+        self.sq(models.Resource).filter(
+            models.Resource.note_id == note.id,
         ).delete()
         for res_struct in resources:
-            res = Resource(
-                action=ACTION_CREATE,
+            res = models.Resource(
+                action=const.ACTION_CREATE,
                 note_id=note.id,
             )
             btype.Resource.from_tuple(res_struct).give_to_obj(res)
             res.id = None
             self.session.add(res)
-        if note.action != ACTION_CREATE:
-            note.action = ACTION_CHANGE
+        if note.action != const.ACTION_CREATE:
+            note.action = const.ACTION_CHANGE
         self.session.commit()
         self.data_changed()
         return btype.Note.from_obj(note).struct
@@ -350,20 +342,20 @@ class ProviderService(dbus.service.Object):
     )
     def delete_note(self, id):
         try:
-            note = self.sq(Note).filter(Note.id == id).one()
-            if note.action == ACTION_CONFLICT:
+            note = self.sq(models.Note).filter(models.Note.id == id).one()
+            if note.action == const.ACTION_CONFLICT:
                 # prevent circular dependency error
                 note.conflict_parent_id = None
                 note.conflict_parent = []
                 self.session.commit()
                 self.session.delete(note)
             else:
-                note.action = ACTION_DELETE
+                note.action = const.ACTION_DELETE
             self.session.commit()
             self.data_changed()
             return True
         except NoResultFound:
-            raise DBusException('Note not found')
+            raise DBusException('models.Note not found')
 
     @dbus.service.method(
         "com.everpad.Provider",
@@ -371,14 +363,14 @@ class ProviderService(dbus.service.Object):
         out_signature=btype.Notebook.signature,
     )
     def create_notebook(self, name, stack):
-        if self.sq(Note).filter(
-            Notebook.name == name,
+        if self.sq(models.Note).filter(
+            models.Notebook.name == name,
         ).count():
             raise DBusException(
-                'Notebook with this name already exist',
+                'models.Notebook with this name already exist',
             )
-        notebook = Notebook(
-            action=ACTION_CREATE,
+        notebook = models.Notebook(
+            action=const.ACTION_CREATE,
             name=name, default=False, stack=stack,
         )
         self.session.add(notebook)
@@ -393,7 +385,7 @@ class ProviderService(dbus.service.Object):
     def authenticate(self, token):
         self.qobject.remove_authenticate_signal.emit()
         self.qobject.authenticate_signal.emit(token)
-        if self.app.sync_thread.status != STATUS_SYNC:
+        if self.app.sync_thread.status != const.STATUS_SYNC:
             self.app.sync_thread.force_sync()
         self.data_changed()
 
@@ -419,9 +411,9 @@ class ProviderService(dbus.service.Object):
     def get_note_resources(self, note_id):
         return map(
             lambda res: btype.Resource.from_obj(res).struct,
-            self.sq(Resource).filter(and_(
-                Resource.note_id == note_id,
-                Resource.action != ACTION_DELETE,
+            self.sq(models.Resource).filter(and_(
+                models.Resource.note_id == note_id,
+                models.Resource.action != const.ACTION_DELETE,
             ))
         )
 
@@ -432,7 +424,7 @@ class ProviderService(dbus.service.Object):
     def list_places(self):
         place = map(lambda place:
             btype.Place.from_obj(place).struct,
-        self.sq(Place).all())
+        self.sq(models.Place).all())
         return place
 
     @dbus.service.method(
@@ -441,14 +433,14 @@ class ProviderService(dbus.service.Object):
     )
     def share_note(self, note_id):
         try:
-            note = self.sq(Note).filter(
-                and_(Note.id == note_id, Note.action != ACTION_DELETE),
+            note = self.sq(models.Note).filter(
+                and_(models.Note.id == note_id, models.Note.action != const.ACTION_DELETE),
             ).one()
-            note.share_status = SHARE_NEED_SHARE
+            note.share_status = const.SHARE_NEED_SHARE
             self.session.commit()
             self.sync()
         except NoResultFound:
-            raise DBusException('Note not found')
+            raise DBusException('models.Note not found')
 
     @dbus.service.method(
         "com.everpad.Provider",
@@ -456,15 +448,15 @@ class ProviderService(dbus.service.Object):
     )
     def stop_sharing_note(self, note_id):
         try:
-            note = self.sq(Note).filter(
-                and_(Note.id == note_id, Note.action != ACTION_DELETE),
+            note = self.sq(models.Note).filter(
+                and_(models.Note.id == note_id, models.Note.action != const.ACTION_DELETE),
             ).one()
-            note.share_status = SHARE_NEED_STOP
+            note.share_status = const.SHARE_NEED_STOP
             note.share_url = ''
             self.session.commit()
             self.sync()
         except NoResultFound:
-            raise DBusException('Note not found')
+            raise DBusException('models.Note not found')
 
     @dbus.service.method(
         "com.everpad.Provider",
@@ -485,7 +477,7 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='',
     )
     def sync(self):
-        if self.app.sync_thread.status != STATUS_SYNC:
+        if self.app.sync_thread.status != const.STATUS_SYNC:
             self.app.sync_thread.force_sync()
         return
 
@@ -502,16 +494,16 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='i',
     )
     def get_sync_delay(self):
-        return int(self.app.settings.value('sync_delay') or 0) or DEFAULT_SYNC_DELAY
+        return int(self.app.settings.value('sync_delay') or 0) or const.DEFAULT_SYNC_DELAY
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
         out_signature='b',
     )
     def is_first_synced(self):
-        return bool(self.sq(Notebook).filter(and_(
-            Notebook.action != ACTION_DELETE,
-            Notebook.default == True,
+        return bool(self.sq(models.Notebook).filter(and_(
+            models.Notebook.action != const.ACTION_DELETE,
+            models.Notebook.default == True,
         )).count())
 
     @dbus.service.method(
@@ -519,7 +511,7 @@ class ProviderService(dbus.service.Object):
         out_signature='i',
     )
     def get_api_version(self):
-        return API_VERSION
+        return const.API_VERSION
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='s',

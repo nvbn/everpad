@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../..')
 from everpad.provider.service import ProviderService
-from everpad.provider.sync import SyncThread
+from everpad.provider.sync.agent import SyncThread
 from everpad.provider.tools import set_auth_token, get_auth_token, get_db_session
 from everpad.specific import AppClass
 from everpad.tools import print_version

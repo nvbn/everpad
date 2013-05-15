@@ -75,6 +75,13 @@ class SyncThread(QtCore.QThread):
             except socket.error:
                 time.sleep(30)
 
+    def _need_to_update(self):
+        """Check need for update notes"""
+        update_count = self.note_store.getSyncState(self.auth_token).updateCount
+        reason = update_count != self.update_count
+        self.update_count = update_count
+        return reason
+
     def force_sync(self):
         """Start sync"""
         self.timer.stop()
@@ -100,7 +107,7 @@ class SyncThread(QtCore.QThread):
             self.local_changes()
         except Exception, e:  # maybe log this
             self.session.rollback()
-            self.init_db()
+            self._init_db()
             self.app.log(e)
         finally:
             self.sync_state_changed.emit(const.SYNC_STATE_FINISH)
@@ -133,4 +140,4 @@ class SyncThread(QtCore.QThread):
         tag.PullTag(*self._get_sync_args()).pull()
 
         self.sync_state_changed.emit(const.SYNC_STATE_NOTES_REMOTE)
-        note.PullNote(self._get_sync_args()).pull()
+        note.PullNote(*self._get_sync_args()).pull()

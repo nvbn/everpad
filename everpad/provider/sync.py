@@ -302,7 +302,29 @@ class PullTag(BaseSync):
         ).delete(synchronize_session='fetch')
 
 
-class PushNote(BaseSync):
+class ShareNoteMixin(object):
+    """Mixin with methods for sharing notes"""
+
+    def _get_shard_id(self):
+        """Receive shard id, not cached because can change"""
+        return self.user_store.getUser(self.auth_token).shardId
+
+    def _share_note(self, note, share_date=None):
+        """Share or receive info about sharing"""
+        try:
+            share_key = self.note_store.shareNote(self.auth_token, note.guid)
+            note.share_url = "https://www.evernote.com/shard/{}/sh/{}/{}".format(
+                self._get_shard_id(), note.guid, share_key,
+            )
+            note.share_date = share_date or int(time.time() * 1000)
+            note.share_status = models.SHARE_SHARED
+        except EDAMUserException as e:
+            note.share_status = models.SHARE_NONE
+            self.app.log('Sharing note %s failed' % note.title)
+            self.app.log(e)
+
+
+class PushNote(BaseSync, ShareNoteMixin):
     """Push note to remote server"""
 
     def push(self):
@@ -407,7 +429,7 @@ class PushNote(BaseSync):
             self.session.delete(note)
 
 
-class PullNote(BaseSync):
+class PullNote(BaseSync, ShareNoteMixin):
     """Pull notes"""
 
     def __init__(self, *args, **kwargs):
@@ -423,6 +445,11 @@ class PullNote(BaseSync):
             except NoResultFound:
                 note = self._create_note(note_ttype)
             self._exists.append(note.id)
+
+            if note_ttype.attributes.shareDate != note.share_date\
+                    and note.share_status not in\
+                    (models.SHARE_NEED_SHARE, models.SHARE_NEED_STOP):
+                self._share_note(note, note_ttype.attributes.shareDate)
 
             resource_ids = self._receive_resources(note, note_ttype)
             self._remove_resources(note, resource_ids)

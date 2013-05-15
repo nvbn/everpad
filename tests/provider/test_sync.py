@@ -1112,15 +1112,13 @@ class PullNoteCase(BaseSyncCase):
         note_title = 'title'
 
         note = self._create_remote_note(note_title, note_guid)
-        note.attributes.sharedDate = 1
+        note.attributes.shareDate = 1
 
-        share_url = 'url'
         self.note_store.shareNote = MagicMock()
-        self.note_store.shareNote.return_value = share_url
+        self.note_store.shareNote.return_value = 'url'
 
         self.sync.pull()
 
         local_note = self.session.query(Note).one()
 
-        self.assertEqual(local_note.share_url, share_url)
         self.assertEqual(local_note.share_status, SHARE_SHARED)

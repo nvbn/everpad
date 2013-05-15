@@ -2,8 +2,9 @@ from sqlalchemy.orm.exc import NoResultFound
 from evernote.edam.error.ttypes import EDAMUserException
 from evernote.edam.limits import constants as limits
 from evernote.edam.type import ttypes
+from ... import const
 from ..exceptions import TTypeValidationFailed
-from .. import const, models
+from .. import models
 from .base import BaseSync
 import regex
 

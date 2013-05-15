@@ -4,7 +4,8 @@ from everpad.tools import sanitize
 from evernote.edam.error.ttypes import EDAMUserException
 from evernote.edam.limits import constants as limits
 from evernote.edam.type import ttypes
-from .. import models, const
+from ... import const
+from .. import models
 from .base import BaseSync
 import time
 import binascii

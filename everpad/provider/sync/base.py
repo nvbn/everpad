@@ -1,3 +1,6 @@
+from ...specific import AppClass
+
+
 class BaseSync(object):
     """Base class for sync"""
 

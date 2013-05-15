@@ -446,10 +446,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                 note = self._create_note(note_ttype)
             self._exists.append(note.id)
 
-            if note_ttype.attributes.shareDate != note.share_date\
-                    and note.share_status not in\
-                    (models.SHARE_NEED_SHARE, models.SHARE_NEED_STOP):
-                self._share_note(note, note_ttype.attributes.shareDate)
+            self._check_sharing_information(note, note_ttype)
 
             resource_ids = self._receive_resources(note, note_ttype)
             self._remove_resources(note, resource_ids)
@@ -560,6 +557,25 @@ class PullNote(BaseSync, ShareNoteMixin):
             & (models.Resource.note_id == note.id)
         ).delete(synchronize_session='fetch')
         self.session.commit()
+
+    def _check_sharing_information(self, note, note_ttype):
+        """Check actual sharing information"""
+        if not (
+            note_ttype.attributes.shareDate or note.share_status in (
+                models.SHARE_NONE, models.SHARE_NEED_SHARE,
+            )
+        ):
+            note.share_status = models.SHARE_NONE
+            note.share_date = None
+            note.share_url = None
+            self.session.commit()
+        elif not (
+            note_ttype.attributes.shareDate == note.share_date
+            or note.share_status in (
+                models.SHARE_NEED_SHARE, models.SHARE_NEED_STOP,
+            )
+        ):
+            self._share_note(note, note_ttype.attributes.shareDate)
 
 
 class SyncAgent(object):

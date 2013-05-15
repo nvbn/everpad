@@ -28,6 +28,7 @@ class ShareNoteMixin(object):
             )
             note.share_date = share_date or int(time.time() * 1000)
             note.share_status = const.SHARE_SHARED
+            self.session.commit()
         except EDAMUserException as e:
             note.share_status = const.SHARE_NONE
             self.app.log('Sharing note %s failed' % note.title)

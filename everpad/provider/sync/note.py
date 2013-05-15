@@ -4,6 +4,7 @@ from everpad.tools import sanitize
 from evernote.edam.error.ttypes import EDAMUserException
 from evernote.edam.limits import constants as limits
 from evernote.edam.type import ttypes
+from evernote.edam.notestore.ttypes import NoteFilter
 from ... import const
 from .. import models
 from .base import BaseSync
@@ -181,7 +182,7 @@ class PullNote(BaseSync, ShareNoteMixin):
 
         while True:
             note_list = self.note_store.findNotes(
-                self.auth_token, ttypes.NoteFilter(
+                self.auth_token, NoteFilter(
                     order=ttypes.NoteSortOrder.UPDATED,
                     ascending=False,
                 ), offset, limits.EDAM_USER_NOTES_MAX,

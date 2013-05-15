@@ -983,6 +983,23 @@ class PushNoteCase(BaseSyncCase):
             note.guid,
         )
 
+    def test_push_for_sharing(self):
+        """Test push for sharing"""
+        note = Note(
+            title='note',
+            content='content',
+            action=ACTION_CREATE,
+            share_status=SHARE_NEED_SHARE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self.note_store.createNote.return_value.guid = 'guid'
+        self.sync.push()
+
+        self.assertEqual(note.share_status, SHARE_SHARED)
+        self.assertIsNotNone(note.share_url)
+
 
 class PullNoteCase(BaseSyncCase):
     """Pull note case"""

@@ -1000,8 +1000,8 @@ class PushNoteCase(BaseSyncCase):
         self.assertEqual(note.share_status, SHARE_SHARED)
         self.assertIsNotNone(note.share_url)
 
-    def test_push_for_non_sharing(self):
-        """Test push for non sharing"""
+    def test_push_for_stop_sharing(self):
+        """Test push for stop sharing"""
         note = Note(
             title='note',
             content='content',

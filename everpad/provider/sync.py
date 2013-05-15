@@ -323,6 +323,13 @@ class ShareNoteMixin(object):
             self.app.log('Sharing note %s failed' % note.title)
             self.app.log(e)
 
+    def _stop_sharing_note(self, note):
+        """Stop sharing note"""
+        note.share_status = models.SHARE_NONE
+        note.share_date = None
+        note.share_url = None
+        self.session.commit()
+
 
 class PushNote(BaseSync, ShareNoteMixin):
     """Push note to remote server"""
@@ -346,6 +353,8 @@ class PushNote(BaseSync, ShareNoteMixin):
 
             if note.share_status == models.SHARE_NEED_SHARE:
                 self._share_note(note)
+            elif note.share_status == models.SHARE_NEED_STOP:
+                self._stop_sharing_note(note)
 
         self.session.commit()
 
@@ -568,10 +577,7 @@ class PullNote(BaseSync, ShareNoteMixin):
                 models.SHARE_NONE, models.SHARE_NEED_SHARE,
             )
         ):
-            note.share_status = models.SHARE_NONE
-            note.share_date = None
-            note.share_url = None
-            self.session.commit()
+            self._stop_sharing_note(note)
         elif not (
             note_ttype.attributes.shareDate == note.share_date
             or note.share_status in (

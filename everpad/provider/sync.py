@@ -344,6 +344,9 @@ class PushNote(BaseSync, ShareNoteMixin):
             elif note.action == ACTION_DELETE:
                 self._delete_note(note, note_ttype)
 
+            if note.share_status == models.SHARE_NEED_SHARE:
+                self._share_note(note)
+
         self.session.commit()
 
     def _create_ttype(self, note):
@@ -385,10 +388,10 @@ class PushNote(BaseSync, ShareNoteMixin):
         """Prepare content"""
         enml_content = (u"""
             <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-            <en-note>%s</en-note>d
-        """ % sanitize(
+            <en-note>{}</en-note>d
+        """.format(sanitize(
             html=content[:EDAM_NOTE_CONTENT_LEN_MAX]
-        )).strip().encode('utf8')
+        ))).strip().encode('utf8')
 
         soup = BeautifulStoneSoup(enml_content, selfClosingTags=[
             'img', 'en-todo', 'en-media', 'br', 'hr',

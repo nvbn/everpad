@@ -11,9 +11,11 @@ from everpad.basetypes import (
     Note, Notebook, Tag, Resource, Place,
     NONE_ID, NONE_VAL,
 )
+from everpad import const
 from everpad.provider import models
 import unittest
 import dbus
+import everpad.basetypes as btype
 
 
 class ServiceTestCase(unittest.TestCase):
@@ -515,3 +517,24 @@ class FindTestCase(unittest.TestCase):
             set(self._to_ids(all)),
             set(self._to_ids(self.notes[-2:])),
         )
+
+
+class MethodsCase(unittest.TestCase):
+    """Case for dbus shortcuts"""
+
+    def setUp(self):
+        self.service = ProviderService()
+        self.session = get_db_session()
+        self.service._session = self.session
+
+    def test_get_note(self):
+        """Test get note method"""
+        note = models.Note(
+            title='title',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        remote_note = btype.Note << self.service.get_note(note.id)
+        self.assertEqual(remote_note.title, note.title)

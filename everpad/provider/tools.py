@@ -4,11 +4,11 @@ from evernote.edam.userstore import UserStore
 from evernote.edam.notestore import NoteStore
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from urlparse import urlparse
 from .models import Base
 from ..const import HOST, DB_PATH
 from ..tools import get_proxy_config
 from ..specific import get_keyring
-from urlparse import urlparse
 import os
 
 

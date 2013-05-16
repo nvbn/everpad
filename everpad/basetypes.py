@@ -13,6 +13,14 @@ class BaseDbusSendable(type):
             self.fields,
         )) + ')'
 
+    def __rshift__(self, other):
+        """Shortcut to from_obj and struct"""
+        return self.from_obj(other).struct
+
+    def __lshift__(self, other):
+        """Shortcut to from_tuple"""
+        return self.from_tuple(other)
+
 
 class DbusSendable(object):
     __metaclass__ = BaseDbusSendable

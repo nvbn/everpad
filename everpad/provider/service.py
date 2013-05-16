@@ -1,7 +1,7 @@
+from PySide.QtCore import Signal, QObject
 from sqlalchemy import or_, and_, func
 from sqlalchemy.orm.exc import NoResultFound
 from dbus.exceptions import DBusException
-from PySide.QtCore import Signal, QObject
 from .. import const, basetypes as btype
 from ..specific import AppClass
 from . import models
@@ -12,12 +12,15 @@ import time
 
 
 class ProviderServiceQObject(QObject):
+    """Signals holder for service"""
     authenticate_signal = Signal(str)
     remove_authenticate_signal = Signal()
     terminate = Signal()
 
 
 class ProviderService(dbus.service.Object):
+    """DBus service for provider"""
+
     def __init__(self, *args, **kwargs):
         super(ProviderService, self).__init__(*args, **kwargs)
         self.qobject = ProviderServiceQObject()
@@ -42,9 +45,12 @@ class ProviderService(dbus.service.Object):
     )
     def get_note(self, id):
         try:
-            return btype.Note.from_obj(self.sq(models.Note).filter(
-                and_(models.Note.id == id, models.Note.action != const.ACTION_DELETE),
-            ).one()).struct
+            note = self.session.query(models.Note).filter(
+                (models.Note.id == id)
+                & (models.Note.action != const.ACTION_DELETE)
+            ).one()
+
+            return btype.Note >> note
         except NoResultFound:
             raise DBusException('models.Note not found')
 

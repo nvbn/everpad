@@ -538,3 +538,16 @@ class MethodsCase(unittest.TestCase):
 
         remote_note = btype.Note << self.service.get_note(note.id)
         self.assertEqual(remote_note.title, note.title)
+
+    def test_get_note_by_guid(self):
+        """Test get note method"""
+        note = models.Note(
+            title='title',
+            guid='guid',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        remote_note = btype.Note << self.service.get_note_by_guid(note.guid)
+        self.assertEqual(remote_note.title, note.title)

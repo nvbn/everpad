@@ -44,6 +44,7 @@ class ProviderService(dbus.service.Object):
         out_signature=btype.Note.signature,
     )
     def get_note(self, id):
+        """Get nite by id"""
         try:
             note = self.session.query(models.Note).filter(
                 (models.Note.id == id)
@@ -59,12 +60,15 @@ class ProviderService(dbus.service.Object):
         out_signature=btype.Note.signature,
     )
     def get_note_by_guid(self, guid):
+        """Get note by guid"""
         try:
-            return btype.Note.from_obj(self.sq(models.Note).filter(and_(
-                models.Note.guid == guid,
-                models.Note.action != const.ACTION_DELETE,
-                models.Note.action != const.ACTION_CONFLICT,
-            )).one()).struct
+            note = self.session.query(models.Note).filter(
+                (models.Note.guid == guid)
+                & (models.Note.action != const.ACTION_DELETE)
+                & (models.Note.action != const.ACTION_CONFLICT)
+            ).one()
+
+            return btype.Note >> note
         except NoResultFound:
             raise DBusException('models.Note not found')
 

@@ -74,13 +74,14 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
-        out_signature='a%s' % btype.Note.signature,
+        out_signature='a{}'.format(btype.Note.signature),
     )
     def get_note_alternatives(self, id):
-        qs = self.sq(models.Note).filter(
+        """Get note conflict alternatives"""
+        notes = self.session.query(models.Note).filter(
             models.Note.conflict_parent_id == id,
-        )
-        return map(lambda note: btype.Note.from_obj(note).struct, qs.all())
+        ).all()
+        return btype.Note.list >> notes
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='saiaiiiii',

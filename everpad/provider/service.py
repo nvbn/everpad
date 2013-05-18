@@ -398,6 +398,19 @@ class ProviderService(dbus.service.Object):
         return btype.Note >> note
 
     @dbus.service.method(
+        "com.everpad.Provider", in_signature='i',
+        out_signature='a{}'.format(btype.Resource.signature),
+    )
+    def get_note_resources(self, note_id):
+        """Get note resources"""
+        resources = self.session.query(models.Resource).filter(
+            (models.Resource.note_id == note_id)
+            & (models.Resource.action != const.ACTION_DELETE)
+        )
+
+        return btype.Resource.list >> resources
+
+    @dbus.service.method(
         "com.everpad.Provider",
         in_signature='%sa%s' % (
             btype.Note.signature,
@@ -496,19 +509,6 @@ class ProviderService(dbus.service.Object):
     )
     def is_authenticated(self):
         return bool(get_auth_token())
-
-    @dbus.service.method(
-        "com.everpad.Provider",
-        in_signature='i', out_signature='a' + btype.Resource.signature,
-    )
-    def get_note_resources(self, note_id):
-        return map(
-            lambda res: btype.Resource.from_obj(res).struct,
-            self.sq(models.Resource).filter(and_(
-                models.Resource.note_id == note_id,
-                models.Resource.action != const.ACTION_DELETE,
-            ))
-        )
 
     @dbus.service.method(
         "com.everpad.Provider",

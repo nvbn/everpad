@@ -228,24 +228,30 @@ class ProviderService(dbus.service.Object):
         out_signature=btype.Notebook.signature,
     )
     def update_notebook(self, notebook_struct):
+        """Update notebook"""
         try:
-            notebook = btype.Notebook.from_tuple(notebook_struct)
-            nb = self.sq(models.Notebook).filter(
-                and_(models.Notebook.id == notebook.id,
-                models.Notebook.action != const.ACTION_DELETE,
-            )).one()
-            if self.sq(models.Notebook).filter(and_(
-                models.Notebook.id != notebook.id,
-                models.Notebook.name == notebook.name,
-            )).count():
+            notebook_btype = btype.Notebook << notebook_struct
+
+            notebook = self.session.query(models.Notebook).filter(
+                (models.Notebook.id == notebook_btype.id)
+                & (models.Notebook.action != const.ACTION_DELETE)
+            ).one()
+
+            if self.session.query(models.Notebook).filter(
+                (models.Notebook.id != notebook_btype.id)
+                & (models.Notebook.name == notebook_btype.name)
+            ).count():
                 raise DBusException(
-                    'models.Notebook with this name already exist',
+                    'Notebook with this name already exist',
                 )
-            nb.action = const.ACTION_CHANGE
+
+            notebook.action = const.ACTION_CHANGE
+            notebook_btype.give_to_obj(notebook)
             self.session.commit()
-            notebook.give_to_obj(nb)
+
             self.data_changed()
-            return btype.Notebook.from_obj(nb).struct
+
+            return btype.Notebook >> notebook
         except NoResultFound:
             raise DBusException('models.Notebook does not exist')
 

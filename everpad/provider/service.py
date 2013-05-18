@@ -260,11 +260,12 @@ class ProviderService(dbus.service.Object):
         out_signature='b',
     )
     def delete_notebook(self, id):
+        """Delete notebook"""
         try:
-            self.sq(models.Notebook).filter(
-                and_(models.Notebook.id == id,
-                models.Notebook.action != const.ACTION_DELETE,
-            )).one().action = const.ACTION_DELETE
+            notebook = self.session.query(models.Notebook).filter(
+                models.Notebook.id == id,
+            ).one()
+            notebook.action = const.ACTION_DELETE
             self.session.commit()
             self.data_changed()
             return True

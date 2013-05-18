@@ -694,3 +694,24 @@ class MethodsCase(unittest.TestCase):
         tags_ids = [tag.id for tag in remote_tags]
 
         self.assertEqual(tags_ids, tags)
+
+    def test_get_tag_notes_count(self):
+        """Test get tag notes count method"""
+        tag = models.Tag(
+            name='tag',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(tag)
+
+        count = 10
+        for i in range(count):
+            self.session.add(models.Note(
+                title='note',
+                action=const.ACTION_NONE,
+                tags=[tag],
+            ))
+        self.session.commit()
+
+        self.assertEqual(
+            self.service.get_tag_notes_count(tag.id), 10,
+        )

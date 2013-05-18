@@ -767,3 +767,27 @@ class MethodsCase(unittest.TestCase):
 
         self.assertEqual(note_btype.title, title)
         self.assertEqual(note.title, title)
+
+    def test_update_note(self):
+        """Test update note"""
+        note = models.Note(
+            title='note',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        new_title = 'title'
+
+        note_btype = btype.Note.from_obj(note)
+        note_btype.title = new_title
+
+        note_btype = btype.Note << self.service.update_note(
+            note_btype.struct,
+        )
+        note = self.session.query(models.Note).filter(
+            models.Note.id == note_btype.id,
+        ).one()
+
+        self.assertEqual(note_btype.title, new_title)
+        self.assertEqual(note.title, new_title)

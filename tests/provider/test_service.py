@@ -791,3 +791,26 @@ class MethodsCase(unittest.TestCase):
 
         self.assertEqual(note_btype.title, new_title)
         self.assertEqual(note.title, new_title)
+
+    def test_get_note_resources(self):
+        """Test get note resources"""
+        note = models.Note(
+            title='note',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        resource = models.Resource(
+            file_name='name',
+            action=const.ACTION_NONE,
+            note_id=note.id,
+        )
+        self.session.add(resource)
+        self.session.commit()
+
+        resources_btype = btype.Resource.list << self.service.get_note_resources(
+            note.id,
+        )
+
+        self.assertEqual(resources_btype[0].file_name, resource.file_name)

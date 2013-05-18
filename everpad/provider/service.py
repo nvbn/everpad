@@ -186,9 +186,12 @@ class ProviderService(dbus.service.Object):
         out_signature='a%s' % btype.Notebook.signature,
     )
     def list_notebooks(self):
-        return map(lambda notebook:
-            btype.Notebook.from_obj(notebook).struct,
-        self.sq(models.Notebook).filter(models.Notebook.action != const.ACTION_DELETE).order_by(models.Notebook.name))
+        """List available notebooks"""
+        notebooks = self.session.query(models.Notebook).filter(
+            models.Notebook.action != const.ACTION_DELETE,
+        ).order_by(models.Notebook.name)
+
+        return btype.Notebook.list >> notebooks
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',

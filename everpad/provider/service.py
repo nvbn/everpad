@@ -289,11 +289,14 @@ class ProviderService(dbus.service.Object):
         out_signature='i',
     )
     def get_tag_notes_count(self, id):
-        return self.sq(models.Note).filter(
-            and_(models.Note.tags.any(models.Tag.id == id),
-            models.Note.action != const.ACTION_DELETE,
-            models.Note.action != const.ACTION_NOEXSIST,
-        )).count()
+        """Get count of notes with tag"""
+        return self.session.query(models.Note).filter(
+            models.Note.tags.any(models.Tag.id == id)
+            & ~models.Note.action.in_((
+                const.ACTION_DELETE, const.ACTION_NOEXSIST,
+                const.ACTION_CONFLICT,
+            ))
+        ).count()
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',

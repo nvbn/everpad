@@ -214,12 +214,14 @@ class ProviderService(dbus.service.Object):
         out_signature='i',
     )
     def get_notebook_notes_count(self, id):
-        return self.sq(models.Note).filter(
-            and_(models.Note.notebook_id == id,
-            models.Note.action != const.ACTION_DELETE,
-            models.Note.action != const.ACTION_NOEXSIST,
-            models.Note.action != const.ACTION_CONFLICT,
-        )).count()
+        """Get count of notes in notebook"""
+        return self.session.query(models.Note).filter(
+            (models.Note.notebook_id == id)
+            & ~models.Note.action.in_((
+                const.ACTION_DELETE, const.ACTION_NOEXSIST,
+                const.ACTION_CONFLICT,
+            ))
+        ).count()
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature=btype.Notebook.signature,

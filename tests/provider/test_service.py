@@ -749,3 +749,21 @@ class MethodsCase(unittest.TestCase):
 
         self.assertEqual(tag_btype.name, new_name)
         self.assertEqual(tag.name, new_name)
+
+    def test_create_note(self):
+        """Test create note"""
+        title = 'note'
+        note_btype = btype.Note(
+            title=title,
+            tags=[],
+        )
+
+        note_btype = btype.Note << self.service.create_note(
+            btype.Note >> note_btype,
+        )
+        note = self.session.query(models.Note).filter(
+            models.Note.id == note_btype.id,
+        ).one()
+
+        self.assertEqual(note_btype.title, title)
+        self.assertEqual(note.title, title)

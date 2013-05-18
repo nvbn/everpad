@@ -294,21 +294,25 @@ class ProviderService(dbus.service.Object):
         out_signature='b',
     )
     def delete_tag(self, id):
+        """Delete tag"""
         try:
-            tag = self.sq(models.Tag).filter(and_(
-                models.Tag.id == id,
-                models.Tag.action != const.ACTION_DELETE,
-            )).one()
+            tag = self.session.query(models.Tag).filter(
+                (models.Tag.id == id)
+                & (models.Tag.action != const.ACTION_DELETE)
+            ).one()
+
             tag.action = const.ACTION_DELETE
-            for note in self.sq(models.Note).filter(
+
+            for note in self.session.query(models.Note).filter(
                 models.Note.tags.contains(tag),
             ).all():
                 note.tags.remove(tag)
+
             self.session.commit()
             self.data_changed()
             return True
         except NoResultFound:
-            raise DBusException('models.Tag does not exist')
+            raise DBusException('Tag does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature=btype.Tag.signature,

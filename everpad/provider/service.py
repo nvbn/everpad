@@ -349,19 +349,23 @@ class ProviderService(dbus.service.Object):
         in_signature=btype.Note.signature,
         out_signature=btype.Note.signature,
     )
-    def create_note(self, data):
+    def create_note(self, note_struct):
+        """Create new note"""
         note = models.Note(
             action=const.ACTION_NOEXSIST,
         )
-        dbus_note = btype.Note.from_tuple(data)
-        dbus_note.id = None
-        dbus_note.give_to_obj(note)
+        note_btype = btype.Note << note_struct
+        note_btype.give_to_obj(note)
+
+        note.id = None
         note.updated = int(time.time() * 1000)
         note.created = int(time.time() * 1000)
+
         self.session.add(note)
         self.session.commit()
         self.data_changed()
-        return btype.Note.from_obj(note).struct
+
+        return btype.Note >> note
 
     @dbus.service.method(
         "com.everpad.Provider",

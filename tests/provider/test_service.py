@@ -597,3 +597,27 @@ class MethodsCase(unittest.TestCase):
         ids = [notebook.id for notebook in remote_notebooks]
 
         self.assertItemsEqual(notebooks, ids)
+
+    def test_get_notebook(self):
+        """Test get notebook method"""
+        notebook = models.Notebook(
+            name='notebook',
+            action=const.ACTION_NONE,
+        )
+        deleted_notebook = models.Notebook(
+            name='deleted notebook',
+            action=const.ACTION_DELETE,
+        )
+        self.session.add(notebook)
+        self.session.add(deleted_notebook)
+        self.session.commit()
+
+        remote_notebook = btype.Notebook << self.service.get_notebook(
+            notebook.id,
+        )
+        self.assertEqual(notebook.name, remote_notebook.name)
+
+        with self.assertRaises(DBusException):
+            self.service.get_notebook(
+                deleted_notebook.id,
+            )

@@ -319,26 +319,30 @@ class ProviderService(dbus.service.Object):
         out_signature=btype.Tag.signature,
     )
     def update_tag(self, tag_struct):
+        """Update tag"""
         try:
-            tag = btype.Tag.from_tuple(tag_struct)
-            tg = self.sq(models.Tag).filter(
-                and_(models.Tag.id == tag.id,
-                models.Tag.action != const.ACTION_DELETE,
-            )).one()
-            if self.sq(models.Tag).filter(and_(
-                models.Tag.id != tag.id,
-                models.Tag.name == tag.name,
-            )).count():
+            tag_btype = btype.Tag << tag_struct
+            tag = self.session.query(models.Tag).filter(
+                (models.Tag.id == tag_btype.id)
+                & (models.Tag.action != const.ACTION_DELETE)
+            ).one()
+
+            if self.session.query(models.Tag).filter(
+                (models.Tag.id != tag_btype.id)
+                & (models.Tag.name == tag_btype.name)
+            ).count():
                 raise DBusException(
-                    'models.Tag with this name already exist',
+                    'Tag with this name already exist',
                 )
-            tg.action = const.ACTION_CHANGE
+
+            tag.action = const.ACTION_CHANGE
+            tag_btype.give_to_obj(tag)
             self.session.commit()
-            tag.give_to_obj(tg)
             self.data_changed()
-            return btype.Tag.from_obj(tg).struct
+
+            return btype.Tag >> tag
         except NoResultFound:
-            raise DBusException('models.Tag does not exist')
+            raise DBusException('Tag does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider",

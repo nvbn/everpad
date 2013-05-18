@@ -728,3 +728,24 @@ class MethodsCase(unittest.TestCase):
         self.service.delete_tag(tag.id)
 
         self.assertEqual(tag.action, const.ACTION_DELETE)
+
+    def test_update_tag(self):
+        """Test update tag method"""
+        tag = models.Tag(
+            name='tag',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(tag)
+        self.session.commit()
+
+        new_name = 'name'
+
+        tag_btype = btype.Tag.from_obj(tag)
+        tag_btype.name = new_name
+
+        tag_btype = btype.Tag << self.service.update_tag(
+            tag_btype.struct,
+        )
+
+        self.assertEqual(tag_btype.name, new_name)
+        self.assertEqual(tag.name, new_name)

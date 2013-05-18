@@ -80,10 +80,8 @@ class NoteFilterer(object):
     def all(self):
         """Get result"""
         return self.session.query(models.Note).filter(and_(
-            ~models.Note.action.in_((
-                const.ACTION_DELETE, const.ACTION_NOEXSIST,
-                const.ACTION_CONFLICT,
-            )), *self._filters
+            ~models.Note.action.in_(const.DISABLED_ACTIONS),
+            *self._filters
         )).order_by(self._order)
 
 
@@ -140,8 +138,7 @@ class ProviderService(dbus.service.Object):
         try:
             note = self.session.query(models.Note).filter(
                 (models.Note.guid == guid)
-                & (models.Note.action != const.ACTION_DELETE)
-                & (models.Note.action != const.ACTION_CONFLICT)
+                & ~models.Note.action.in_(const.DISABLED_ACTIONS)
             ).one()
 
             return btype.Note >> note
@@ -217,10 +214,7 @@ class ProviderService(dbus.service.Object):
         """Get count of notes in notebook"""
         return self.session.query(models.Note).filter(
             (models.Note.notebook_id == id)
-            & ~models.Note.action.in_((
-                const.ACTION_DELETE, const.ACTION_NOEXSIST,
-                const.ACTION_CONFLICT,
-            ))
+            & ~models.Note.action.in_(const.DISABLED_ACTIONS)
         ).count()
 
     @dbus.service.method(
@@ -292,10 +286,7 @@ class ProviderService(dbus.service.Object):
         """Get count of notes with tag"""
         return self.session.query(models.Note).filter(
             models.Note.tags.any(models.Tag.id == id)
-            & ~models.Note.action.in_((
-                const.ACTION_DELETE, const.ACTION_NOEXSIST,
-                const.ACTION_CONFLICT,
-            ))
+            & ~models.Note.action.in_(const.DISABLED_ACTIONS)
         ).count()
 
     @dbus.service.method(

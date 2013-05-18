@@ -161,7 +161,7 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='saiaiiiii',
-        out_signature='a%s' % btype.Note.signature,
+        out_signature='a{}'.format(btype.Note.signature),
     )
     def find_notes(
         self, words, notebooks, tags, place,
@@ -183,7 +183,7 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
-        out_signature='a%s' % btype.Notebook.signature,
+        out_signature='a{}'.format(btype.Notebook.signature),
     )
     def list_notebooks(self):
         """List available notebooks"""
@@ -274,14 +274,15 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
-        out_signature='a%s' % btype.Tag.signature,
+        out_signature='a{}'.format(btype.Tag.signature),
     )
     def list_tags(self):
-        return map(lambda tag:
-            btype.Tag.from_obj(tag).struct,
-        self.sq(models.Tag).filter(
+        """List all tags"""
+        tags = self.session.query(models.Tag).filter(
             models.Tag.action != const.ACTION_DELETE,
-        ).order_by(models.Tag.name))
+        ).order_by(models.Tag.name)
+
+        return btype.Tag.list >> tags
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',

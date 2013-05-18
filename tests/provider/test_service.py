@@ -715,3 +715,16 @@ class MethodsCase(unittest.TestCase):
         self.assertEqual(
             self.service.get_tag_notes_count(tag.id), 10,
         )
+
+    def test_delete_tag(self):
+        """Test delete tag"""
+        tag = models.Tag(
+            name='tag',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(tag)
+        self.session.commit()
+
+        self.service.delete_tag(tag.id)
+
+        self.assertEqual(tag.action, const.ACTION_DELETE)

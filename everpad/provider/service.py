@@ -372,24 +372,30 @@ class ProviderService(dbus.service.Object):
         in_signature=btype.Note.signature,
         out_signature=btype.Note.signature,
     )
-    def update_note(self, note):
-        received_note = btype.Note.from_tuple(note)
+    def update_note(self, note_struct):
+        """Update note"""
+        note_btype = btype.Note << note_struct
+
         try:
-            note = self.sq(models.Note).filter(
-                and_(models.Note.id == received_note.id,
-                models.Note.action != const.ACTION_DELETE,
-            )).one()
+            note = self.session.query(models.Note).filter(
+                (models.Note.id == note_btype.id)
+                & (models.Note.action != const.ACTION_DELETE)
+            ).one()
         except NoResultFound:
-            raise DBusException('models.Note not found')
-        received_note.give_to_obj(note)
+            raise DBusException('Note not found')
+
+        note_btype.give_to_obj(note)
+
         if note.action == const.ACTION_NOEXSIST:
             note.action = const.ACTION_CREATE
         elif note.action != const.ACTION_CREATE:
             note.action = const.ACTION_CHANGE
+
         note.updated_local = int(time.time() * 1000)
         self.session.commit()
         self.data_changed()
-        return btype.Note.from_obj(note).struct
+
+        return btype.Note >> note
 
     @dbus.service.method(
         "com.everpad.Provider",

@@ -642,3 +642,24 @@ class MethodsCase(unittest.TestCase):
         self.assertEqual(
             self.service.get_notebook_notes_count(notebook.id), 10,
         )
+
+    def test_update_notebook(self):
+        """Test update notebook method"""
+        notebook = models.Notebook(
+            name='notebook',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(notebook)
+        self.session.commit()
+
+        new_name = 'name'
+
+        notebook_btype = btype.Notebook.from_obj(notebook)
+        notebook_btype.name = new_name
+
+        notebook_btype = btype.Notebook << self.service.update_notebook(
+            notebook_btype.struct,
+        )
+
+        self.assertEqual(notebook_btype.name, new_name)
+        self.assertEqual(notebook.name, new_name)

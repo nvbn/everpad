@@ -9,7 +9,6 @@ from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
 from everpad.basetypes import (
     Note, Notebook, Tag, Resource, Place,
-    NONE_ID, NONE_VAL,
 )
 from everpad import const
 from everpad.provider import models
@@ -68,13 +67,13 @@ class ServiceTestCase(unittest.TestCase):
         get_place = lambda num: '123' if num < 50 else '456'
         for i in range(100):
             notes.append(Note.from_tuple(self.service.create_note(Note(
-                id=NONE_ID,
+                id=const.NONE_ID,
                 title='New note',
                 content="New note content",
                 tags=['123', '345'],
                 notebook=notebook.id,
-                created=NONE_VAL,
-                updated=NONE_VAL,
+                created=const.NONE_VAL,
+                updated=const.NONE_VAL,
                 place=get_place(i),
             ).struct)))
         filtered = []
@@ -88,7 +87,7 @@ class ServiceTestCase(unittest.TestCase):
                 Note.from_tuple, self.service.find_notes(
                     '', dbus.Array([], signature='i'),
                     dbus.Array([], signature='i'), 0,
-                    100, Note.ORDER_UPDATED_DESC, -1,
+                    100, const.ORDER_UPDATED_DESC, -1,
                 ),
             )),
         )
@@ -120,13 +119,13 @@ class ServiceTestCase(unittest.TestCase):
             self.service.create_notebook('test', None),
         )
         self.service.create_note(Note(
-            id=NONE_ID,
+            id=const.NONE_ID,
             title='New note',
             content="New note content",
             tags=tags,
             notebook=notebook.id,
-            created=NONE_VAL,
-            updated=NONE_VAL,
+            created=const.NONE_VAL,
+            updated=const.NONE_VAL,
             place='',
         ).struct)
         remote_tags = map(Tag.from_tuple, self.service.list_tags())
@@ -168,20 +167,20 @@ class ServiceTestCase(unittest.TestCase):
             self.service.create_notebook('test', None),
         )
         struct = self.service.create_note(Note(
-            id=NONE_ID,
+            id=const.NONE_ID,
             title='New note',
             content="New note content",
             tags=[],
             notebook=notebook.id,
-            created=NONE_VAL,
-            updated=NONE_VAL,
+            created=const.NONE_VAL,
+            updated=const.NONE_VAL,
             place='',
         ).struct)
         note = Note.from_tuple(self.service.update_note(struct))
         resources = []
         for i in range(100):
             resources.append(Resource(
-                id=NONE_ID,
+                id=const.NONE_ID,
                 file_name="name/%d" % i,
                 file_path="path/%d" % i,
                 mime='image/png',
@@ -332,190 +331,196 @@ class ServiceTestCase(unittest.TestCase):
 
 
 class FindTestCase(unittest.TestCase):
+    """Find notes method test case"""
+
     def setUp(self):
-        self.service = ProviderService()
-        self.service._session = get_db_session()
-        models.Note.session = self.service._session  # TODO: fix that shit
-        self.notebook = Notebook.from_tuple(
-            self.service.create_notebook('test', None),
-        )
-        self.notebook2 = Notebook.from_tuple(
-            self.service.create_notebook('test2', None),
-        )
-        self.notebook3 = Notebook.from_tuple(
-            self.service.create_notebook(u'Блокнот', None),
-        )
+        self._create_service()
+        self._create_notebooks()
+        self._create_notes()
+
+    def _create_notes(self):
+        """Create notes"""
         notes = [
             self.service.create_note(Note(
-                id=NONE_ID,
+                id=const.NONE_ID,
                 title='New note',
                 content="New note content",
                 tags=['ab', 'cd'],
                 notebook=self.notebook.id,
-                created=NONE_VAL,
-                updated=NONE_VAL,
+                created=const.NONE_VAL,
+                updated=const.NONE_VAL,
                 place='first',
                 pinnded=False,
             ).struct),
-            self.service.create_note(Note(
-                id=NONE_ID,
+            self.service.create_note(btype.Note(
+                id=const.NONE_ID,
                 title='Old note',
                 content="Old note content",
                 tags=['ef', 'gh'],
                 notebook=self.notebook2.id,
-                created=NONE_VAL,
-                updated=NONE_VAL,
+                created=const.NONE_VAL,
+                updated=const.NONE_VAL,
                 place='second',
                 pinnded=False,
             ).struct),
-            self.service.create_note(Note(
-                id=NONE_ID,
+            self.service.create_note(btype.Note(
+                id=const.NONE_ID,
                 title='not',
                 content="oke",
                 tags=['ab', 'gh'],
                 notebook=self.notebook.id,
-                created=NONE_VAL,
-                updated=NONE_VAL,
+                created=const.NONE_VAL,
+                updated=const.NONE_VAL,
                 place='second',
                 pinnded=True,
             ).struct),
-            self.service.create_note(Note(
-                id=NONE_ID,
+            self.service.create_note(btype.Note(
+                id=const.NONE_ID,
                 title=u'Заметка',
                 content=u"Заметка",
                 tags=[u'тэг'],
                 notebook=self.notebook.id,
-                created=NONE_VAL,
-                updated=NONE_VAL,
+                created=const.NONE_VAL,
+                updated=const.NONE_VAL,
                 place=u'место',
                 pinnded=False,
             ).struct),
-            self.service.create_note(Note(
-                id=NONE_ID,
+            self.service.create_note(btype.Note(
+                id=const.NONE_ID,
                 title=u'заметка',
                 content=u"заметка",
                 tags=[u'тэг'],
                 notebook=self.notebook.id,
-                created=NONE_VAL,
-                updated=NONE_VAL,
+                created=const.NONE_VAL,
+                updated=const.NONE_VAL,
                 place=u'место',
                 pinnded=False,
             ).struct),
         ]
-        self.notes = map(lambda note:
-            Note.from_tuple(self.service.update_note(note)),
-        notes)
+        self.notes = btype.Note.list << [
+            self.service.update_note(note) for note in notes
+        ]
+
+    def _create_notebooks(self):
+        """Create notebooks"""
+        self.notebook =\
+            btype.Notebook << self.service.create_notebook('test', None)
+        self.notebook2 =\
+            btype.Notebook << self.service.create_notebook('test2', None)
+        self.notebook3 =\
+            btype.Notebook << self.service.create_notebook(u'Блокнот', None)
+
+    def _create_service(self):
+        """Create service"""
+        self.service = ProviderService()
+        self.service._session = get_db_session()
+        models.Note.session = self.service._session  # TODO: fix that shit
 
     def _to_ids(self, items):
         return set(map(lambda item: item.id, items))
 
     def _find(self, *args, **kwargs):
-        return map(Note.from_tuple,
-            self.service.find_notes(*args, **kwargs))
+        return btype.Note.list << self.service.find_notes(*args, **kwargs)
 
     def test_by_words(self):
         """Test notes find by words"""
-        all = self._find(
+        all_notes = self._find(
             'not', dbus.Array([], signature='i'),
             dbus.Array([], signature='i'), 0,
-            100, Note.ORDER_UPDATED_DESC, -1,
+            100, const.ORDER_UPDATED_DESC, -1,
         )
-        self.assertEqual(
-            set(self._to_ids(all)),
-            set(self._to_ids(self.notes[:-2])),
+        self.assertItemsEqual(
+            self._to_ids(all_notes), self._to_ids(self.notes[:-2]),
         )
         two = self._find(
             'note', dbus.Array([], signature='i'),
             dbus.Array([], signature='i'), 0,
-            100, Note.ORDER_UPDATED_DESC, -1,
+            100, const.ORDER_UPDATED_DESC, -1,
         )
-        self.assertEqual(
-            set(self._to_ids(two)),
-            set(self._to_ids(self.notes[:2])),
+        self.assertItemsEqual(
+            self._to_ids(two), self._to_ids(self.notes[:2]),
         )
         blank = self._find(
             'not note', dbus.Array([], signature='i'),
             dbus.Array([], signature='i'), 0,
-            100, Note.ORDER_UPDATED_DESC, -1,
+            100, const.ORDER_UPDATED_DESC, -1,
         )
         self.assertEqual(len(blank), 0)
 
     def test_by_tags(self):
-        """Test notef find by tags"""
-        tags = map(Tag.from_tuple, self.service.list_tags())
+        """Test note find by tags"""
+        tags = btype.Tag.list << self.service.list_tags()
         first_last = self._find(
             '', dbus.Array([], signature='i'),
-            [tags[0].id], 0, 100, Note.ORDER_UPDATED_DESC, -1,
+            [tags[0].id], 0, 100, const.ORDER_UPDATED_DESC, -1,
         )
-        self.assertEqual(
-            set(self._to_ids(first_last)),
-            set(self._to_ids([self.notes[0], self.notes[2]])),
+        self.assertItemsEqual(
+            self._to_ids(first_last), [self.notes[0].id, self.notes[2].id],
         )
         second = self._find(
             '', dbus.Array([], signature='i'),
             [tags[2].id], 0, 100,
-            Note.ORDER_UPDATED_DESC, -1,
+            const.ORDER_UPDATED_DESC, -1,
         )
-        self.assertEqual(
-            self._to_ids(second), set([self.notes[1].id]),
+        self.assertItemsEqual(
+            self._to_ids(second), [self.notes[1].id],
         )
-        all = self._find(
+        all_notes = self._find(
             '', dbus.Array([], signature='i'),
             map(lambda tag: tag.id, tags), 0, 100,
-            Note.ORDER_UPDATED_DESC, -1,
+            const.ORDER_UPDATED_DESC, -1,
         )
-        self.assertEqual(
-            self._to_ids(all), self._to_ids(self.notes),
+        self.assertItemsEqual(
+            self._to_ids(all_notes), self._to_ids(self.notes),
         )
 
     def test_by_notebooks(self):
         """Test find note by notebooks"""
-        all = self._find(
+        all_notebooks = self._find(
             '', self._to_ids([self.notebook, self.notebook2]),
             dbus.Array([], signature='i'), 0,
-            100, Note.ORDER_UPDATED_DESC, -1,
+            100, const.ORDER_UPDATED_DESC, -1,
         )
-        self.assertEqual(
-            self._to_ids(all), self._to_ids(self.notes),
+        self.assertItemsEqual(
+            self._to_ids(all_notebooks), self._to_ids(self.notes),
         )
         second = self._find(
             '', [self.notebook2.id],
             dbus.Array([], signature='i'), 0,
-            100, Note.ORDER_UPDATED_DESC, -1,
+            100, const.ORDER_UPDATED_DESC, -1,
         )
-        self.assertEqual(
-            self._to_ids(second), set([self.notes[1].id]),
+        self.assertItemsEqual(
+            self._to_ids(second), [self.notes[1].id],
         )
 
     def test_combine(self):
         """Test find by combination"""
-        places = map(Place.from_tuple, self.service.list_places())
-        tags = map(Tag.from_tuple, self.service.list_tags())
+        places = btype.Place.list << self.service.list_places()
+        tags = btype.Tag.list << self.service.list_tags()
         first = self._find(
             'new', [self.notebook.id], [tags[0].id], places[0].id,
-            100, Note.ORDER_UPDATED_DESC, False,
+            100, const.ORDER_UPDATED_DESC, False,
         )
-        self.assertEqual(
-            self._to_ids(first), set([self.notes[0].id]),
+        self.assertItemsEqual(
+            self._to_ids(first), [self.notes[0].id],
         )
         last = self._find(
             'oke', [self.notebook.id], [tags[0].id], places[1].id,
-            100, Note.ORDER_UPDATED_DESC, True,
+            100, const.ORDER_UPDATED_DESC, True,
         )
-        self.assertEqual(
-            self._to_ids(last), set([self.notes[2].id]),
+        self.assertItemsEqual(
+            self._to_ids(last), [self.notes[2].id],
         )
 
     def test_unicode_ignorecase(self):
         """Test unicode ignorecase"""
-        all = self._find(
+        all_notes = self._find(
             u'заметка', dbus.Array([], signature='i'),
             dbus.Array([], signature='i'), 0,
-            100, Note.ORDER_UPDATED_DESC, -1,
+            100, const.ORDER_UPDATED_DESC, -1,
         )
-        self.assertEqual(
-            set(self._to_ids(all)),
-            set(self._to_ids(self.notes[-2:])),
+        self.assertItemsEqual(
+            self._to_ids(all_notes), self._to_ids(self.notes[-2:]),
         )
 
 

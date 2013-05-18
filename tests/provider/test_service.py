@@ -663,3 +663,16 @@ class MethodsCase(unittest.TestCase):
 
         self.assertEqual(notebook_btype.name, new_name)
         self.assertEqual(notebook.name, new_name)
+
+    def test_delete_notebook(self):
+        """Test delete notebook"""
+        notebook = models.Notebook(
+            name='notebook',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(notebook)
+        self.session.commit()
+
+        self.service.delete_notebook(notebook.id)
+
+        self.assertEqual(notebook.action, const.ACTION_DELETE)

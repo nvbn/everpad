@@ -253,7 +253,7 @@ class ProviderService(dbus.service.Object):
 
             return btype.Notebook >> notebook
         except NoResultFound:
-            raise DBusException('models.Notebook does not exist')
+            raise DBusException('Notebook does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
@@ -269,7 +269,7 @@ class ProviderService(dbus.service.Object):
             self.data_changed()
             return True
         except NoResultFound:
-            raise DBusException('models.Notebook does not exist')
+            raise DBusException('Notebook does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',

@@ -676,3 +676,21 @@ class MethodsCase(unittest.TestCase):
         self.service.delete_notebook(notebook.id)
 
         self.assertEqual(notebook.action, const.ACTION_DELETE)
+
+    def test_list_tags(self):
+        """Test list tags"""
+        tags = []
+
+        for name in range(10):
+            tag = models.Tag(
+                name=str(name),
+                action=const.ACTION_NONE,
+            )
+            self.session.add(tag)
+            self.session.commit()
+            tags.append(tag.id)
+
+        remote_tags = btype.Tag.list << self.service.list_tags()
+        tags_ids = [tag.id for tag in remote_tags]
+
+        self.assertEqual(tags_ids, tags)

@@ -580,3 +580,20 @@ class MethodsCase(unittest.TestCase):
             note.id,
         )
         self.assertEqual(remote_notes[0].id, alternative.id)
+
+    def test_list_notebooks(self):
+        """Test list notebooks method"""
+        notebooks = []
+        for name in range(10):
+            notebook = models.Notebook(
+                name=str(name),
+                action=const.ACTION_NONE,
+            )
+            self.session.add(notebook)
+            self.session.commit()
+            notebooks.append(notebook.id)
+
+        remote_notebooks = btype.Notebook.list << self.service.list_notebooks()
+        ids = [notebook.id for notebook in remote_notebooks]
+
+        self.assertItemsEqual(notebooks, ids)

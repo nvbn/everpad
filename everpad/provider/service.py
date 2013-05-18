@@ -11,6 +11,82 @@ import dbus.service
 import time
 
 
+class NoteFilterer(object):
+    """Create list with wiltered and sorted notes"""
+
+    def __init__(self, session):
+        self._filters = []
+        self._order = None
+        self.session = session
+
+    def by_words(self, words):
+        """Add filter by words"""
+        if words:
+            words = '%' + words.replace(' ', '%').lower() + '%'
+            self._filters.append(
+                func.lower(models.Note.title).like(words)
+                | func.lower(models.Note.content).like(words)
+                | models.Note.tags.any(
+                    func.lower(models.Tag.name).like(words),
+                )
+                | models.Note.notebook.has(
+                    func.lower(models.Notebook.name).like(words)
+                )
+            )
+        return self
+
+    def by_notebooks(self, notebooks):
+        """Add filter by notebooks"""
+        if notebooks:
+            self._filters.append(
+                models.Note.notebook_id.in_(notebooks),
+            )
+        return self
+
+    def by_tags(self, tags):
+        """Add filter by tags"""
+        if tags:
+            self._filters.append(
+                models.Note.tags.any(models.Tag.id.in_(tags)),
+            )
+        return self
+
+    def by_place(self, place):
+        """Add filter by place"""
+        if place:
+            self._filters.append(
+                models.Note.place_id == place,
+            )
+        return self
+
+    def by_pinnded(self, pinnded):
+        """By pinnded status"""
+        if pinnded != const.NOT_PINNDED:
+            self._filters.append(
+                models.Note.pinnded == pinnded,
+            )
+        return self
+
+    def order_by(self, order):
+        """Set ordering"""
+        self._order = {
+            btype.Note.ORDER_TITLE: models.Note.title,
+            btype.Note.ORDER_UPDATED: models.Note.updated,
+            btype.Note.ORDER_TITLE_DESC: models.Note.title.desc(),
+            btype.Note.ORDER_UPDATED_DESC: models.Note.updated.desc(),
+        }[order]
+        return self
+
+    def all(self):
+        """Get result"""
+        return self.session.query(models.Note).filter(and_(
+            ~models.Note.action.in_((
+                const.ACTION_DELETE, const.ACTION_NOEXSIST,
+                const.ACTION_CONFLICT,
+            )), *self._filters
+        )).order_by(self._order)
+
+
 class ProviderServiceQObject(QObject):
     """Signals holder for service"""
     authenticate_signal = Signal(str)
@@ -87,45 +163,23 @@ class ProviderService(dbus.service.Object):
         "com.everpad.Provider", in_signature='saiaiiiii',
         out_signature='a%s' % btype.Note.signature,
     )
-    def find_notes(self, words, notebooks, tags, place,
-        limit=100, order=btype.Note.ORDER_UPDATED, pinnded=-1,
+    def find_notes(
+        self, words, notebooks, tags, place,
+        limit=const.DEFAULT_LIMIT, order=const.ORDER_UPDATED,
+        pinnded=const.NOT_PINNDED,
     ):
-        filters = []
-        if words:
-            words = '%' + words.replace(' ', '%').lower() + '%'
-            filters.append(or_(  # TODO: use xapian
-                func.lower(models.Note.title).like(words),
-                func.lower(models.Note.content).like(words),
-                models.Note.tags.any(func.lower(models.Tag.name).like(words)),
-                models.Note.notebook.has(func.lower(models.Notebook.name).like(words)),
-            ))
-        if notebooks:
-            filters.append(
-                models.Note.notebook_id.in_(notebooks),
-            )
-        if tags:
-            filters.append(
-                models.Note.tags.any(models.Tag.id.in_(tags)),
-            )
-        if place:
-            filters.append(
-                models.Note.place_id == place,
-            )
-        if pinnded != -1:
-            filters.append(
-                models.Note.pinnded == pinnded,
-            )
-        qs = self.sq(models.Note).filter(and_(
-            models.Note.action != const.ACTION_DELETE,
-            models.Note.action != const.ACTION_NOEXSIST,
-            models.Note.action != const.ACTION_CONFLICT,
-        *filters)).order_by({
-            btype.Note.ORDER_TITLE: models.Note.title,
-            btype.Note.ORDER_UPDATED: models.Note.updated,
-            btype.Note.ORDER_TITLE_DESC: models.Note.title.desc(),
-            btype.Note.ORDER_UPDATED_DESC: models.Note.updated.desc(),
-        }[order]).limit(limit)
-        return map(lambda note: btype.Note.from_obj(note).struct, qs.all())
+        """Find notes by filters"""
+        notes = btype.Note.list >> NoteFilterer(self.session)\
+            .by_words(words)\
+            .by_notebooks(notebooks)\
+            .by_tags(tags)\
+            .by_place(place)\
+            .by_pinnded(pinnded)\
+            .order_by(order)\
+            .all()\
+            .limit(limit)
+
+        return notes
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',

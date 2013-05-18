@@ -146,7 +146,7 @@ class ProviderService(dbus.service.Object):
 
             return btype.Note >> note
         except NoResultFound:
-            raise DBusException('models.Note not found')
+            raise DBusException('Note not found')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',
@@ -198,13 +198,16 @@ class ProviderService(dbus.service.Object):
         out_signature=btype.Notebook.signature,
     )
     def get_notebook(self, id):
+        """Get notebook by id"""
         try:
-            return btype.Notebook.from_obj(self.sq(models.Notebook).filter(
-                and_(models.Notebook.id == id,
-                models.Notebook.action != const.ACTION_DELETE,
-            )).one()).struct
+            notebook = self.session.query(models.Notebook).filter(
+                (models.Notebook.id == id)
+                & (models.Notebook.action != const.ACTION_DELETE)
+            ).one()
+
+            return btype.Notebook >> notebook
         except NoResultFound:
-            raise DBusException('models.Notebook does not exist')
+            raise DBusException('Notebook does not exist')
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='i',

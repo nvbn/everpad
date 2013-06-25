@@ -12,7 +12,7 @@ from everpad.basetypes import (
     Note, Notebook, Tag, Resource, Place,
 )
 from everpad import const
-from everpad.provider import models
+from everpad.provider import models, tools
 import unittest
 import dbus
 import everpad.basetypes as btype
@@ -874,3 +874,18 @@ class MethodsCase(unittest.TestCase):
         self.service.remove_authentication()
         self.service.qobject\
             .remove_authenticate_signal.emit.assert_called_once_with()
+
+    def test_list_places(self):
+        """Test list places"""
+        place_ids = []
+        for num in range(10):
+            place = models.Place(
+                name='{}'.format(num),
+            )
+            self.session.add(place)
+            self.session.commit()
+            place_ids.append(place.id)
+
+        places_btype = btype.Place.list << self.service.list_places()
+        for place_btype in places_btype:
+            self.assertIn(place_btype.id, place_ids)

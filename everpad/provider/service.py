@@ -519,6 +519,7 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='b',
     )
     def is_authenticated(self):
+        """Check is client authenticated"""
         return bool(get_auth_token())
 
     @dbus.service.method(
@@ -526,10 +527,9 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='a%s' % btype.Place.signature,
     )
     def list_places(self):
-        place = map(lambda place:
-            btype.Place.from_obj(place).struct,
-        self.sq(models.Place).all())
-        return place
+        """List places"""
+        places = self.session.query(models.Place).all()
+        return btype.Place.list >> places
 
     @dbus.service.method(
         "com.everpad.Provider",

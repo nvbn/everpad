@@ -27,6 +27,9 @@ class BaseSyncCase(unittest.TestCase):
         self._create_user_store()
         self._create_sync()
 
+    def tearDown(self):
+        self.session.flush()
+
     def _create_db_session(self):
         """Create database session"""
         self.session = get_db_session()

@@ -536,25 +536,26 @@ class MethodsCase(unittest.TestCase):
         self.service.app = MagicMock()
         self.service.sync = MagicMock()
 
-    def test_get_note(self):
-        """Test get note method"""
+    def _create_note(self, **kwargs):
         note = models.Note(
-            title='title',
+            title='note',
             action=const.ACTION_NONE,
+            **kwargs
         )
         self.session.add(note)
         self.session.commit()
+        return note
+
+    def test_get_note(self):
+        """Test get note method"""
+        note = self._create_note()
 
         remote_note = btype.Note << self.service.get_note(note.id)
         self.assertEqual(remote_note.title, note.title)
 
     def test_get_note_by_guid(self):
         """Test get note method"""
-        note = models.Note(
-            title='title',
-            guid='guid',
-            action=const.ACTION_NONE,
-        )
+        note = self._create_note(guid='guid')
         self.session.add(note)
         self.session.commit()
 
@@ -563,13 +564,7 @@ class MethodsCase(unittest.TestCase):
 
     def test_get_note_alternatives(self):
         """Test get note alternatives"""
-        note = models.Note(
-            title='title',
-            guid='guid',
-            action=const.ACTION_NONE,
-        )
-        self.session.add(note)
-        self.session.commit()
+        note = self._create_note(guid='guid')
 
         alternative = models.Note(
             title='title',
@@ -774,12 +769,7 @@ class MethodsCase(unittest.TestCase):
 
     def test_update_note(self):
         """Test update note"""
-        note = models.Note(
-            title='note',
-            action=const.ACTION_NONE,
-        )
-        self.session.add(note)
-        self.session.commit()
+        note = self._create_note()
 
         new_title = 'title'
 
@@ -798,12 +788,7 @@ class MethodsCase(unittest.TestCase):
 
     def test_get_note_resources(self):
         """Test get note resources"""
-        note = models.Note(
-            title='note',
-            action=const.ACTION_NONE,
-        )
-        self.session.add(note)
-        self.session.commit()
+        note = self._create_note()
 
         resource = models.Resource(
             file_name='name',
@@ -821,12 +806,7 @@ class MethodsCase(unittest.TestCase):
 
     def test_update_note_resources(self):
         """Test update note resources"""
-        note = models.Note(
-            title='note',
-            action=const.ACTION_NONE,
-        )
-        self.session.add(note)
-        self.session.commit()
+        note = self._create_note()
 
         resource = btype.Resource(
             file_name='test',
@@ -841,12 +821,7 @@ class MethodsCase(unittest.TestCase):
 
     def test_delete_note(self):
         """Test delete note"""
-        note = models.Note(
-            title='note',
-            action=const.ACTION_NONE,
-        )
-        self.session.add(note)
-        self.session.commit()
+        note = self._create_note()
 
         self.service.delete_note(note.id)
 
@@ -893,12 +868,7 @@ class MethodsCase(unittest.TestCase):
 
     def test_share_note(self):
         """Test share note"""
-        note = models.Note(
-            title='note',
-            action=const.ACTION_NONE,
-        )
-        self.session.add(note)
-        self.session.commit()
+        note = self._create_note()
 
         self.service.share_note(note.id)
         self.assertEqual(note.share_status, const.SHARE_NEED_SHARE)
@@ -906,13 +876,7 @@ class MethodsCase(unittest.TestCase):
 
     def test_stop_sharing_note(self):
         """Test stop sharing note"""
-        note = models.Note(
-            title='note',
-            action=const.ACTION_NONE,
-            share_status=const.SHARE_SHARED,
-        )
-        self.session.add(note)
-        self.session.commit()
+        note = self._create_note(share_status=const.SHARE_SHARED)
 
         self.service.stop_sharing_note(note.id)
         self.assertEqual(note.share_status, const.SHARE_NEED_STOP)

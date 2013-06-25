@@ -881,3 +881,7 @@ class MethodsCase(unittest.TestCase):
         self.service.stop_sharing_note(note.id)
         self.assertEqual(note.share_status, const.SHARE_NEED_STOP)
         self.service.sync.assert_called_once_with()
+
+    def test_is_first_synced(self):
+        """Test is first synced"""
+        self.assertFalse(self.service.is_first_synced())

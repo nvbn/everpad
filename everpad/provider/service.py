@@ -571,6 +571,7 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='i',
     )
     def get_status(self):
+        """Get sync status"""
         return self.app.sync_thread.status
 
     @dbus.service.method(
@@ -578,6 +579,7 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='s',
     )
     def get_last_sync(self):
+        """Get last sync date"""
         return self.app.sync_thread.last_sync.strftime('%H:%M')
 
     @dbus.service.method(
@@ -585,6 +587,7 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='',
     )
     def sync(self):
+        """Preform sync"""
         if self.app.sync_thread.status != const.STATUS_SYNC:
             self.app.sync_thread.force_sync()
         return
@@ -594,6 +597,7 @@ class ProviderService(dbus.service.Object):
         in_signature='i', out_signature='',
     )
     def set_sync_delay(self, delay):
+        """Change sync delay"""
         self.app.settings.setValue('sync_delay', str(delay))
         self.app.sync_thread.update_timer()
 
@@ -602,17 +606,20 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='i',
     )
     def get_sync_delay(self):
-        return int(self.app.settings.value('sync_delay') or 0) or const.DEFAULT_SYNC_DELAY
+        """Get sync delay"""
+        return int(self.app.settings.value('sync_delay') or 0)\
+            or const.DEFAULT_SYNC_DELAY
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',
         out_signature='b',
     )
     def is_first_synced(self):
-        return bool(self.sq(models.Notebook).filter(and_(
-            models.Notebook.action != const.ACTION_DELETE,
-            models.Notebook.default == True,
-        )).count())
+        """Check is first sync performed"""
+        return bool(self.session.query(models.Notebook).filter(
+            (models.Notebook.action != const.ACTION_DELETE)
+            & (models.Notebook.default == True)
+        ).count())
 
     @dbus.service.method(
         "com.everpad.Provider", in_signature='',

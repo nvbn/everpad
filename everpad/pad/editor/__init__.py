@@ -180,7 +180,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.update_note()
         self.app.provider.update_note(self.note.struct)
         self.app.provider.update_note_resources(
-            self.note.struct, dbus.Array(map(lambda res:
+            self.note.id, dbus.Array(map(lambda res:
                 res.struct, self.resource_edit.resources,
             ), signature=Resource.signature),
         )

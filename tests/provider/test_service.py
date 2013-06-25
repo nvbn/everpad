@@ -847,3 +847,13 @@ class MethodsCase(unittest.TestCase):
         self.service.delete_note(note.id)
 
         self.assertEqual(note.action, const.ACTION_DELETE)
+
+    def test_create_notebook(self):
+        """Test create notebook"""
+        notebook_btype =\
+            btype.Notebook << self.service.create_notebook('test', 'test')
+
+        notebook = self.session.query(models.Notebook).filter(
+            models.Notebook.id == notebook_btype.id,
+        ).one()
+        self.assertEqual(notebook.name, 'test')

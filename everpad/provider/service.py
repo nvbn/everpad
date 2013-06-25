@@ -476,12 +476,14 @@ class ProviderService(dbus.service.Object):
         out_signature=btype.Notebook.signature,
     )
     def create_notebook(self, name, stack):
-        if self.sq(models.Note).filter(
+        """Create new notebook"""
+        if self.session.query(models.Note).filter(
             models.Notebook.name == name,
         ).count():
             raise DBusException(
                 'models.Notebook with this name already exist',
             )
+
         notebook = models.Notebook(
             action=const.ACTION_CREATE,
             name=name, default=False, stack=stack,
@@ -489,7 +491,7 @@ class ProviderService(dbus.service.Object):
         self.session.add(notebook)
         self.session.commit()
         self.data_changed()
-        return btype.Notebook.from_obj(notebook).struct
+        return btype.Notebook >> notebook
 
     @dbus.service.method(
         "com.everpad.Provider",

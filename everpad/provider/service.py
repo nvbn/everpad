@@ -536,9 +536,11 @@ class ProviderService(dbus.service.Object):
         in_signature='i', out_signature='',
     )
     def share_note(self, note_id):
+        """Share note"""
         try:
-            note = self.sq(models.Note).filter(
-                and_(models.Note.id == note_id, models.Note.action != const.ACTION_DELETE),
+            note = self.session.query(models.Note).filter(
+                (models.Note.id == note_id)
+                & (models.Note.action != const.ACTION_DELETE)
             ).one()
             note.share_status = const.SHARE_NEED_SHARE
             self.session.commit()

@@ -534,6 +534,7 @@ class MethodsCase(unittest.TestCase):
         self.service._session = self.session
         self.service.qobject = MagicMock()
         self.service.app = MagicMock()
+        self.service.sync = MagicMock()
 
     def test_get_note(self):
         """Test get note method"""
@@ -889,3 +890,16 @@ class MethodsCase(unittest.TestCase):
         places_btype = btype.Place.list << self.service.list_places()
         for place_btype in places_btype:
             self.assertIn(place_btype.id, place_ids)
+
+    def test_share_note(self):
+        """Test share note"""
+        note = models.Note(
+            title='note',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self.service.share_note(note.id)
+        self.assertEqual(note.share_status, const.SHARE_NEED_SHARE)
+        self.service.sync.assert_called_once_with()

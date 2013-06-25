@@ -121,11 +121,11 @@ class Indicator(QSystemTrayIcon):
                 else:
                     sync_label = self.tr('Last Sync: %s mins ago') % delta_sync
             menu_items = {
-                'create_note'   : [self.tr('Create Note'), self.create],
-                'all_notes'     : [self.tr('All Notes'), self.show_all_notes],
-                'sync'          : [sync_label, Slot()(self.app.provider.sync)],
-                'pin_notes'     : pin_notes,
-                'notes'         : notes,
+                'create_note': [self.tr('Create Note'), self.create],
+                'all_notes': [self.tr('All Notes'), self.show_all_notes],
+                'sync': [sync_label, Slot()(self.app.provider.sync)],
+                'pin_notes': pin_notes,
+                'notes': notes,
             }
             for item in self.app.settings.value('menu-order', DEFAULT_INDICATOR_LAYOUT):
                 if item == 'pin_notes' or item == 'notes':

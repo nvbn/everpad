@@ -355,6 +355,7 @@ class ProviderService(dbus.service.Object):
             action=const.ACTION_NOEXSIST,
         )
         note_btype = btype.Note << note_struct
+        note_btype.id = None
         note_btype.give_to_obj(note)
 
         note.updated = int(time.time() * 1000)

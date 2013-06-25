@@ -626,6 +626,7 @@ class ProviderService(dbus.service.Object):
         out_signature='i',
     )
     def get_api_version(self):
+        """Get api version"""
         return const.API_VERSION
 
     @dbus.service.method(
@@ -633,6 +634,7 @@ class ProviderService(dbus.service.Object):
         out_signature='s',
     )
     def get_settings_value(self, name):
+        """Get settings value"""
         return self.app.settings.value(name, '')
 
     @dbus.service.method(
@@ -640,6 +642,7 @@ class ProviderService(dbus.service.Object):
         out_signature='',
     )
     def set_settings_value(self, name, value):
+        """Set settings value"""
         self.app.settings.setValue(name, value)
         self.settings_changed(name, value)
         return
@@ -648,6 +651,7 @@ class ProviderService(dbus.service.Object):
         "com.everpad.Provider", in_signature='',
     )
     def kill(self):
+        """Kill everpad"""
         self.qobject.terminate.emit()
         return
 
@@ -655,16 +659,19 @@ class ProviderService(dbus.service.Object):
         'com.everpad.provider', signature='i',
     )
     def sync_state_changed(self, state):
+        """Emit when sync state changed"""
         return
 
     @dbus.service.signal(
         'com.everpad.provider', signature='',
     )
     def data_changed(self):
+        """Emit when data changed"""
         return
 
     @dbus.service.signal(
         'com.everpad.provider', signature='ss',
     )
     def settings_changed(self, name, value):
+        """Emit when settings changed"""
         return

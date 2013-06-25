@@ -216,6 +216,7 @@ class MethodsCase(unittest.TestCase):
         self.service.sync = MagicMock()
 
     def _create_note(self, **kwargs):
+        """Create note"""
         note = models.Note(
             title='note',
             action=const.ACTION_NONE,
@@ -434,6 +435,7 @@ class MethodsCase(unittest.TestCase):
         note_btype = btype.Note(
             title=title,
             tags=[],
+            id=const.NONE_ID,
         )
 
         note_btype = btype.Note << self.service.create_note(

@@ -553,9 +553,11 @@ class ProviderService(dbus.service.Object):
         in_signature='i', out_signature=''
     )
     def stop_sharing_note(self, note_id):
+        """Stop sharing note"""
         try:
-            note = self.sq(models.Note).filter(
-                and_(models.Note.id == note_id, models.Note.action != const.ACTION_DELETE),
+            note = self.session.query(models.Note).filter(
+                (models.Note.id == note_id)
+                & (models.Note.action != const.ACTION_DELETE)
             ).one()
             note.share_status = const.SHARE_NEED_STOP
             note.share_url = ''

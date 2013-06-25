@@ -903,3 +903,17 @@ class MethodsCase(unittest.TestCase):
         self.service.share_note(note.id)
         self.assertEqual(note.share_status, const.SHARE_NEED_SHARE)
         self.service.sync.assert_called_once_with()
+
+    def test_stop_sharing_note(self):
+        """Test stop sharing note"""
+        note = models.Note(
+            title='note',
+            action=const.ACTION_NONE,
+            share_status=const.SHARE_SHARED,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self.service.stop_sharing_note(note.id)
+        self.assertEqual(note.share_status, const.SHARE_NEED_STOP)
+        self.service.sync.assert_called_once_with()

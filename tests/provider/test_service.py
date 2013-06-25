@@ -828,9 +828,22 @@ class MethodsCase(unittest.TestCase):
             file_name='test',
         )
 
-        note = self.service.update_note_resources(
+        self.service.update_note_resources(
             note.id, btype.Resource.list >> [resource],
         )
 
         resource = self.session.query(models.Resource).one()
         self.assertEqual(resource.file_name, 'test')
+
+    def test_delete_note(self):
+        """Test delete note"""
+        note = models.Note(
+            title='note',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        self.service.delete_note(note.id)
+
+        self.assertEqual(note.action, const.ACTION_DELETE)

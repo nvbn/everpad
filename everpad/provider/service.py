@@ -448,9 +448,13 @@ class ProviderService(dbus.service.Object):
         "com.everpad.Provider",
         in_signature='i', out_signature='b',
     )
-    def delete_note(self, id):
+    def delete_note(self, note_id):
+        """Delete note"""
         try:
-            note = self.sq(models.Note).filter(models.Note.id == id).one()
+            note = self.session.query(models.Note).filter(
+                models.Note.id == note_id,
+            ).one()
+
             if note.action == const.ACTION_CONFLICT:
                 # prevent circular dependency error
                 note.conflict_parent_id = None
@@ -459,6 +463,7 @@ class ProviderService(dbus.service.Object):
                 self.session.delete(note)
             else:
                 note.action = const.ACTION_DELETE
+
             self.session.commit()
             self.data_changed()
             return True

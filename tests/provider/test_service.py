@@ -215,6 +215,9 @@ class MethodsCase(unittest.TestCase):
         self.service.app = MagicMock()
         self.service.sync = MagicMock()
 
+    def tearDown(self):
+        self.session.flush()
+
     def _create_note(self, **kwargs):
         """Create note"""
         note = models.Note(

@@ -412,35 +412,37 @@ class ProviderService(dbus.service.Object):
 
     @dbus.service.method(
         "com.everpad.Provider",
-        in_signature='%sa%s' % (
-            btype.Note.signature,
-            btype.Resource.signature,
-        ), out_signature='b',
+        in_signature='ia{}'.format(btype.Resource.signature),
+        out_signature='{}'.format(btype.Note.signature),
     )
-    def update_note_resources(self, note, resources):
-        received_note = btype.Note.from_tuple(note)
+    def update_note_resources(self, note_id, resources_struct):
+        """Update note resources"""
         try:
-            note = self.sq(models.Note).filter(
-                models.Note.id == received_note.id,
+            note = self.session.query(models.Note).filter(
+                models.Note.id == note_id,
             ).one()
         except NoResultFound:
             raise DBusException('models.Note not found')
-        self.sq(models.Resource).filter(
+
+        self.session.query(models.Resource).filter(
             models.Resource.note_id == note.id,
         ).delete()
-        for res_struct in resources:
-            res = models.Resource(
+
+        for resource_btype in btype.Resource.list << resources_struct:
+            resource = models.Resource(
                 action=const.ACTION_CREATE,
                 note_id=note.id,
             )
-            btype.Resource.from_tuple(res_struct).give_to_obj(res)
-            res.id = None
-            self.session.add(res)
+            resource_btype.give_to_obj(resource)
+            resource.id = None
+            self.session.add(resource)
+
         if note.action != const.ACTION_CREATE:
             note.action = const.ACTION_CHANGE
+
         self.session.commit()
         self.data_changed()
-        return btype.Note.from_obj(note).struct
+        return btype.Note >> note
 
     @dbus.service.method(
         "com.everpad.Provider",

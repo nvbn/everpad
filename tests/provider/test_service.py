@@ -814,3 +814,23 @@ class MethodsCase(unittest.TestCase):
         )
 
         self.assertEqual(resources_btype[0].file_name, resource.file_name)
+
+    def test_update_note_resources(self):
+        """Test update note resources"""
+        note = models.Note(
+            title='note',
+            action=const.ACTION_NONE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        resource = btype.Resource(
+            file_name='test',
+        )
+
+        note = self.service.update_note_resources(
+            note.id, btype.Resource.list >> [resource],
+        )
+
+        resource = self.session.query(models.Resource).one()
+        self.assertEqual(resource.file_name, 'test')

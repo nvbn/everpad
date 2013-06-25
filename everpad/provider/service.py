@@ -357,7 +357,6 @@ class ProviderService(dbus.service.Object):
         note_btype = btype.Note << note_struct
         note_btype.give_to_obj(note)
 
-        note.id = None
         note.updated = int(time.time() * 1000)
         note.created = int(time.time() * 1000)
 

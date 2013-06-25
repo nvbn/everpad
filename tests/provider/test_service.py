@@ -343,7 +343,6 @@ class FindTestCase(unittest.TestCase):
         """Create notes"""
         notes = [
             self.service.create_note(Note(
-                id=const.NONE_ID,
                 title='New note',
                 content="New note content",
                 tags=['ab', 'cd'],
@@ -354,7 +353,6 @@ class FindTestCase(unittest.TestCase):
                 pinnded=False,
             ).struct),
             self.service.create_note(btype.Note(
-                id=const.NONE_ID,
                 title='Old note',
                 content="Old note content",
                 tags=['ef', 'gh'],
@@ -365,7 +363,6 @@ class FindTestCase(unittest.TestCase):
                 pinnded=False,
             ).struct),
             self.service.create_note(btype.Note(
-                id=const.NONE_ID,
                 title='not',
                 content="oke",
                 tags=['ab', 'gh'],
@@ -376,7 +373,6 @@ class FindTestCase(unittest.TestCase):
                 pinnded=True,
             ).struct),
             self.service.create_note(btype.Note(
-                id=const.NONE_ID,
                 title=u'Заметка',
                 content=u"Заметка",
                 tags=[u'тэг'],
@@ -387,7 +383,6 @@ class FindTestCase(unittest.TestCase):
                 pinnded=False,
             ).struct),
             self.service.create_note(btype.Note(
-                id=const.NONE_ID,
                 title=u'заметка',
                 content=u"заметка",
                 tags=[u'тэг'],

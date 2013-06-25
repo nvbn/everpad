@@ -868,3 +868,9 @@ class MethodsCase(unittest.TestCase):
             .remove_authenticate_signal.emit.assert_called_once_with()
         self.service.qobject\
             .authenticate_signal.emit.assert_called_once_with('test')
+
+    def test_remove_authentication(self):
+        """Test remove authentication"""
+        self.service.remove_authentication()
+        self.service.qobject\
+            .remove_authenticate_signal.emit.assert_called_once_with()

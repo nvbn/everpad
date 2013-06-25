@@ -510,6 +510,7 @@ class ProviderService(dbus.service.Object):
         in_signature='', out_signature='',
     )
     def remove_authentication(self):
+        """Remove authentication"""
         self.qobject.remove_authenticate_signal.emit()
         self.data_changed()
 

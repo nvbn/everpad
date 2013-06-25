@@ -498,6 +498,7 @@ class ProviderService(dbus.service.Object):
         in_signature='s', out_signature='',
     )
     def authenticate(self, token):
+        """Authenticate client with token"""
         self.qobject.remove_authenticate_signal.emit()
         self.qobject.authenticate_signal.emit(token)
         if self.app.sync_thread.status != const.STATUS_SYNC:

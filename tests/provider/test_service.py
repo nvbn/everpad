@@ -5,6 +5,7 @@ sys.path.insert(0, '..')
 import settings
 
 from dbus.exceptions import DBusException
+from mock import MagicMock
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
 from everpad.basetypes import (
@@ -531,6 +532,8 @@ class MethodsCase(unittest.TestCase):
         self.service = ProviderService()
         self.session = get_db_session()
         self.service._session = self.session
+        self.service.qobject = MagicMock()
+        self.service.app = MagicMock()
 
     def test_get_note(self):
         """Test get note method"""
@@ -857,3 +860,11 @@ class MethodsCase(unittest.TestCase):
             models.Notebook.id == notebook_btype.id,
         ).one()
         self.assertEqual(notebook.name, 'test')
+
+    def test_authenticate(self):
+        """Test authenticate"""
+        self.service.authenticate('test')
+        self.service.qobject\
+            .remove_authenticate_signal.emit.assert_called_once_with()
+        self.service.qobject\
+            .authenticate_signal.emit.assert_called_once_with('test')

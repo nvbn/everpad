@@ -7,8 +7,7 @@ sys.path.insert(0, os.path.join(
 import settings
 
 from mock import MagicMock
-from PySide.QtGui import QApplication
-from PySide.QtCore import QSettings, Signal, QUrl
+from PySide.QtCore import QSettings, Signal, QUrl, QObject
 from dbus.exceptions import DBusException
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
@@ -24,7 +23,7 @@ import dbus
 import unittest
 
 
-class FakeApp(QApplication):
+class FakeApp(QObject):
     data_changed = Signal()
 
     def update(self, service):

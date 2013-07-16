@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 import sys
-sys.path.insert(0, '..')
+import os
+sys.path.insert(0, os.path.join(
+    os.path.dirname(__file__), '..',
+))
+# patch settings:
+import settings
+
 from settings import TOKEN
 from everpad.provider.sync import note, notebook, tag
 from everpad.provider.tools import get_db_session
@@ -11,7 +17,6 @@ from evernote import edam
 from datetime import datetime
 from mock import MagicMock
 import unittest
-import os
 
 
 resource_path = os.path.join(os.path.dirname(__file__), '../test.png')

@@ -7,6 +7,7 @@ from everpad import const
 from evernote.edam.type import ttypes
 from evernote import edam
 from mock import MagicMock
+from .. import factories
 import unittest
 import os
 
@@ -30,6 +31,7 @@ class BaseSyncCase(unittest.TestCase):
     def _create_db_session(self):
         """Create database session"""
         self.session = get_db_session()
+        factories.invoke_session(self.session)
 
     def _create_note_store(self):
         """Create note store mock"""
@@ -57,13 +59,10 @@ class PushNotebookCase(BaseSyncCase):
 
     def test_push_new_notebook(self):
         """Test push new notebook"""
-        notebook = models.Notebook(
-            name='name',
+        notebook = factories.NotebookFactory.create(
             action=const.ACTION_CREATE,
             stack='stack',
         )
-        self.session.add(notebook)
-        self.session.commit()
 
         guid = 'guid'
         self.note_store.createNotebook.return_value.guid = guid
@@ -78,34 +77,26 @@ class PushNotebookCase(BaseSyncCase):
 
     def test_push_changed_notebook(self):
         """Test push changed notebook"""
-        notebook = models.Notebook(
-            name='name',
+        notebook = factories.NotebookFactory.create(
             action=const.ACTION_CHANGE,
-            guid='guid',
+            stack='123',
         )
-        self.session.add(notebook)
-        self.session.commit()
-
         self.sync.push()
         pushed = self.note_store.updateNotebook.call_args_list[0][0][1]
-
         self.assertEqual(pushed.name, notebook.name)
         self.assertEqual(pushed.stack, notebook.stack)
 
     def _base_test_push_notebook_duplicates(self, action):
         """Base test push notebook duplicates"""
-        notebook = models.Notebook(
+        notebook = factories.NotebookFactory.create(
             name='name',
             action=action,
         )
-        self.session.add(notebook)
 
-        original = models.Notebook(
+        original = factories.NotebookFactory.create(
             name='name',
             action=const.ACTION_NONE,
         )
-        self.session.add(original)
-        self.session.commit()
 
         note1 = models.Note(
             title='title',
@@ -147,72 +138,44 @@ class PullNotebookCase(BaseSyncCase):
     def test_pull_new_notebook(self):
         """Test pull new notebook"""
         notebook_name = 'name'
-
         self.note_store.listNotebooks.return_value = [
             ttypes.Notebook(name=notebook_name),
         ]
-
         self.sync.pull()
-
         notebook = self.session.query(models.Notebook).one()
         self.assertEqual(notebook.name, notebook_name)
 
     def test_pull_updated_notebook(self):
         """Test pull updated notebook"""
-        guid = 'guid'
-        notebook = models.Notebook(
-            name='name',
+        notebook = factories.NotebookFactory.create(
             service_updated=0,
-            guid=guid,
         )
-        self.session.add(notebook)
-        self.session.commit()
-
         notebook_name = 'name*'
-
         self.note_store.listNotebooks.return_value = [ttypes.Notebook(
-            name=notebook_name, guid=guid, serviceUpdated=1,
+            name=notebook_name, guid=notebook.guid, serviceUpdated=1,
         )]
-
         self.sync.pull()
-
         self.assertEqual(notebook.name, notebook_name)
 
     def test_pull_not_updated_notebook(self):
         """Test pull not updated notebook"""
-        guid = 'guid'
-        notebook = models.Notebook(
-            name='name',
+        notebook = factories.NotebookFactory.create(
             service_updated=2,
-            guid=guid,
         )
-        self.session.add(notebook)
-        self.session.commit()
-
         notebook_name = 'name*'
-
         self.note_store.listNotebooks.return_value = [ttypes.Notebook(
-            name=notebook_name, guid=guid, serviceUpdated=1,
+            name=notebook_name, guid=notebook.guid, serviceUpdated=1,
         )]
-
         self.sync.pull()
-
         self.assertNotEqual(notebook.name, notebook_name)
 
     def test_delete_after_pull(self):
         """Test delete notebooks after pull"""
-        notebook = models.Notebook(
-            name='name',
-            guid='guid',
+        factories.NotebookFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(notebook)
-        self.session.commit()
-
         self.note_store.listNotebooks.return_value = []
-
         self.sync.pull()
-
         self.assertEqual(self.session.query(models.Notebook).count(), 0)
 
 

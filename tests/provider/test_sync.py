@@ -1,22 +1,14 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
-sys.path.insert(0, os.path.join(
-    os.path.dirname(__file__), '..',
-))
-# patch settings:
-import settings
-
-from settings import TOKEN
+from .. import settings
 from everpad.provider.sync import note, notebook, tag
 from everpad.provider.tools import get_db_session
 from everpad.provider import models
 from everpad import const
 from evernote.edam.type import ttypes
 from evernote import edam
-from datetime import datetime
 from mock import MagicMock
 import unittest
+import os
 
 
 resource_path = os.path.join(os.path.dirname(__file__), '../test.png')
@@ -49,9 +41,9 @@ class BaseSyncCase(unittest.TestCase):
 
     def _create_sync(self):
         """Create sync object"""
-        self.token = 'token'
+        self.TOKEN = 'TOKEN'
         self.sync = self.sync_cls(
-            self.token,
+            self.TOKEN,
             self.session,
             self.note_store,
             self.user_store,

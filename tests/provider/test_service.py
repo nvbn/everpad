@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
-sys.path.insert(0, os.path.join(
-    os.path.dirname(__file__), '..',
-))
-# patch settings:
-import settings
+from .. import settings
 
 from dbus.exceptions import DBusException
 from mock import MagicMock

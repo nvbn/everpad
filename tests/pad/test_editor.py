@@ -1,14 +1,7 @@
-import sys
-import os
-sys.path.insert(0, os.path.join(
-    os.path.dirname(__file__), '..',
-))
-# patch settings:
-import settings
+from .. import settings
 
 from mock import MagicMock
 from PySide.QtCore import QSettings, Signal, QUrl, QObject
-from dbus.exceptions import DBusException
 from everpad.provider.service import ProviderService
 from everpad.provider.tools import get_db_session
 from everpad.basetypes import (
@@ -19,8 +12,8 @@ from everpad.provider import models
 from everpad.pad.editor import Editor
 from everpad.pad.editor.content import set_links
 from datetime import datetime
-import dbus
 import unittest
+import sys
 
 
 class FakeApp(QObject):

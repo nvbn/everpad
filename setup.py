@@ -26,7 +26,6 @@ setup(name='everpad',
         "pysqlite ",
         "regex",
         "sqlalchemy",
-        'pyside',
     ],
     entry_points={
         'gui_scripts': [

@@ -26,10 +26,21 @@ class TagFactory(SQLAlchemyModelFactory):
     action = const.ACTION_NONE
 
 
+class ResourceFactory(SQLAlchemyModelFactory):
+    """Resource factory"""
+    FACTORY_FOR = models.Resource
+
+    guid = factory.Sequence(lambda n: 'guid{}'.format(n))
+    hash = factory.Sequence(lambda n: 'hash{}'.format(n))
+    mime = 'text/plain'
+    action = const.ACTION_NONE
+
+
 def invoke_session(session):
     """Invoke sqlalchemy sessions"""
     for _factory in (
         NotebookFactory,
         TagFactory,
+        ResourceFactory,
     ):
         _factory.FACTORY_SESSION = session

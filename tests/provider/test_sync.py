@@ -239,7 +239,7 @@ class PullTagCase(BaseSyncCase):
 
     def test_delete_after_pull(self):
         """Test delete non exists after pull"""
-        tag = factories.TagFactory.create(
+        factories.TagFactory.create(
             action=const.ACTION_NONE,
         )
         self.note_store.listTags.return_value = []
@@ -256,19 +256,12 @@ class PushNoteCase(BaseSyncCase):
         resource_path = '/tmp/resource'
         with open(resource_path, 'w') as resource_file:
             resource_file.write('test')
-
         file_name = 'resource'
-
-        resource = models.Resource(
+        factories.ResourceFactory(
             note_id=note.id,
             file_name=file_name,
-            mime='plain/text',
             file_path=resource_path,
-            action=const.ACTION_NONE,
         )
-        self.session.add(resource)
-        self.session.commit()
-
         return file_name
 
     def test_push_new_note(self):

@@ -92,25 +92,17 @@ class PushNotebookCase(BaseSyncCase):
             name='name',
             action=action,
         )
-
         original = factories.NotebookFactory.create(
             name='name',
             action=const.ACTION_NONE,
         )
-
-        note1 = models.Note(
-            title='title',
+        factories.NoteFactory.create(
             notebook=notebook,
         )
-        note2 = models.Note(
-            title='title',
+        factories.NoteFactory.create(
             notebook=original,
         )
-        self.session.add(note1)
-        self.session.add(note2)
-
         self.sync.push()
-
         self.assertItemsEqual(
             self.session.query(models.Notebook).all(), [original],
         )
@@ -267,16 +259,11 @@ class PushNoteCase(BaseSyncCase):
     def test_push_new_note(self):
         """Test push new note"""
         guid = 'guid'
-        note = models.Note(
-            title='note',
-            content='content',
+        note = factories.NoteFactory.create(
             action=const.ACTION_CREATE,
         )
-        self.session.add(note)
         self.session.commit()
-
         file_name = self._create_resources(note)
-
         self.note_store.createNote.return_value.guid = guid
         self.sync.push()
 
@@ -289,13 +276,9 @@ class PushNoteCase(BaseSyncCase):
 
     def test_push_changed_note(self):
         """Test push changed note"""
-        note = models.Note(
-            title='note',
-            content='content',
-            guid='guid',
+        note = factories.NoteFactory.create(
             action=const.ACTION_CHANGE,
         )
-        self.session.add(note)
         self.session.commit()
 
         file_name = self._create_resources(note)
@@ -309,17 +292,10 @@ class PushNoteCase(BaseSyncCase):
 
     def test_delete_note(self):
         """Test delete note"""
-        note = models.Note(
-            title='note',
-            content='content',
-            guid='guid',
+        note = factories.NoteFactory.create(
             action=const.ACTION_DELETE,
         )
-        self.session.add(note)
-        self.session.commit()
-
         self.sync.push()
-
         self.assertEqual(
             self.note_store.deleteNote.call_args_list[0][0][1],
             note.guid,
@@ -327,35 +303,23 @@ class PushNoteCase(BaseSyncCase):
 
     def test_push_for_sharing(self):
         """Test push for sharing"""
-        note = models.Note(
-            title='note',
-            content='content',
+        note = factories.NoteFactory.create(
             action=const.ACTION_CREATE,
             share_status=const.SHARE_NEED_SHARE,
         )
-        self.session.add(note)
-        self.session.commit()
-
         self.note_store.createNote.return_value.guid = 'guid'
         self.sync.push()
-
         self.assertEqual(note.share_status, const.SHARE_SHARED)
         self.assertIsNotNone(note.share_url)
 
     def test_push_for_stop_sharing(self):
         """Test push for stop sharing"""
-        note = models.Note(
-            title='note',
-            content='content',
+        note = factories.NoteFactory.create(
             action=const.ACTION_CREATE,
             share_status=const.SHARE_NEED_STOP,
         )
-        self.session.add(note)
-        self.session.commit()
-
         self.note_store.createNote.return_value.guid = 'guid'
         self.sync.push()
-
         self.assertEqual(note.share_status, const.SHARE_NONE)
 
 
@@ -369,13 +333,9 @@ class PullNoteCase(BaseSyncCase):
 
     def _create_default_notebook(self):
         """Create default notebook"""
-        self.notebook = models.Notebook(
-            guid='guid',
-            name='name',
+        self.notebook = factories.NotebookFactory.create(
             default=True,
         )
-        self.session.add(self.notebook)
-        self.session.commit()
 
     def _create_remote_note(self, note_title, note_guid):
         """Create remote note"""
@@ -424,59 +384,37 @@ class PullNoteCase(BaseSyncCase):
 
     def test_pull_changed_note(self):
         """Test pull changed note"""
-        note_guid = 'guid'
-        note_title = 'title'
-        note = models.Note(
-            title='note',
-            guid=note_guid,
+        note = factories.NoteFactory.create(
             updated=0,
         )
-        self.session.add(note)
-        self.session.commit()
-
-        self._create_remote_note(note_title, note_guid)
-
+        self._create_remote_note(note.title, note.guid)
         self.sync.pull()
-
-        self.assertEqual(note.title, note_title)
+        self.assertEqual(note.title, note.title)
         self.assertEqual(self.session.query(models.Resource).count(), 1)
 
     def test_delete_after_pull(self):
         """Test delete non exists note after pull"""
-        note = models.Note(
-            title='note',
+        note = factories.NoteFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(note)
-        self.session.commit()
-
         search_result = MagicMock()
         search_result.totalNotes = 0
         search_result.startIndex = 0
         search_result.notes = []
         self.note_store.findNotes.return_value = search_result
-
         self.sync.pull()
-
         self.assertEqual(self.session.query(models.Note).count(), 0)
 
     def test_pull_with_conflict(self):
         """Test pull with conflict"""
-        note_guid = 'guid'
-        note_title = 'title'
-        note = models.Note(
-            title='note',
-            guid=note_guid,
+        note = factories.NoteFactory.create(
             updated=0,
             action=const.ACTION_CHANGE,
         )
         self.session.add(note)
         self.session.commit()
-
-        self._create_remote_note(note_title, note_guid)
-
+        self._create_remote_note(note.title, note.guid)
         self.sync.pull()
-
         self.assertEqual(self.session.query(models.Note).filter(
             models.Note.action == const.ACTION_CONFLICT
         ).count(), 1)
@@ -503,15 +441,13 @@ class PullNoteCase(BaseSyncCase):
         note_guid = 'guid'
         note_title = 'title'
 
-        note = models.Note(
+        factories.NoteFactory.create(
             title=note_title,
             guid=note_guid,
             updated=0,
             action=const.ACTION_NONE,
             share_status=const.SHARE_SHARED,
         )
-        self.session.add(note)
-        self.session.commit()
 
         note = self._create_remote_note(note_title, note_guid)
         note.attributes.shareDate = None

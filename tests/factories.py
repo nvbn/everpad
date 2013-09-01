@@ -36,11 +36,24 @@ class ResourceFactory(SQLAlchemyModelFactory):
     action = const.ACTION_NONE
 
 
+class NoteFactory(SQLAlchemyModelFactory):
+    """Note factory"""
+    FACTORY_FOR = models.Note
+
+    guid = factory.Sequence(lambda n: 'guid{}'.format(n))
+    title = factory.Sequence(lambda n: 'title{}'.format(n))
+    content = factory.Sequence(lambda n: 'content{}'.format(n))
+    created = factory.Sequence(lambda n: n)
+    updated = factory.Sequence(lambda n: n)
+    updated_local = factory.Sequence(lambda n: n)
+
+
 def invoke_session(session):
     """Invoke sqlalchemy sessions"""
     for _factory in (
         NotebookFactory,
         TagFactory,
         ResourceFactory,
+        NoteFactory,
     ):
         _factory.FACTORY_SESSION = session

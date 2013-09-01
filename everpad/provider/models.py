@@ -16,7 +16,8 @@ import socket
 Base = declarative_base()
 
 
-notetags_table = Table('notetags', Base.metadata,
+notetags_table = Table(
+    'notetags', Base.metadata,
     Column('note', Integer, ForeignKey('notes.id')),
     Column('tag', Integer, ForeignKey('tags.id'))
 )
@@ -33,7 +34,8 @@ class Note(Base):
     updated_local = Column(Integer)
     notebook_id = Column(Integer, ForeignKey('notebooks.id'))
     notebook = relationship("Notebook", backref='note')
-    tags = relationship("Tag",
+    tags = relationship(
+        "Tag",
         secondary=notetags_table,
         backref="notes",
     )
@@ -148,8 +150,8 @@ class Note(Base):
         soup = BeautifulSoup(note.content.decode('utf8'))
         content = reduce(
             lambda txt, cur: txt + unicode(cur),
-            soup.find('en-note').contents,
-        u'')
+            soup.find('en-note').contents, u'',
+        )
         self.title = note.title.decode('utf8')
         self.content = content
         self.created = note.created
@@ -212,7 +214,7 @@ class Notebook(Base):
         self.service_created = notebook.serviceCreated
         self.service_updated = notebook.serviceUpdated
         self.action = const.ACTION_NONE
-        if(notebook.stack):
+        if notebook.stack:
             self.stack = notebook.stack.decode('utf8')
 
     @property

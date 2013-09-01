@@ -10,6 +10,7 @@ from everpad.provider import models
 import unittest
 import dbus
 import everpad.basetypes as btype
+from .. import factories
 
 
 class FindTestCase(unittest.TestCase):
@@ -208,53 +209,45 @@ class MethodsCase(unittest.TestCase):
         self.service = ProviderService()
         self.session = get_db_session()
         self.service._session = self.session
+        models.Note.session = self.session
         self.service.qobject = MagicMock()
         self.service.app = MagicMock()
         self.service.sync = MagicMock()
+        factories.invoke_session(self.session)
 
     def tearDown(self):
         self.session.flush()
 
     def _create_note(self, **kwargs):
         """Create note"""
-        note = models.Note(
-            title='note',
+        note = factories.NoteFactory.create(
             action=const.ACTION_NONE,
             **kwargs
         )
-        self.session.add(note)
         self.session.commit()
         return note
 
     def test_get_note(self):
         """Test get note method"""
         note = self._create_note()
-
         remote_note = btype.Note << self.service.get_note(note.id)
         self.assertEqual(remote_note.title, note.title)
 
     def test_get_note_by_guid(self):
         """Test get note method"""
         note = self._create_note(guid='guid')
-        self.session.add(note)
-        self.session.commit()
-
         remote_note = btype.Note << self.service.get_note_by_guid(note.guid)
         self.assertEqual(remote_note.title, note.title)
 
     def test_get_note_alternatives(self):
         """Test get note alternatives"""
         note = self._create_note(guid='guid')
-
-        alternative = models.Note(
-            title='title',
+        alternative = factories.NoteFactory.create(
             guid='guid',
             action=const.ACTION_CONFLICT,
             conflict_parent_id=note.id,
         )
-        self.session.add(alternative)
         self.session.commit()
-
         remote_notes = btype.Note.list << self.service.get_note_alternatives(
             note.id,
         )
@@ -262,15 +255,11 @@ class MethodsCase(unittest.TestCase):
 
     def test_list_notebooks(self):
         """Test list notebooks method"""
-        notebooks = []
-        for name in range(10):
-            notebook = models.Notebook(
-                name=str(name),
-                action=const.ACTION_NONE,
-            )
-            self.session.add(notebook)
-            self.session.commit()
-            notebooks.append(notebook.id)
+        notebooks = factories.NotebookFactory.create_batch(
+            10, action=const.ACTION_NONE,
+        )
+        self.session.commit()
+        notebooks = [notebook.id for notebook in notebooks]
 
         remote_notebooks = btype.Notebook.list << self.service.list_notebooks()
         ids = [notebook.id for notebook in remote_notebooks]
@@ -279,16 +268,12 @@ class MethodsCase(unittest.TestCase):
 
     def test_get_notebook(self):
         """Test get notebook method"""
-        notebook = models.Notebook(
-            name='notebook',
+        notebook = factories.NotebookFactory.create(
             action=const.ACTION_NONE,
         )
-        deleted_notebook = models.Notebook(
-            name='deleted notebook',
+        deleted_notebook = factories.NotebookFactory(
             action=const.ACTION_DELETE,
         )
-        self.session.add(notebook)
-        self.session.add(deleted_notebook)
         self.session.commit()
 
         remote_notebook = btype.Notebook << self.service.get_notebook(
@@ -303,139 +288,103 @@ class MethodsCase(unittest.TestCase):
 
     def test_get_notebook_notes_count(self):
         """Test get notebook notes count method"""
-        notebook = models.Notebook(
-            name='notebook',
+        notebook = factories.NotebookFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(notebook)
-
-        count = 10
-        for i in range(count):
-            self.session.add(models.Note(
-                title='note',
-                action=const.ACTION_NONE,
-                notebook=notebook,
-            ))
+        factories.NoteFactory.create_batch(
+            10, action=const.ACTION_NONE,
+            notebook=notebook,
+        )
         self.session.commit()
-
         self.assertEqual(
             self.service.get_notebook_notes_count(notebook.id), 10,
         )
 
     def test_update_notebook(self):
         """Test update notebook method"""
-        notebook = models.Notebook(
-            name='notebook',
+        notebook = factories.NotebookFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(notebook)
         self.session.commit()
-
         new_name = 'name'
-
         notebook_btype = btype.Notebook.from_obj(notebook)
         notebook_btype.name = new_name
-
         notebook_btype = btype.Notebook << self.service.update_notebook(
             notebook_btype.struct,
         )
-
         self.assertEqual(notebook_btype.name, new_name)
         self.assertEqual(notebook.name, new_name)
 
     def test_delete_notebook(self):
         """Test delete notebook"""
-        notebook = models.Notebook(
+        notebook = factories.NotebookFactory.create(
             name='notebook',
             action=const.ACTION_NONE,
         )
-        self.session.add(notebook)
         self.session.commit()
-
         self.service.delete_notebook(notebook.id)
-
         self.assertEqual(notebook.action, const.ACTION_DELETE)
 
     def test_list_tags(self):
         """Test list tags"""
-        tags = []
-
-        for name in range(10):
-            tag = models.Tag(
-                name=str(name),
-                action=const.ACTION_NONE,
-            )
-            self.session.add(tag)
-            self.session.commit()
-            tags.append(tag.id)
-
+        tags = factories.TagFactory.create_batch(
+            10, action=const.ACTION_NONE,
+        )
+        self.session.commit()
+        tags = [tag.id for tag in tags]
         remote_tags = btype.Tag.list << self.service.list_tags()
         tags_ids = [tag.id for tag in remote_tags]
-
-        self.assertEqual(tags_ids, tags)
+        self.assertItemsEqual(tags_ids, tags)
 
     def test_get_tag_notes_count(self):
         """Test get tag notes count method"""
-        tag = models.Tag(
-            name='tag',
+        tag = factories.TagFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(tag)
-
-        count = 10
-        for i in range(count):
-            self.session.add(models.Note(
-                title='note',
-                action=const.ACTION_NONE,
-                tags=[tag],
-            ))
+        factories.NoteFactory.create_batch(
+            10, action=const.ACTION_NONE,
+            tags=[tag],
+        )
         self.session.commit()
-
         self.assertEqual(
             self.service.get_tag_notes_count(tag.id), 10,
         )
 
     def test_delete_tag(self):
         """Test delete tag"""
-        tag = models.Tag(
-            name='tag',
+        tag = factories.TagFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(tag)
         self.session.commit()
-
         self.service.delete_tag(tag.id)
-
         self.assertEqual(tag.action, const.ACTION_DELETE)
 
     def test_update_tag(self):
         """Test update tag method"""
-        tag = models.Tag(
-            name='tag',
+        tag = factories.TagFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(tag)
         self.session.commit()
-
         new_name = 'name'
-
         tag_btype = btype.Tag.from_obj(tag)
         tag_btype.name = new_name
-
         tag_btype = btype.Tag << self.service.update_tag(
             tag_btype.struct,
         )
-
         self.assertEqual(tag_btype.name, new_name)
         self.assertEqual(tag.name, new_name)
 
     def test_create_note(self):
         """Test create note"""
+        notebook = factories.NotebookFactory.create(default=True)
+        self.session.commit()
+
         title = 'note'
         note_btype = btype.Note(
             title=title,
             tags=[],
             id=const.NONE_ID,
+            notebook=notebook.id,
         )
 
         note_btype = btype.Note << self.service.create_note(
@@ -450,7 +399,12 @@ class MethodsCase(unittest.TestCase):
 
     def test_update_note(self):
         """Test update note"""
-        note = self._create_note()
+        notebook = factories.NotebookFactory.create(default=True)
+        self.session.commit()
+
+        note = self._create_note(
+            notebook_id=notebook.id,
+        )
 
         new_title = 'title'
 
@@ -471,12 +425,11 @@ class MethodsCase(unittest.TestCase):
         """Test get note resources"""
         note = self._create_note()
 
-        resource = models.Resource(
+        resource = factories.ResourceFactory.create(
             file_name='name',
             action=const.ACTION_NONE,
             note_id=note.id,
         )
-        self.session.add(resource)
         self.session.commit()
 
         resources_btype = btype.Resource.list << self.service.get_note_resources(
@@ -534,15 +487,9 @@ class MethodsCase(unittest.TestCase):
 
     def test_list_places(self):
         """Test list places"""
-        place_ids = []
-        for num in range(10):
-            place = models.Place(
-                name='{}'.format(num),
-            )
-            self.session.add(place)
-            self.session.commit()
-            place_ids.append(place.id)
-
+        places = factories.PlaceFactory.create_batch(10)
+        self.session.commit()
+        place_ids = [place.id for place in places]
         places_btype = btype.Place.list << self.service.list_places()
         for place_btype in places_btype:
             self.assertIn(place_btype.id, place_ids)

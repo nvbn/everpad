@@ -48,6 +48,13 @@ class NoteFactory(SQLAlchemyModelFactory):
     updated_local = factory.Sequence(lambda n: n)
 
 
+class PlaceFactory(SQLAlchemyModelFactory):
+    """Place factory"""
+    FACTORY_FOR = models.Place
+
+    name = factory.Sequence(lambda n: 'name{}'.format(n))
+
+
 def invoke_session(session):
     """Invoke sqlalchemy sessions"""
     for _factory in (
@@ -55,5 +62,6 @@ def invoke_session(session):
         TagFactory,
         ResourceFactory,
         NoteFactory,
+        PlaceFactory,
     ):
         _factory.FACTORY_SESSION = session

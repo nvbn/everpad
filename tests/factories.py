@@ -17,6 +17,19 @@ class NotebookFactory(SQLAlchemyModelFactory):
     stack = ''
 
 
+class TagFactory(SQLAlchemyModelFactory):
+    """Tag factory"""
+    FACTORY_FOR = models.Tag
+
+    guid = factory.Sequence(lambda n: 'guid{}'.format(n))
+    name = factory.Sequence(lambda n: 'name{}'.format(n))
+    action = const.ACTION_NONE
+
+
 def invoke_session(session):
     """Invoke sqlalchemy sessions"""
-    NotebookFactory.FACTORY_SESSION = session
+    for _factory in (
+        NotebookFactory,
+        TagFactory,
+    ):
+        _factory.FACTORY_SESSION = session

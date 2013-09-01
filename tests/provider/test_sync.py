@@ -186,16 +186,11 @@ class PushTagCase(BaseSyncCase):
     def test_push_new_tag(self):
         """Test push new tag"""
         guid = 'guid'
-        tag = models.Tag(
-            name='tag',
+        tag = factories.TagFactory.create(
             action=const.ACTION_CREATE,
         )
-        self.session.add(tag)
-        self.session.commit()
-
         self.note_store.createTag.return_value.guid = guid
         self.sync.push()
-
         self.assertEqual(tag.guid, guid)
         self.assertEqual(
             self.note_store.createTag.call_args_list[0][0][1].name,
@@ -204,16 +199,11 @@ class PushTagCase(BaseSyncCase):
 
     def test_push_changed_tag(self):
         """Test push changed tag"""
-        tag = models.Tag(
-            name='tag',
+        tag = factories.TagFactory.create(
             action=const.ACTION_CHANGE,
         )
-        self.session.add(tag)
-        self.session.commit()
-
         self.sync.push()
         pushed = self.note_store.updateTag.call_args_list[0][0][1]
-
         self.assertEqual(pushed.name, tag.name)
 
 
@@ -237,35 +227,23 @@ class PullTagCase(BaseSyncCase):
 
     def test_pull_changed_tag(self):
         """Test pull changed tags"""
-        tag = models.Tag(
-            name='name',
-            guid='guid',
+        tag = factories.TagFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(tag)
-        self.session.commit()
-
         tag_name = 'name*'
         self.note_store.listTags.return_value = [ttypes.Tag(
             name=tag_name, guid=tag.guid,
         )]
-
         self.sync.pull()
         self.assertEqual(tag.name, tag_name)
 
     def test_delete_after_pull(self):
         """Test delete non exists after pull"""
-        tag = models.Tag(
-            name='name',
-            guid='guid',
+        tag = factories.TagFactory.create(
             action=const.ACTION_NONE,
         )
-        self.session.add(tag)
-        self.session.commit()
-
         self.note_store.listTags.return_value = []
         self.sync.pull()
-
         self.assertEqual(self.session.query(models.Tag).count(), 0)
 
 

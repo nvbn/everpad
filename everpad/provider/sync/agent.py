@@ -95,6 +95,7 @@ class SyncThread(QtCore.QThread):
 
     def perform(self):
         """Perform all sync"""
+        self.app.log("Performing sync")
         self.status = const.STATUS_SYNC
         self.last_sync = datetime.now()
         self.sync_state_changed.emit(const.SYNC_STATE_START)
@@ -115,6 +116,7 @@ class SyncThread(QtCore.QThread):
             self.all_notes = None
 
         self.data_changed.emit()
+        self.app.log("Sync performed.")
 
     def _get_sync_args(self):
         """Get sync arguments"""
@@ -122,6 +124,7 @@ class SyncThread(QtCore.QThread):
 
     def local_changes(self):
         """Send local changes to evernote server"""
+        self.app.log('Running local_changes()')
         self.sync_state_changed.emit(const.SYNC_STATE_NOTEBOOKS_LOCAL)
         notebook.PushNotebook(*self._get_sync_args()).push()
 
@@ -133,6 +136,7 @@ class SyncThread(QtCore.QThread):
 
     def remote_changes(self):
         """Receive remote changes from evernote"""
+        self.app.log('Running remote_changes()')
         self.sync_state_changed.emit(const.SYNC_STATE_NOTEBOOKS_REMOTE)
         notebook.PullNotebook(*self._get_sync_args()).pull()
 

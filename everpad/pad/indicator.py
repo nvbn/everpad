@@ -23,6 +23,7 @@ import dbus.mainloop.glib
 import argparse
 import fcntl
 import os
+import logging
 import getpass
 
 
@@ -36,6 +37,16 @@ class Indicator(QSystemTrayIcon):
         self.opened_notes = {}
         self.activated.connect(self._activated)
         self.settings = QSettings('everpad', 'everpad-pad')
+        # Configure logger.
+        self.logger = logging.getLogger('everpad-indicator')
+        self.logger.setLevel(logging.DEBUG)
+        fh = logging.FileHandler(
+            os.path.expanduser('~/.everpad/logs/everpad.log'))
+        fh.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
 
     def _activated(self, reason):
         if reason == QSystemTrayIcon.Trigger:
@@ -150,6 +161,7 @@ class Indicator(QSystemTrayIcon):
         self.menu.addAction(self.tr('Exit'), self.exit)
 
     def open(self, note, search_term=''):
+        self.logger.debug('Opening note: "%s".' % note.title)
         old_note_window = self.opened_notes.get(note.id, None)
         if old_note_window and not getattr(old_note_window, 'closed', True):
             editor = self.opened_notes[note.id]
@@ -169,6 +181,7 @@ class Indicator(QSystemTrayIcon):
 
     @Slot()
     def create(self, attach=None, notebook_id=NONE_ID):
+        self.logger.debug('Creating new note.')
         note_struct = Note(  # maybe replace NONE's to somthing better
             id=NONE_ID,
             title=self.tr('New note'),

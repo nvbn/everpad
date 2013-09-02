@@ -13,9 +13,11 @@ import os
 import getpass
 import argparse
 import sys
+import logging
 
 
 class ProviderApp(AppClass):
+
     def __init__(self, verbose, *args, **kwargs):
         AppClass.__init__(self, *args, **kwargs)
         self.settings = QSettings('everpad', 'everpad-provider')
@@ -39,6 +41,17 @@ class ProviderApp(AppClass):
             self.on_remove_authenticated,
         )
         self.service.qobject.terminate.connect(self.terminate)
+        # Configure logger.
+        self.logger = logging.getLogger('everpad-provider')
+        self.logger.setLevel(logging.DEBUG)
+        fh = logging.FileHandler(
+            os.path.expanduser('~/.everpad/logs/everpad-provider.log'))
+        fh.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
+        self.logger.debug('Provider started.')
 
     @Slot(str)
     def on_authenticated(self, token):
@@ -66,6 +79,7 @@ class ProviderApp(AppClass):
         session.commit()
 
     def log(self, data):
+        self.logger.debug(data)
         if self.verbose:
             print data
 
@@ -96,6 +110,8 @@ def main():
         app.exec_()
     except IOError:
         print "everpad-provider already ran"
+    except Exception, e:
+        app.logger.debug(e)
 
 if __name__ == '__main__':
     main()

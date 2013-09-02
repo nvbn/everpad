@@ -108,7 +108,7 @@ class PushNote(BaseSync, ShareNoteMixin):
         """Prepare content"""
         enml_content = (u"""
             <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-            <en-note>{}</en-note>d
+            <en-note>{}</en-note>
         """.format(sanitize(
             html=content[:limits.EDAM_NOTE_CONTENT_LEN_MAX]
         ))).strip().encode('utf8')

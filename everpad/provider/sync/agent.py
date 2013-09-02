@@ -4,7 +4,9 @@ from ... import const
 from ...specific import AppClass
 from .. import tools
 from . import note, notebook, tag
+from .. import models
 import time
+import traceback
 import socket
 
 
@@ -18,7 +20,6 @@ class SyncThread(QtCore.QThread):
         """Init default values"""
         QtCore.QThread.__init__(self, *args, **kwargs)
         self.app = AppClass.instance()
-        self._init_sync()
         self._init_timer()
         self._init_locks()
 
@@ -26,7 +27,12 @@ class SyncThread(QtCore.QThread):
         """Init sync"""
         self.status = const.STATUS_NONE
         self.last_sync = datetime.now()
-        self.update_count = 0
+        self.sync_state = self.session.query(models.Sync).first()
+        if not self.sync_state:
+            self.sync_state = models.Sync(
+                update_count=0, last_sync=self.last_sync)
+            self.session.add(self.sync_state)
+            self.session.commit()
 
     def _init_timer(self):
         """Init timer"""
@@ -53,6 +59,7 @@ class SyncThread(QtCore.QThread):
         """Run thread"""
         self._init_db()
         self._init_network()
+        self._init_sync()
         while True:
             self.mutex.lock()
             self.wait_condition.wait(self.mutex)
@@ -77,9 +84,25 @@ class SyncThread(QtCore.QThread):
 
     def _need_to_update(self):
         """Check need for update notes"""
-        update_count = self.note_store.getSyncState(self.auth_token).updateCount
-        reason = update_count != self.update_count
-        self.update_count = update_count
+        self.app.log('Checking need for update notes.')
+        # Try to update_count.
+        try:
+            update_count = self.note_store.getSyncState(
+                self.auth_token).updateCount
+        except socket.error, e:
+            self.app.log(
+                "Couldn't connect to remote server. Got: %s" %
+                traceback.format_exc())
+            # This is most likely a network failure. Return False so
+            # everpad-provider won't lock up and can try to sync up in the
+            # next run.
+            return False
+        #XXX: matsubara probably innefficient as it does a SQL each time it
+        # accesses the update_count attr?
+        self.app.log("Local update count: %s Remote update count: %s" % (
+            self.sync_state.update_count, update_count))
+        reason = update_count != self.sync_state.update_count
+        self.sync_state.update_count = update_count
         return reason
 
     def force_sync(self):

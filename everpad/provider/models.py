@@ -275,3 +275,10 @@ class Place(Base):
     __tablename__ = 'places'
     id = Column(Integer, primary_key=True)
     name = Column(String)
+
+
+class Sync(Base):
+    __tablename__ = 'sync'
+    id = Column(Integer, primary_key=True)
+    update_count = Column(Integer)
+    last_sync = Column(Integer)

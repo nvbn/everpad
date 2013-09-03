@@ -256,12 +256,11 @@ class PushNoteCase(BaseSyncCase):
         )
         return file_name
 
-    def test_formatting_bug(self):
-        """ TODO: Need to test:
-        - read enml input from evernote api and convert to Note model object
-            provider.models.Note.from_api()
-        - write enml output from evernote Note model object.
-            provider.sync.note.PushNote._prepare_content()
+    def test_note_content_formatting(self):
+        """Test note content formatting.
+
+        This tests that the content from the Note model object continues the
+        same after converting it to a ttype.
         """
         content = """Some
             foo bar
@@ -279,11 +278,6 @@ class PushNoteCase(BaseSyncCase):
         note_ttype = self.sync._create_ttype(note)
         note.from_api(note_ttype, self.session)
         self.assertEqual(note.content, content)
-
-        # XXX: matsubara
-        #enml = self.sync._prepare_content(content)
-        #self.assertEqual(enml, None)
-
 
     def test_push_new_note(self):
         """Test push new note"""

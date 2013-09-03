@@ -17,7 +17,7 @@ class PushTag(BaseSync):
         for tag in self.session.query(models.Tag).filter(
             models.Tag.action != const.ACTION_NONE,
         ):
-            self.app.log('Tag %s local' % tag.name)
+            self.app.log('Pushing tag "%s" to remote server.' % tag.name)
 
             try:
                 tag_ttype = self._create_ttype(tag)
@@ -79,7 +79,8 @@ class PullTag(BaseSync):
     def pull(self):
         """Pull tags from server"""
         for tag_ttype in self.note_store.listTags(self.auth_token):
-            self.app.log('Tag %s remote' % tag_ttype.name)
+            self.app.log(
+                'Pulling tag "%s" from remote server.' % tag_ttype.name)
             try:
                 tag = self._update_tag(tag_ttype)
             except NoResultFound:

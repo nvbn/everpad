@@ -17,7 +17,8 @@ class PushNotebook(BaseSync):
         for notebook in self.session.query(models.Notebook).filter(
             models.Notebook.action != const.ACTION_NONE,
         ):
-            self.app.log('Notebook %s local' % notebook.name)
+            self.app.log(
+                'Pushing notebook "%s" to remote server.' % notebook.name)
 
             try:
                 notebook_ttype = self._create_ttype(notebook)
@@ -113,7 +114,8 @@ class PullNotebook(BaseSync):
     def pull(self):
         """Receive notebooks from server"""
         for notebook_ttype in self.note_store.listNotebooks(self.auth_token):
-            self.app.log('Notebook %s remote' % notebook_ttype.name)
+            self.app.log(
+                'Pulling notebook "%s" from remote server.' % notebook_ttype.name)
             try:
                 notebook = self._update_notebook(notebook_ttype)
             except NoResultFound:

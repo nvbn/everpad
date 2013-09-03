@@ -52,7 +52,7 @@ class PushNote(BaseSync, ShareNoteMixin):
                 const.ACTION_NONE, const.ACTION_NOEXSIST, const.ACTION_CONFLICT,
             ))
         ):
-            self.app.log('Note %s local' % note.title)
+            self.app.log('Pushing note "%s" to remote server.' % note.title)
             note_ttype = self._create_ttype(note)
 
             if note.action == const.ACTION_CREATE:
@@ -126,7 +126,7 @@ class PushNote(BaseSync, ShareNoteMixin):
             note.guid = note_ttype.guid
         except EDAMUserException as e:
             note.action = const.ACTION_NONE
-            self.app.log('Note %s failed' % note.title)
+            self.app.log('Push new note "%s" failed.' % note.title)
             self.app.log(e)
         finally:
             note.action = const.ACTION_NONE
@@ -136,7 +136,9 @@ class PushNote(BaseSync, ShareNoteMixin):
         try:
             self.note_store.updateNote(self.auth_token, note_ttype)
         except EDAMUserException as e:
-            self.app.log('Note %s failed' % note.title)
+            self.app.log('Push changed note "%s" failed.' % note.title)
+            self.app.log(note_ttype)
+            self.app.log(note)
             self.app.log(e)
         finally:
             note.action = const.ACTION_NONE
@@ -162,7 +164,8 @@ class PullNote(BaseSync, ShareNoteMixin):
     def pull(self):
         """Pull notes from remote server"""
         for note_ttype in self._get_all_notes():
-            self.app.log('Note %s remote' % note_ttype.title)
+            self.app.log(
+                'Pulling note "%s" from remote server.' % note_ttype.title)
             try:
                 note = self._update_note(note_ttype)
             except NoResultFound:

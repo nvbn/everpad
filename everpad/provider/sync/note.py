@@ -1,4 +1,4 @@
-from BeautifulSoup import BeautifulStoneSoup
+from BeautifulSoup import BeautifulSoup
 from sqlalchemy.orm.exc import NoResultFound
 from everpad.tools import sanitize
 from evernote.edam.error.ttypes import EDAMUserException
@@ -113,11 +113,11 @@ class PushNote(BaseSync, ShareNoteMixin):
             html=content[:limits.EDAM_NOTE_CONTENT_LEN_MAX]
         ))).strip().encode('utf8')
 
-        soup = BeautifulStoneSoup(enml_content, selfClosingTags=[
+        soup = BeautifulSoup(enml_content, selfClosingTags=[
             'img', 'en-todo', 'en-media', 'br', 'hr',
         ])
 
-        return soup.prettify()
+        return str(soup)
 
     def _push_new_note(self, note, note_ttype):
         """Push new note to remote"""

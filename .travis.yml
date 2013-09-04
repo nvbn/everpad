@@ -1,9 +1,13 @@
 language: python
 python:
   - "2.7"
+before_install:
+  - cat setup.py|grep -v PySide > setup.py
 install:
-  - easy_install PySide
+  - sudo apt-get install python-pyside
   - pip install . --use-mirrors
   - pip install -r dev_requirements.txt --use-mirrors
+before_script:
+  - ln -s /usr/lib/python2.7/dist-packages/PySide /home/vagrant/virtualenv/python2.7/lib/python2.7/site-packages/PySide -v
 script:
   - nosetests

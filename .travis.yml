@@ -5,11 +5,12 @@ env:
   - TRAVIS_CI="True"
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq python-pyside
+  - sudo apt-get install -qq python-pyside python-dbus
 install:
   - pip install . --use-mirrors
   - pip install -r dev_requirements.txt --use-mirrors
 before_script:
   - ln -s /usr/lib/python2.7/dist-packages/PySide /home/travis/virtualenv/python2.7/lib/python2.7/site-packages/PySide -v
+  - ln -s /usr/lib/python2.7/dist-packages/dbus /home/travis/virtualenv/python2.7/lib/python2.7/site-packages/dbus -v
 script:
   - nosetests

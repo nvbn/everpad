@@ -19,3 +19,7 @@ before_script:
   - mkdir -p /home/travis/.everpad/data/1/
 script:
   - nosetests
+after_success:
+  - coverage report
+  - pip install --quiet python-coveralls
+  - coveralls

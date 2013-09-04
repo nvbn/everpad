@@ -1,14 +1,16 @@
 from setuptools import setup, find_packages
-import sys, os
+
 
 version = '2.5'
 
-setup(name='everpad',
+setup(
+    name='everpad',
     version=version,
     description="Ubuntu integrated evernote client",
-    long_description="""\
-""",
-    classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    long_description=open('README.rst').read(),
+    classifiers=[
+        'Programming Language :: Python',
+    ],
     keywords='ubuntu python evernote',
     author='Vladimir Yakovlev',
     author_email='nvbn.rm@gmail.com',
@@ -72,7 +74,7 @@ setup(name='everpad',
         ('share/everpad/i18n/', [
             'i18n/ru_RU.qm',
             'i18n/ar_EG.qm',
-    	    'i18n/zh_CN.qm',
+            'i18n/zh_CN.qm',
             'i18n/zh_TW.qm',
             'i18n/ja.qm',
             'i18n/es.qm',
@@ -86,7 +88,7 @@ setup(name='everpad',
         ('share/locale/ru/LC_MESSAGES', ['i18n/ru/LC_MESSAGES/everpad.mo']),
         ('share/locale/ar/LC_MESSAGES', ['i18n/ar/LC_MESSAGES/everpad.mo']),
         ('share/locale/zh_CN/LC_MESSAGES', ['i18n/zh_CN/LC_MESSAGES/everpad.mo']),
-    	('share/locale/zh_TW/LC_MESSAGES', ['i18n/zh_TW/LC_MESSAGES/everpad.mo']),
+        ('share/locale/zh_TW/LC_MESSAGES', ['i18n/zh_TW/LC_MESSAGES/everpad.mo']),
         ('share/locale/ja/LC_MESSAGES', ['i18n/ja/LC_MESSAGES/everpad.mo']),
         ('share/locale/es/LC_MESSAGES', ['i18n/es/LC_MESSAGES/everpad.mo']),
         ('share/locale/de/LC_MESSAGES', ['i18n/de/LC_MESSAGES/everpad.mo']),

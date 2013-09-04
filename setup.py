@@ -28,6 +28,7 @@ setup(
         "pysqlite ",
         "regex",
         "sqlalchemy",
+        'PySide',
     ],
     entry_points={
         'gui_scripts': [

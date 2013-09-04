@@ -1,18 +1,15 @@
-everpad package in ubuntu software center pending review - https://myapps.developer.ubuntu.com/dev/apps/1678/
-
-Please vote for these bugs, they greatly hinder development:
-============================================================
-https://bugs.launchpad.net/ubuntu/+source/openssl/+bug/965371
-
-https://bugs.launchpad.net/appmenu-qt/+bug/1057167
-
-
 Everpad
 =======
-
-.. image:: http://ubuntuone.com/4ABojaepuBiaDVv2VsDB7o
+.. image:: https://travis-ci.org/nvbn/django-bower.png
+   :alt: Build Status
+   :target: https://travis-ci.org/nvbn/everpad
+.. image:: https://coveralls.io/repos/nvbn/everpad/badge.png?branch=develop
+   :alt: Coverage Status
+   :target: https://coveralls.io/r/nvbn/everpad
 
 Evernote client well integrated with linux desktop.
+
+.. image:: http://ubuntuone.com/4ABojaepuBiaDVv2VsDB7o
 
 Client has:
  - unity lens

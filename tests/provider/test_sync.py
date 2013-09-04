@@ -256,6 +256,29 @@ class PushNoteCase(BaseSyncCase):
         )
         return file_name
 
+    def test_note_content_formatting(self):
+        """Test note content formatting.
+
+        This tests that the content from the Note model object continues the
+        same after converting it to a ttype.
+        """
+        content = """Some
+            foo bar
+            content."""
+
+        guid = 'guid'
+        note = models.Note(
+            title='note',
+            content=content,
+            action=const.ACTION_CREATE,
+        )
+        self.session.add(note)
+        self.session.commit()
+
+        note_ttype = self.sync._create_ttype(note)
+        note.from_api(note_ttype, self.session)
+        self.assertEqual(note.content, content)
+
     def test_push_new_note(self):
         """Test push new note"""
         guid = 'guid'

@@ -145,7 +145,7 @@ class Note(Base):
     def share_url_dbus(self, val):
         pass
 
-    def from_api(self, note,session):
+    def from_api(self, note, session):
         """Fill data from api"""
         soup = BeautifulSoup(note.content.decode('utf8'))
         content = reduce(
@@ -166,22 +166,23 @@ class Note(Base):
                 Tag.guid.in_(note.tagGuids),
             ).all()
         place_name = None
-        if note.attributes.placeName:
-            place_name = note.attributes.placeName.decode('utf8')
-        elif note.attributes.longitude:
-            try:
-                data = json.loads(urllib.urlopen(
-                    'http://maps.googleapis.com/maps/api/geocode/json?latlng=%.4f,%.4f&sensor=false' % (
-                        note.attributes.latitude,
-                        note.attributes.longitude,
-                    ),
-                ).read())
+        if getattr(note, 'attributes'):
+            if note.attributes.placeName:
+                place_name = note.attributes.placeName.decode('utf8')
+            elif note.attributes.longitude:
                 try:
-                    place_name = data['results'][0]['formatted_address']
-                except (IndexError, KeyError):
+                    data = json.loads(urllib.urlopen(
+                        'http://maps.googleapis.com/maps/api/geocode/json?latlng=%.4f,%.4f&sensor=false' % (
+                            note.attributes.latitude,
+                            note.attributes.longitude,
+                        ),
+                    ).read())
+                    try:
+                        place_name = data['results'][0]['formatted_address']
+                    except (IndexError, KeyError):
+                        pass
+                except socket.error:
                     pass
-            except socket.error:
-                pass
         if place_name:
             self.set_place(place_name, session)
 

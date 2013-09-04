@@ -18,7 +18,7 @@ before_script:
   - cp tests/settings/ci_local.py tests/settings/local.py
   - mkdir -p /home/travis/.everpad/data/1/
 script:
-  - nosetests
+  - nosetests --with-coverage
 after_success:
   - coverage report
   - pip install --quiet python-coveralls

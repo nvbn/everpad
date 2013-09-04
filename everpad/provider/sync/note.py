@@ -175,7 +175,8 @@ class PullNote(BaseSync, ShareNoteMixin):
             self._check_sharing_information(note, note_ttype)
 
             resource_ids = self._receive_resources(note, note_ttype)
-            self._remove_resources(note, resource_ids)
+            if resource_ids:
+                self._remove_resources(note, resource_ids)
 
         self.session.commit()
         self._remove_notes()
@@ -243,13 +244,18 @@ class PullNote(BaseSync, ShareNoteMixin):
 
     def _remove_notes(self):
         """Remove not exists notes"""
-        self.session.query(models.Note).filter((
-            ~models.Note.id.in_(self._exists)
-            | ~models.Note.conflict_parent_id.in_(self._exists)
-        ) & ~models.Note.action.in_((
-            const.ACTION_NOEXSIST, const.ACTION_CREATE,
-            const.ACTION_CHANGE, const.ACTION_CONFLICT,
-        ))).delete(synchronize_session='fetch')
+        if self._exists:
+            q = ((~models.Note.id.in_(self._exists) |
+                ~models.Note.conflict_parent_id.in_(self._exists)) &
+                ~models.Note.action.in_((
+                    const.ACTION_NOEXSIST, const.ACTION_CREATE,
+                    const.ACTION_CHANGE, const.ACTION_CONFLICT)))
+        else:
+            q = (~models.Note.action.in_((
+                    const.ACTION_NOEXSIST, const.ACTION_CREATE,
+                    const.ACTION_CHANGE, const.ACTION_CONFLICT)))
+        self.session.query(models.Note).filter(q).delete(
+            synchronize_session='fetch')
         self.session.commit()
 
     def _receive_resources(self, note, note_ttype):

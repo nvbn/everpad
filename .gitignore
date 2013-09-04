@@ -1,5 +1,6 @@
 syntax: glob
 
+*.swp
 *.pyc
 *pip-delete-this-directory.txt
 /build

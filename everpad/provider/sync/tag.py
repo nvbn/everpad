@@ -91,7 +91,7 @@ class PullTag(BaseSync):
         self._remove_tags()
 
     def _create_tag(self, tag_ttype):
-        """Create notebook from server"""
+        """Create tag from server"""
         tag = models.Tag(guid=tag_ttype.guid)
         tag.from_api(tag_ttype)
         self.session.add(tag)
@@ -109,7 +109,10 @@ class PullTag(BaseSync):
 
     def _remove_tags(self):
         """Remove not exist tags"""
-        self.session.query(models.Tag).filter(
-            ~models.Tag.id.in_(self._exists)
-            & (models.Tag.action != const.ACTION_CREATE)
-        ).delete(synchronize_session='fetch')
+        if self._exists:
+            q = (~models.Tag.id.in_(self._exists)
+                & (models.Tag.action != const.ACTION_CREATE))
+        else:
+            q = (models.Tag.action != const.ACTION_CREATE)
+        self.session.query(models.Tag).filter(q).delete(
+            synchronize_session='fetch')

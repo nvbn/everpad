@@ -144,8 +144,13 @@ class PullNotebook(BaseSync):
 
     def _remove_notebooks(self):
         """Remove not received notebooks"""
+        if self._exists:
+            q = (~models.Notebook.id.in_(self._exists)
+                & (models.Notebook.action != const.ACTION_CREATE)
+                & (models.Notebook.action != const.ACTION_CHANGE))
+        else:
+            q = ((models.Notebook.action != const.ACTION_CREATE)
+                & (models.Notebook.action != const.ACTION_CHANGE))
+
         self.session.query(models.Notebook).filter(
-            ~models.Notebook.id.in_(self._exists)
-            & (models.Notebook.action != const.ACTION_CREATE)
-            & (models.Notebook.action != const.ACTION_CHANGE)
-        ).delete(synchronize_session='fetch')
+            q).delete(synchronize_session='fetch')

@@ -12,5 +12,6 @@ install:
 before_script:
   - ln -s /usr/lib/python2.7/dist-packages/PySide /home/travis/virtualenv/python2.7/lib/python2.7/site-packages/PySide -v
   - ln -s /usr/lib/python2.7/dist-packages/dbus /home/travis/virtualenv/python2.7/lib/python2.7/site-packages/dbus -v
+  - cp tests/settings/ci_local.py tests/settings/local.py
 script:
   - nosetests

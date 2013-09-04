@@ -50,5 +50,5 @@ Or create bug reports.
 
 Or donate:
 
- - **PayPal**: nvbn.rm@gmail.com
- - **Yandex Money**: 410011244953574
+- **PayPal**: nvbn.rm@gmail.com
+- **Yandex Money**: 410011244953574

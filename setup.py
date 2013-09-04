@@ -1,7 +1,20 @@
 from setuptools import setup, find_packages
-
+import os
 
 version = '2.5'
+requirements = [
+    "BeautifulSoup",
+    "html2text",
+    "httplib2",
+    "keyring",
+    "py-oauth2 ",
+    "pysqlite ",
+    "regex",
+    "sqlalchemy",
+]
+if not 'TRAVIS_CI' in os.environ:
+    requirements.append('PySide')
+
 
 setup(
     name='everpad',
@@ -19,17 +32,7 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=True,
-    install_requires=[
-        "BeautifulSoup",
-        "html2text",
-        "httplib2",
-        "keyring",
-        "py-oauth2 ",
-        "pysqlite ",
-        "regex",
-        "sqlalchemy",
-        'PySide',
-    ],
+    install_requires=requirements,
     entry_points={
         'gui_scripts': [
             'everpad=everpad.pad.indicator:main'

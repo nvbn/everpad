@@ -1,8 +1,8 @@
 language: python
 python:
   - "2.7"
-before_install:
-  - cat setup.py|grep -v PySide > setup.py
+env:
+  - TRAVIS_CI="True"
 install:
   - sudo apt-get install python-pyside
   - pip install . --use-mirrors

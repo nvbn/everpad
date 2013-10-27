@@ -89,13 +89,18 @@ class ProviderApp(AppClass):
         self.quit()
 
 
+def _create_dirs(dirs):
+    """Create everpad dirs"""
+    for path in dirs:
+        try:
+            os.mkdir(os.path.expanduser(path))
+        except OSError:
+            continue
+
+
 def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    try:
-        os.mkdir(os.path.expanduser('~/.everpad/'))
-        os.mkdir(os.path.expanduser('~/.everpad/data/'))
-    except OSError:
-        pass
+    _create_dirs(['~/.everpad/', '~/.everpad/data/', '~/.everpad/logs/'])
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', action='store_true', help='verbose output')
     parser.add_argument('--version', '-v', action='store_true', help='show version')
@@ -109,8 +114,8 @@ def main():
         app = ProviderApp(args.verbose, sys.argv)
         app.exec_()
     except IOError:
-        print "everpad-provider already ran"
-    except Exception, e:
+        print("everpad-provider already ran")
+    except Exception as e:
         app.logger.debug(e)
 
 if __name__ == '__main__':

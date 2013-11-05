@@ -22,6 +22,7 @@ SYNC_STATES = (
 )
 DEFAULT_FONT = 'Sans'
 DEFAULT_FONT_SIZE = 14
+DEFAULT_INDICATOR_LAYOUT = ['create_note', 'pin_notes', 'notes', 'all_notes', 'sync']
 SCHEMA_VERSION = 5
 API_VERSION = 6
 VERSION = '2.5'

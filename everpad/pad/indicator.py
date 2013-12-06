@@ -11,6 +11,7 @@ from everpad.pad.list import List
 from everpad.const import (
     STATUS_SYNC, SYNC_STATES, SYNC_STATE_START,
     SYNC_STATE_FINISH, API_VERSION,
+    DEFAULT_INDICATOR_LAYOUT,
 )
 from everpad.specific import get_launcher, get_tray_icon
 from functools import partial
@@ -34,6 +35,7 @@ class Indicator(QSystemTrayIcon):
         self.menu.aboutToShow.connect(self.update)
         self.opened_notes = {}
         self.activated.connect(self._activated)
+        self.settings = QSettings('everpad', 'everpad-pad')
 
     def _activated(self, reason):
         if reason == QSystemTrayIcon.Trigger:
@@ -80,43 +82,48 @@ class Indicator(QSystemTrayIcon):
                 dbus.Array([], signature='i'), 0,
                 20 - len(pin_notes), Note.ORDER_UPDATED_DESC, 0,
             )
-            if len(notes) + len(pin_notes) or self.app.provider.is_first_synced():
-                self.menu.addAction(self.tr('All Notes'), self.show_all_notes)
-                self.menu.addSeparator()
-                if len(pin_notes):
-                    for struct in pin_notes:
-                        self._add_note(struct)
-                    self.menu.addSeparator()
-                for struct in notes:
-                    self._add_note(struct)
-                self.menu.addSeparator()
-                self.menu.addAction(self.tr('Create Note'), self.create)
-                first_sync = False
+            first_sync = not (
+                len(notes) + len(pin_notes) or self.app.provider.is_first_synced()
+            )
+            status_syncing = self.app.provider.get_status() == STATUS_SYNC
+            if status_syncing and first_sync:
+                sync_label = self.tr('Wait, first sync in progress')
+            elif status_syncing and not first_sync:
+                sync_label = self.tr('Sync in progress')
+            elif not status_syncing and first_sync:
+                sync_label = self.tr('Please perform first sync')
             else:
-                first_sync = True
-            if self.app.provider.get_status() == STATUS_SYNC:
-                action = self.menu.addAction(
-                    self.tr('Wait, first sync in progress') if first_sync
-                    else self.tr('Sync in progress')
-                )
-                action.setEnabled(False)
-            else:
-                if first_sync:
-                    label = self.tr('Please perform first sync')
+                last_sync = self.app.provider.get_last_sync()
+                delta_sync = (
+                    datetime.now() - datetime.strptime(last_sync, '%H:%M')
+                ).seconds // 60
+                if delta_sync == 0:
+                    sync_label = self.tr('Last Sync: Just now')
+                elif delta_sync == 1:
+                    sync_label = self.tr('Last Sync: %s min ago') % delta_sync
                 else:
-                    last_sync = self.app.provider.get_last_sync()
-                    delta_sync = (
-                        datetime.now() - datetime.strptime(last_sync, '%H:%M')
-                    ).seconds // 60
-                    if delta_sync == 0:
-                        label = self.tr('Last Sync: Just now')
-                    elif delta_sync == 1:
-                        label = self.tr('Last Sync: %s min ago') % delta_sync
-                    else:
-                        label = self.tr('Last Sync: %s mins ago') % delta_sync
-                self.menu.addAction(label, Slot()(self.app.provider.sync))
-        self.menu.addAction(self.tr('Settings and Management'), self.show_management)
+                    sync_label = self.tr('Last Sync: %s mins ago') % delta_sync
+            menu_items = {
+                'create_note'   : [self.tr('Create Note'), self.create],
+                'all_notes'     : [self.tr('All Notes'), self.show_all_notes],
+                'sync'          : [sync_label, Slot()(self.app.provider.sync)],
+                'pin_notes'     : pin_notes,
+                'notes'         : notes,
+            }
+            for item in self.app.settings.value('menu-order', DEFAULT_INDICATOR_LAYOUT):
+                if item == 'pin_notes' or item == 'notes':
+                    if not first_sync:
+                        if len(menu_items[item]):
+                            self.menu.addSeparator()
+                            for struct in menu_items[item]:
+                                self._add_note(struct)
+                            self.menu.addSeparator()
+                else:
+                    action = self.menu.addAction(menu_items[item][0], menu_items[item][1])
+                    if status_syncing and item == 'sync':
+                        action.setEnabled(False)
         self.menu.addSeparator()
+        self.menu.addAction(self.tr('Settings and Management'), self.show_management)
         self.menu.addAction(self.tr('Exit'), self.exit)
 
     def open(self, note, search_term=''):

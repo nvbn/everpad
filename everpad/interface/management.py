@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'management.ui'
 #
-# Created: Sun Feb 24 12:07:26 2013
-#      by: pyside-uic 0.2.13 running on PySide 1.1.1
+# Created: Sat Mar  2 22:53:08 2013
+#      by: pyside-uic 0.2.13 running on PySide 1.1.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -79,6 +79,16 @@ class Ui_Dialog(object):
         self.searchOnHome.setText("")
         self.searchOnHome.setObjectName("searchOnHome")
         self.gridLayout_2.addWidget(self.searchOnHome, 4, 1, 1, 1)
+        self.label_indLayout = QtGui.QLabel(self.tab_2)
+        self.label_indLayout.setObjectName("label_indLayout")
+        self.gridLayout_2.addWidget(self.label_indLayout, 5, 0, 1, 1)
+        self.listWidget_indLayout = QtGui.QListWidget(self.tab_2)
+        self.listWidget_indLayout.setMinimumSize(QtCore.QSize(0, 96))
+        self.listWidget_indLayout.setMaximumSize(QtCore.QSize(16777215, 96))
+        self.listWidget_indLayout.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.listWidget_indLayout.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.listWidget_indLayout.setObjectName("listWidget_indLayout")
+        self.gridLayout_2.addWidget(self.listWidget_indLayout, 5, 1, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.webView = QtWebKit.QWebView(Dialog)
@@ -107,6 +117,8 @@ class Ui_Dialog(object):
         self.label_6.setText(QtGui.QApplication.translate("Dialog", "Black tray icon", None, QtGui.QApplication.UnicodeUTF8))
         self.progressLabel.setText(QtGui.QApplication.translate("Dialog", "Launcher progress bar", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("Dialog", "Search on the home lens", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_indLayout.setText(QtGui.QApplication.translate("Dialog", "Indicator Layout", None, QtGui.QApplication.UnicodeUTF8))
+        self.listWidget_indLayout.setToolTip(QtGui.QApplication.translate("Dialog", "<html><head/><body><p>Drag and drop items to change layout.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Appearance", None, QtGui.QApplication.UnicodeUTF8))
 
 from PySide import QtWebKit

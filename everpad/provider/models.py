@@ -59,8 +59,7 @@ class Note(Base):
     action = Column(Integer)
     conflict_parent = relationship("Note", post_update=False)
     conflict_parent_id = Column(
-        Integer, ForeignKey('notes.conflict_parent_id'),
-        nullable=True,
+        Integer, ForeignKey('notes.id'), nullable=True,
     )
 
     # sharing data:
@@ -121,7 +120,7 @@ class Note(Base):
 
     @property
     def conflict_parent_dbus(self):
-        if self.conflict_parent:
+        if self.conflict_parent_id:
             return self.conflict_parent_id
         return 0
 

@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Table, Column, Integer, ForeignKey, String, Boolean,
-    and_,
+    and_, func,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -79,7 +79,7 @@ class Note(Base):
             if tag and tag != ' ':  # for blank array and other
                 try:
                     tags.append(self.session.query(Tag).filter(and_(
-                        Tag.name == tag,
+                        func.lower(Tag.name) == tag.lower(),
                         Tag.action != ACTION_DELETE,
                     )).one())  # shit shit shit
                 except NoResultFound:

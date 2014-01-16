@@ -23,6 +23,8 @@ Client support:
  - resources
  - places
  - en-* tags
+ 
+Security information: The client store notes in a SQLite database and communicates with the Evernote API via Thrift via https.
 
 Installation
 ============

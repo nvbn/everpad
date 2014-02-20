@@ -1,0 +1,68 @@
+.TH EVERPAD "1" "February 20, 2014"
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" Process this file with
+.\" groff -man -Tascii everpad.1
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.\"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+everpad \- Evernote client for GNU/Linux
+.SH SYNOPSIS
+\fBeverpad\fP  [\-\-open OPEN] [\-\-create] [\-\-all\-notes] [\-\-settings]
+.br
+    [\-\-replace] [\-\-version] [\-h] [attachments [attachments ...]]
+.SH DESCRIPTION
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics,
+.\" respectively.
+\fBeverpad\fP allows to interact with the Evernote service
+right from your desktop.
+.PP
+It supports notes, tags, notebooks, resources, places and en-* tags.
+.\" Options section originally created using help2man
+.SH OPTIONS
+.SS "positional arguments:"
+.TP
+attachments
+attach files to new note
+.SS "optional arguments:"
+.TP
+\fB\-\-open\fR OPEN
+open note
+.TP
+\fB\-\-create\fR
+create new note
+.TP
+\fB\-\-all\-notes\fR
+show all notes window
+.TP
+\fB\-\-settings\fR
+settings and management
+.TP
+\fB\-\-replace\fR
+replace already running instance
+.TP
+\fB\-\-version\fR, \fB\-v\fR
+show version
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.SH BUGS
+To report a bug, please visit https://github.com/nvbn/everpad/issues and/or report bugs to the Debian Bug Tracking System, as usual.
+.SH AUTHOR
+everpad was written by Vladimir Iakovlev <nvbn.rm@gmail.com>.
+.br
+Manpage written for Debian by Emilien Klein <emilien+debian@klein.st>.

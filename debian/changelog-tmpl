@@ -1,3 +1,9 @@
+everpad (2.5.8-0~{{ release }}) {{ release }}; urgency=low
+
+  * Revert to stable version
+
+ -- Vladimir Iakovlev <nvbn.rm@gmail.com>  Fri, 26 Feb 2013 20:26:00 +0400
+
 everpad (2.5.7-0~{{ release }}) {{ release }}; urgency=low
 
   * Fix work with sqlalchemy 0.8.x

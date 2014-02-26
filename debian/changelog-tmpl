@@ -1,6 +1,7 @@
-everpad (2.5.8-0~{{ release }}) {{ release }}; urgency=low
+everpad (2.15.8-0~{{ release }}) {{ release }}; urgency=low
 
   * Revert to stable version
+  * Move version bigger than previous cause ppa reasons
 
  -- Vladimir Iakovlev <nvbn.rm@gmail.com>  Fri, 26 Feb 2013 20:26:00 +0400
 

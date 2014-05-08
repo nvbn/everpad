@@ -111,6 +111,7 @@ def main():
     try:
         fcntl.lockf(fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        dbus.mainloop.glib.threads_init()
         app = ProviderApp(args.verbose, sys.argv)
         app.exec_()
     except IOError:

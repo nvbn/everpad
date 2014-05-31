@@ -61,7 +61,7 @@ class ProviderApp(AppClass):
     @Slot()
     def on_remove_authenticated(self):
         self.sync_thread.quit()
-        self.sync_thread.update_count = 0
+        self.sync_thread.sync_state.update_count = 0
         set_auth_token('')
         session = get_db_session()
         session.query(models.Note).delete(

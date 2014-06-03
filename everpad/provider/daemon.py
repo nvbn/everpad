@@ -116,7 +116,7 @@ def main():
     except IOError:
         print("everpad-provider already ran")
     except Exception as e:
-        app.logger.debug(e)
+        logging.exception("failed to start everpad-provider")
 
 if __name__ == '__main__':
     main()

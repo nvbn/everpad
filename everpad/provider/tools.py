@@ -10,6 +10,7 @@ from ..const import HOST, DB_PATH
 from ..tools import get_proxy_config
 from ..specific import get_keyring
 import os
+import logging
 
 
 def _nocase_lower(item):
@@ -21,7 +22,10 @@ def set_auth_token(token):
 
 
 def get_auth_token():
-    return get_keyring().get_password('everpad', 'oauth_token')
+    try:
+        return get_keyring().get_password('everpad', 'oauth_token')
+    except Exception as e:
+        logging.exception("Error getting token from keyring")
 
 
 def get_db_session(db_path=None):

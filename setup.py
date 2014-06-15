@@ -59,15 +59,17 @@ setup(
             'data/editor-icons/everpad-insert-image.png',
             'data/editor-icons/everpad-pin.png',
         ]),
+        ('share/icons/hicolor/32x32/apps', [
+            'data/everpad-black.png', 'data/everpad-mono.png',
+        ]),
         ('share/icons/hicolor/48x48/actions', [
             'data/everpad-file.png',
         ]),
         ('share/icons/hicolor/64x64/apps', [
-            'data/everpad-mono.png', 'data/everpad-lens.png',
-            'data/everpad-note.png', 'data/everpad-black.png',
+            'data/everpad-note.png',
         ]),
         ('share/icons/hicolor/128x128/apps', [
-            'data/everpad.png',
+            'data/everpad.png', 'data/everpad-lens.png',
         ]),
         ('share/pixmaps', [
             'data/everpad.png', 'data/everpad-mono.png',

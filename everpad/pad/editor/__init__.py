@@ -2,7 +2,7 @@ from PySide.QtGui import (
     QMainWindow, QIcon, QMessageBox, QAction,
     QShortcut, QKeySequence, QApplication,
 )
-from PySide.QtCore import Slot
+from PySide.QtCore import Slot, QBasicTimer
 from everpad.interface.editor import Ui_Editor
 from everpad.pad.tools import get_icon
 from everpad.pad.editor.actions import FindBar
@@ -34,6 +34,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.logger.addHandler(fh)
 
         self.app = QApplication.instance()
+        self.timer = QBasicTimer()
         self.note = note
         self.closed = False
         self.ui = Ui_Editor()
@@ -51,6 +52,11 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         if geometry:
             self.restoreGeometry(geometry)
         self.resource_edit.note = note
+        self.timer.start(10000, self)
+
+    def timerEvent(self, event):
+        if self.touched:
+            self.save(notify=False)
 
     def init_controls(self):
         self.ui.menubar.hide()
@@ -191,7 +197,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
         self.setWindowTitle(self.tr('Everpad / %s') % title)
 
     @Slot()
-    def save(self):
+    def save(self, notify = True):
         self.logger.debug('Saving note: "%s"' % self.note.title)
         self.mark_untouched()
         self.update_note()
@@ -201,7 +207,7 @@ class Editor(QMainWindow):  # TODO: kill this god shit
                 res.struct, self.resource_edit.resources,
             ), signature=Resource.signature),
         )
-        self.app.send_notify(self.tr('Note "%s" saved!') % self.note.title)
+        if notify: self.app.send_notify(self.tr('Note "%s" saved!') % self.note.title)
 
     @Slot()
     def save_and_close(self):

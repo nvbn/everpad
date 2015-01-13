@@ -113,6 +113,10 @@ class PushNote(BaseSync, ShareNoteMixin):
             html=content[:limits.EDAM_NOTE_CONTENT_LEN_MAX]
         ))).strip().encode('utf8')
 
+        BeautifulSoup.NESTABLE_TAGS['li'] = ['ul', 'ol']
+        BeautifulSoup.NESTABLE_TAGS['ul'] = ['li']
+        BeautifulSoup.NESTABLE_TAGS['ol'] = ['li']
+
         soup = BeautifulSoup(enml_content, selfClosingTags=[
             'img', 'en-todo', 'en-media', 'br', 'hr',
         ])
